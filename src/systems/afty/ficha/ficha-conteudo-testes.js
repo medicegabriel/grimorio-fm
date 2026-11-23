@@ -98,7 +98,7 @@ export function usaTesteConteudo(sessao, derived, entrada = {}, pedido = {}) {
         usos: { chave: `treino:pericia:${entrada.id}:vantagem`, max: 2 } };
       break;
     case "treino-sucesso":
-      if (treino < 4 || entrada.oposto !== false) break;
+      if (treino < 4 || entrada.oposto !== false || derived.conteudoTreinos?.sucessoGarantidoPericia === false) break;
       desc = { id: `treino:pericia:${entrada.id}:sucesso`, nome: "Treino de Perícia", limite: { por: "cena" } };
       break;
     case "luta":
@@ -182,18 +182,26 @@ export function rerrolaTesteDeClasse(sessao, derived, entrada = {}, pedido = {},
   return { ...uso, sessao: alvo ? uso.sessao : alterada, ...(alvo ? { sessaoAlvo: alterada } : {}), rolagem };
 }
 
-/** p.345. Repete apenas o d20 baixo e preserva os dados extras já rolados. */
-export function rerrolaTreinoPericia(sessao, derived, entrada = {}, pedido = {}) {
+export function testesParaRerrolarTreino(sessao, derived, alvo, tr = false) {
+  const treinos = tr ? derived.conteudoTreinos?.treinoTR?.instancias : derived.conteudoTreinos?.pericias;
+  const completos = new Set((treinos ?? []).filter((t) => t.progresso === 4 && (!alvo || t.alvo === alvo)).map((t) => t.alvo));
+  return (sessao.log ?? []).filter((r) => r.tipo === "teste" && completos.has(tr ? r.resistenciaId : r.periciaId)
+    && r.natural < 5 && !r.treinoRerrolado && r.sorte?.escolha !== null && !testeComConsequencias(r));
+}
+
+/** Repete apenas o d20 baixo e preserva os dados extras já rolados. */
+export function rerrolaTesteDeTreino(sessao, derived, entrada = {}, pedido = {}) {
   const guard = identidade(sessao, pedido); if (guard) return guard;
-  const r = sessao.log?.find((r) => r.id === entrada.id && r.tipo === "teste");
-  const treino = derived.conteudoTreinos?.pericias?.find((t) => t.alvo === r?.periciaId);
-  if (!r || r.natural >= 5 || treino?.progresso !== 4 || r.treinoRerrolado || r.sorte?.escolha === null || testeComConsequencias(r)) return recusa(sessao, "Rerrolagem do Treino Indisponível");
+  const r = testesParaRerrolarTreino(sessao, derived, entrada.alvo, entrada.tr).find((r) => r.id === entrada.id);
+  if (!r) return recusa(sessao, "Rerrolagem do Treino Indisponível");
   const d20 = rolarDados(1, 20, entrada.rng)[0], natural = Math.max(r.natural, d20), total = natural + r.bonus + (r.somaExtras ?? 0);
   const rolagem = { ...r, natural, total, critico: natural >= (r.margemCritico ?? 20), pifia: natural === 1,
     ...(d20 > r.natural ? { d20: [d20], descartado: null } : {}),
     sucesso: r.cd == null ? null : total >= r.cd, treinoRerrolado: { original: r.natural, novo: d20, dadosOriginais: r.d20 } };
-  return { aplicado: true, rolagem, sessao: comOperacao({ ...sessao, log: sessao.log.map((x) => x.id === r.id ? rolagem : x) }, { id: pedido.opId, tipo: "treino-pericia" }) };
+  return { aplicado: true, rolagem, sessao: comOperacao({ ...sessao, log: sessao.log.map((x) => x.id === r.id ? rolagem : x) }, { id: pedido.opId, tipo: entrada.tr ? "treino-tr" : "treino-pericia" }) };
 }
+
+export { rerrolaTesteDeTreino as rerrolaTreinoPericia };
 
 /** p.105. O teste precede a descoberta para permitir rerrolagens nativas. */
 export function usaAnaliseProfunda(sessao, derived, sessaoAlvo, derivedAlvo, entrada = {}, pedido = {}) {

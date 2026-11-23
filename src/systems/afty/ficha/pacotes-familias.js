@@ -225,6 +225,9 @@ function resolverFeitico(f, c) {
   });
 }
 function fontesDeFeitico(c) {
+  /* Eclesiastes (2026-11-23) não tem Feitiço Auxiliar por Nível: o antigo foi
+     descartado, e o buff de Feitiço por pontos para aliado é da fase 2. */
+  if (c.ficha?.edicaoDeRegras === "eclesiastes") return [];
   return lista(c.ficha?.feiticos).filter((f) => f?.tipo === "auxiliar" && f.id && !String(f.id).startsWith("rec_")).map((f) => ({
     chave: `feitico|${f.id}`, familia: "feitico", nome: f.nome || "Feitiço Sem Nome", grupo: "Feitiços Auxiliares", escolhas: [],
     resolver: () => resolverFeitico(f, c),

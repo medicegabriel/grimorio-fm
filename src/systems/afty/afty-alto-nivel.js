@@ -39,6 +39,7 @@
  * o teto duro de 30 de `deriveAfty` quando esse canal existir.
  */
 
+import { vetaTREclesiastes } from "../eclesiastes/regras";
 import { registrarFamilia, remendarLista, nivelDaFicha, filtraForaDoJogador, perdidaNoJogador } from "./afty-addons";
 import { sistemaDaFicha, regraDo } from "./afty-sistema";
 import {
@@ -61,7 +62,7 @@ export { MELHORIA_NIVEL_INICIAL, LENDARIA_NIVEL_INICIAL };
    uma perícia nova entra aqui sozinha. */
 const OPCOES_PERICIA = AFTY_PERICIAS.map((p) => ({ id: p.id, nome: p.nome }));
 const OPCOES_ATRIBUTO = AFTY_ATTRS.map((a) => ({ id: a.key, nome: a.label }));
-const OPCOES_RESISTENCIA = AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label }));
+const OPCOES_RESISTENCIA = AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label, resistenciaId: r.value }));
 /* O id da opção É a chave da trilha (`dom`, `au`...), porque ele vira o `alvo`
    do canal `limiteAptidao` em LENDARIA_EFEITOS_ALVO. */
 const OPCOES_TRILHA = APTIDAO_TRILHAS.map((t) => ({ id: t.key, nome: t.label }));
@@ -914,7 +915,7 @@ export function resolveAltoNivel(creature, ctx = {}) {
           || ["treinado", "mestre"].includes(creature?.pericias?.[p.id])
           || (ctx.periciasTreinadas || []).includes(p.id))
         .map((p) => ({ id: p.id, nome: p.nome }))
-      : item.escolha.opcoes;
+      : item.escolha.opcoes.filter((o) => !vetaTREclesiastes(creature, o.resistenciaId));
     return [item.id, opcoes];
   }));
   const escolhas = {

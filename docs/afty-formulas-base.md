@@ -10,6 +10,32 @@ FLOOR, `INT`=parte inteira, `MAIOR(intervalo;k)`=k-ésimo maior, `VERDADEIRO`=TR
 
 ---
 
+## Escala de Nível e ND em Eclesiastes
+
+Em fichas com `edicaoDeRegras: "eclesiastes"`, Defesa, CD, Acerto, TRs e Perícias omitem a parcela de nível. Atenção, Manobras, Concentração, testes de Conjuração em Ritual e CD de Feitiços recebem as bases já calculadas pela edição.
+
+- Conflito de Domínio soma o Nível de Aptidão em Domínio e os bônus ao d10.
+- Nas Técnicas de Barreira, o PV por parede é 5 + bônus. Cortina e domo continuam usando 3 e 12 paredes, respectivamente. Paredes Resistentes usa 10 + Nível de Barreira × ND + bônus.
+- A CD dos Treinamentos para Feitiço, Habilidade e Aptidão é 12.
+- O Treinamento Completo do Treino de Perícia soma `piso(bt / 2)` aos testes da perícia escolhida pelo canal `bonusPericia`.
+- Os TRs da edição são Reflexos, Fortitude, Vontade e Integridade. Astúcia deixa de entrar no cálculo de bônus e no limite de perícias.
+- O Treinamento Completo do Treino de TR soma `piso(bt / 2)` ao Teste de Resistência escolhido pelo canal `bonusTR`.
+- A RD Geral base da criatura Conjuradora e da Mista abaixo do ND 10 é 0. A Mista a partir do ND 10 usa ND inteiro.
+- Quantidade de PE Pouca e Grande têm ajuste 0. Muito Pouca desconta o ND inteiro e Muito Grande soma o ND inteiro.
+
+Eclesiastes aplica os verbos de Guerra de Feiticeiros 1.0.4 na hidratação da ficha. Atenção Só Pela Percepção e TR no Limite de Perícias valem para os dois sistemas. No jogador, o PV Final dobra e a Alma segue o cálculo Afty. Progressão Épica é opcional por jogador e eleva o multiplicador do PV Final a 3, concede 3 pontos de atributo por ciclo e habilita Guarda de Calamidade. A composição da edição usa a fonte em `addons/guerra-de-feiticeiros.json` e preserva a CD 12 no Treinamento para Habilidade.
+
+### Dano de criatura em Eclesiastes
+
+| Patamar | Dado base | Dano Total antes do grau da ferramenta e dos bônus |
+| --- | --- | --- |
+| Comum | d6 | `ND + MOD` |
+| Desafio | d8 | `2 × ND + (MOD + CL)` |
+| Calamidade | d10 | `3 × ND + 2 × (MOD + CL)` |
+| Beyond | d12 | `3 × ND + 3 × (MOD + CL)` |
+
+Use o ND já acrescido dos Níveis de Dano, o modificador do atributo do ataque (`MOD`) e o nível efetivo de Controle e Leitura (`CL`). Some o grau da Ferramenta Amaldiçoada e os bônus da linha ao Dano Total. A quantidade de dados base é `máximo(1, MOD + 1)` e o fixo é `teto(Dano Total − quantidade de dados base × média do dado)`. Some os dados adicionais depois da conversão.
+
 ## Correções estruturais ao que estava assumido
 
 ### CX3: conteúdo direcionado e custos de ER (2026-11-03)

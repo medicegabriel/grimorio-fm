@@ -42,15 +42,16 @@ import { cofreTrancado, destrancarDeVez } from "./afty-cofre";
 import {
   lerBiblioteca, instalarDeTexto, instalarPacote, removerPacote, compararComBiblioteca,
 } from "./afty-addons-biblioteca";
-import { familiasDeAddon, incompativeisCom, problemasDaAplicacao, LIBERACOES, PRIMITIVAS } from "./afty-addons";
+import { addonNativoDaFicha, familiasDeAddon, incompativeisCom, problemasDaAplicacao, LIBERACOES, PRIMITIVAS } from "./afty-addons";
+import ControlesDeAjustes from "./ui/ControlesDeAjustes";
 import ListaLateral from "./ui/ListaLateral";
 import {
   CATEGORIAS_DE_ADDON, FILTROS_DE_ADDON, montarItens, textoDeBuscaDoAddon, oQueMuda, blocosDaDescricao, recortaBlocos,
 } from "./afty-addons-lista";
 import { sistemaDaFicha, palavrasDoSistema } from "./afty-sistema";
-import { addonNativo } from "../eradeouro/era-de-ouro";
+import { GUERRA_NATIVA, guerraNativaNaFicha } from "../eclesiastes/pacotes-nativos";
 import {
-  fontesCompostas, fonteComposta, ajustesDoSistema, ajustesEfetivos, ligarComposto, desligarComposto, definirAjuste,
+  fontesCompostas, fonteComposta, ligarComposto, desligarComposto, definirAjuste,
   avisosDosCompostos, compor, hidratarFicha,
 } from "./afty-addons-compostos";
 
@@ -269,60 +270,6 @@ function DetalheDoAddon({
   );
 }
 
-/* Número inteiro de um ajuste de pacote composto. Confirma ao sair do campo, e
-   valor fora da faixa volta ao que estava. */
-function CampoInteiro({ rotulo, min, max, valor, onChange }) {
-  const [digitado, setDigitado] = useState(null);
-  const confirmar = () => {
-    const numero = digitado === null || digitado.trim() === "" ? valor : Number(digitado);
-    onChange(Number.isInteger(numero) ? Math.min(max, Math.max(min, numero)) : valor);
-    setDigitado(null);
-  };
-  return (
-    <label className="flex items-center gap-2 px-2 pb-1 text-xs text-slate-400">
-      {rotulo}
-      <input
-        type="number" min={min} max={max} step={1}
-        aria-label={rotulo}
-        className="afty-campo afty-linha w-16 px-2 py-1 tabular-nums"
-        value={digitado ?? valor}
-        onChange={(e) => {
-          const texto = e.target.value;
-          setDigitado(texto);
-          const numero = Number(texto);
-          if (texto !== "" && Number.isInteger(numero) && numero >= min && numero <= max) onChange(numero);
-        }}
-        onBlur={confirmar}
-        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); e.currentTarget.blur(); } }}
-      />
-    </label>
-  );
-}
-
-/* Os ajustes de um pacote composto que esta ficha mostra, com o valor de hoje. */
-function ControlesDoPacoteComposto({ draft, pacote, onAjuste }) {
-  // Sem a fonte instalada nesta máquina a ficha segue com a cópia dela, e não há o que ajustar.
-  const fonte = fonteComposta(pacote.composicao?.fonte);
-  if (!fonte) return null;
-  const sistema = sistemaDaFicha(draft);
-  const valores = ajustesEfetivos(fonte, sistema, draft.addonAjustes?.[fonte.id]);
-  return ajustesDoSistema(fonte, sistema).map((a) => (a.tipo === "interruptor" ? (
-    <label key={a.id} className="flex items-center gap-2 px-2 pb-1 text-xs text-slate-400">
-      <input
-        type="checkbox"
-        checked={valores[a.id] === true}
-        onChange={(e) => onAjuste(fonte.id, a.id, e.target.checked)}
-      />
-      {a.rotulo}
-    </label>
-  ) : (
-    <CampoInteiro
-      key={a.id} rotulo={a.rotulo} min={a.min} max={a.max} valor={valores[a.id]}
-      onChange={(v) => onAjuste(fonte.id, a.id, v)}
-    />
-  )));
-}
-
 export default function TabAddons({ draft, derived, setAddons, trocarFicha, renderMotor }) {
   const [biblioteca, setBiblioteca] = useState(() => lerBiblioteca());
   const [texto, setTexto] = useState("");
@@ -451,6 +398,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
   /* A lista unificada: compostos instalados, biblioteca e o que a ficha carrega, cada
      pacote uma vez. O aviso de parcial vai para o item do pacote antigo que ficou ligado. */
   const sistemaDaTela = sistemaDaFicha(draft);
+  const cobertosPelaEdicao = guerraNativaNaFicha(draft, GUERRA_NATIVA.id) ? GUERRA_NATIVA.absorve : [];
   const avisosDe = {};
   for (const a of parciais) (avisosDe[a.id] ||= []).push(a.texto);
   const itens = montarItens({
@@ -459,7 +407,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
   }).filter((i) => i.id !== "servos-da-guerra" || sistemaDaTela === "afty" || i.ligado)
     /* O pacote NATIVO da mesa não aparece (a Guilda, 2026-11-09): ele vale sempre,
        sempre em dia, e não tem o que ligar, desligar ou atualizar. */
-    .filter((i) => !addonNativo(draft, i.id));
+    .filter((i) => !addonNativoDaFicha(draft, i.id) && !cobertosPelaEdicao.includes(i.id));
   const item = itens.find((i) => i.id === escolhido)
     ?? itens.find((i) => i.ligado) ?? itens[0] ?? null;
   const ligados = itens.filter((i) => i.ligado).length;
@@ -486,7 +434,7 @@ export default function TabAddons({ draft, derived, setAddons, trocarFicha, rend
     if (!i.ligado || !i.copia) return null;
     const p = i.copia;
     if (p.id === "servos-da-guerra") return <ServosEditor draft={draft} derived={derived} onFicha={trocarFicha} renderMotor={renderMotor} />;
-    if (p.composicao) return <ControlesDoPacoteComposto draft={draft} pacote={p} onAjuste={mudarAjuste} />;
+    if (p.composicao) return <ControlesDeAjustes draft={draft} fonte={fonteComposta(p.composicao.fonte)} onAjuste={mudarAjuste} />;
     return (
       <>
         {p.regrasAfty?.talentosIniciais != null && (

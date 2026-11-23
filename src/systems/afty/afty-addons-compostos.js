@@ -3,10 +3,10 @@
  * ADDONS COMPOSTOS
  * ============================================================
  * Um pacote COMPOSTO é instalado pelo JSON, como qualquer addon, e a fonte mora
- * SÓ no navegador de quem o instalou (chave própria no `localStorage`, ver
- * `CHAVE_FONTES`). Nada dele viaja dentro do app publicado: quem não tem o JSON
- * não vê o pacote, e uma ficha que chega com a cópia dele continua funcionando
- * com ela, sem atualizar.
+ * no navegador de quem o instalou (chave própria no `localStorage`, ver
+ * `CHAVE_FONTES`). Sem uma fonte instalada, uma ficha importada continua
+ * funcionando com a cópia que ela carrega. Eclesiastes tem uma fonte nativa
+ * própria para Guerra de Feiticeiros, usada só nas fichas dessa edição.
  *
  * Ao contrário de um pacote comum da biblioteca, quem TEM a fonte instalada vê as
  * fichas se atualizarem sozinhas: a cópia que a ficha carrega é REFEITA a partir
@@ -39,12 +39,13 @@
  * só em parte (`parciais`) ficam ligados, com aviso. Ficha que só tem pacotes
  * antigos espera alguém ligar o composto, e nada muda nela.
  *
- * ⚠ FOLHA DE IMPORTS: só `afty-sistema` (também folha). Não importe
+ * ⚠ FOLHA DE IMPORTS: o sistema e as fontes nativas da edição. Não importe
  * `afty-addons.js` aqui: ele importa este módulo. A validação que precisa dele
  * (cada cópia por sistema ser um pacote válido) mora na biblioteca, que é quem
  * instala.
  */
 import { sistemaDaFicha } from "./afty-sistema";
+import { GUERRA_NATIVA, guerraNativaNaFicha } from "../eclesiastes/pacotes-nativos";
 
 /* ============================================================ */
 /* AS FONTES INSTALADAS                                          */
@@ -92,6 +93,7 @@ const garantir = () => (fontes ??= new Map(lerGravadas().map((f) => [f.id, f])))
 export const fontesCompostas = () => [...garantir().values()];
 export const fonteComposta = (id) => garantir().get(id) ?? null;
 export const ehComposto = (id) => garantir().has(id);
+const fonteCompostaDaFicha = (ficha, id) => guerraNativaNaFicha(ficha, id) ? GUERRA_NATIVA : fonteComposta(id);
 
 /**
  * Instala a fonte (ou troca a que tem o mesmo id). Não valida: quem instala pela
@@ -339,27 +341,27 @@ function escolhasComLegado(doLegado, salvos) {
  * Põe a cópia nova no lugar da velha, ou no fim da lista. Guarda as escolhas
  * efetivas em `addonAjustes`, que é onde elas moram.
  */
-function comCopia(ficha, fonte, salvos) {
+function comCopia(ficha, fonte, salvos, nativo = false) {
   const sistema = sistemaDaFicha(ficha);
   const efetivos = ajustesEfetivos(fonte, sistema, salvos);
   const copia = compor(fonte, sistema, efetivos);
   const lista = ficha.addons ?? [];
   const indice = lista.findIndex((p) => p && p.id === fonte.id);
-  if (indice >= 0 && lista[indice].ativo === false) copia.ativo = false;
+  if (!nativo && indice >= 0 && lista[indice].ativo === false) copia.ativo = false;
   const addons = indice >= 0 ? lista.map((p, i) => (i === indice ? copia : p)) : [...lista, copia];
   return { ...ficha, addons, addonAjustes: { ...(ficha.addonAjustes ?? {}), [fonte.id]: { ...salvos, ...efetivos } } };
 }
 
-function hidratarUm(ficha, fonte, sistema) {
+function hidratarUm(ficha, fonte, sistema, nativo = false) {
   // Ficha que só tem pacotes antigos espera alguém ligar o composto (autor, 2026-10-29).
-  if (!ficha.addons.some((p) => p && p.id === fonte.id)) return ficha;
+  if (!nativo && !ficha.addons.some((p) => p && p.id === fonte.id)) return ficha;
   const { ficha: base, doLegado } = absorverAntigos(ficha, fonte);
-  const atual = base.addons.find((p) => p && p.id === fonte.id);
+  const atual = base.addons?.find((p) => p && p.id === fonte.id);
   const salvos = base.addonAjustes?.[fonte.id] ?? {};
   const escolhidos = escolhasComLegado(doLegado, salvos);
   const chave = chaveDaComposicao(fonte, sistema, ajustesEfetivos(fonte, sistema, escolhidos));
-  if (base === ficha && atual.composicao?.chave === chave) return ficha;
-  return comCopia(base, fonte, escolhidos);
+  if (base === ficha && atual?.composicao?.chave === chave && (!nativo || atual.ativo !== false)) return ficha;
+  return comCopia(base, fonte, escolhidos, nativo);
 }
 
 const cache = new WeakMap();
@@ -383,13 +385,22 @@ export function registrarNativos(fn) {
 }
 
 /**
- * A ficha com os pacotes nativos da mesa dela, na frente e em dia. A cópia que a
+ * A ficha com os pacotes nativos da mesa ou edição em dia. A cópia que a
  * ficha já carregava com o mesmo id sai (a dos addons oficiais antigos, ou a que
  * alguém instalou pela biblioteca), para o mesmo pacote não valer duas vezes.
- * Devolve a MESMA ficha fora de uma mesa e quando já está tudo em dia.
+ * Devolve a MESMA ficha quando não há pacote nativo ou já está tudo em dia.
  */
 export function hidratarNativos(ficha) {
   if (!ficha || typeof ficha !== "object") return ficha;
+  if (guerraNativaNaFicha(ficha, GUERRA_NATIVA.id)) {
+    const visto = cacheNativos.get(ficha);
+    if (visto?.nativos === GUERRA_NATIVA && visto.addons === ficha.addons && visto.ajustes === ficha.addonAjustes) {
+      return visto.saida;
+    }
+    const saida = hidratarUm(ficha, GUERRA_NATIVA, sistemaDaFicha(ficha), true);
+    cacheNativos.set(ficha, { addons: ficha.addons, ajustes: ficha.addonAjustes, nativos: GUERRA_NATIVA, saida });
+    return saida;
+  }
   const nativos = nativosDaFicha(ficha);
   if (!nativos.length) return ficha;
   const visto = cacheNativos.get(ficha);
@@ -420,7 +431,7 @@ export function hidratarFicha(fichaCrua) {
   if (!Array.isArray(lista) || lista.length === 0) return ficha;
   const instaladas = garantir();
   if (instaladas.size === 0) return ficha;
-  if (!lista.some((p) => p && instaladas.has(p.id))) return ficha;
+  if (!lista.some((p) => p && instaladas.has(p.id) && !guerraNativaNaFicha(ficha, p.id))) return ficha;
 
   const visto = cache.get(ficha);
   if (visto && visto.geracao === geracao && visto.addons === ficha.addons
@@ -429,7 +440,9 @@ export function hidratarFicha(fichaCrua) {
   }
   const sistema = sistemaDaFicha(ficha);
   let saida = ficha;
-  for (const fonte of instaladas.values()) saida = hidratarUm(saida, fonte, sistema);
+  for (const fonte of instaladas.values()) {
+    if (!guerraNativaNaFicha(ficha, fonte.id)) saida = hidratarUm(saida, fonte, sistema);
+  }
   if (saida !== ficha) cache.set(ficha, { geracao, addons: ficha.addons, ajustes: ficha.addonAjustes, tamanho: lista.length, saida });
   return saida;
 }
@@ -447,8 +460,9 @@ export function avisosDosCompostos(ficha) {
   const out = [];
   const lista = ficha?.addons ?? [];
   const sistema = sistemaDaFicha(ficha);
-  for (const fonte of garantir().values()) {
-    if (!lista.some((p) => p && p.id === fonte.id)) continue;
+  for (const pacote of lista) {
+    const fonte = fonteCompostaDaFicha(ficha, pacote?.id);
+    if (!fonte) continue;
     for (const parcial of fonte.parciais ?? []) {
       if (Array.isArray(parcial.sistemas) && !parcial.sistemas.includes(sistema)) continue;
       const antigo = lista.find((p) => p && p.id === parcial.id);
@@ -468,6 +482,7 @@ export function avisosDosCompostos(ficha) {
  * aproveita o que eles tinham escolhido. Sem a fonte instalada, não faz nada.
  */
 export function ligarComposto(ficha, id) {
+  if (guerraNativaNaFicha(ficha, id)) return hidratarNativos(ficha);
   const fonte = fonteComposta(id);
   if (!fonte) return ficha;
   const { ficha: base, doLegado } = absorverAntigos(ficha, fonte);
@@ -476,13 +491,17 @@ export function ligarComposto(ficha, id) {
 
 /** Tira a cópia da ficha. As escolhas ficam guardadas para o caso de ligar de novo. */
 export function desligarComposto(ficha, id) {
+  if (guerraNativaNaFicha(ficha, id)) return ficha;
   return { ...ficha, addons: (ficha.addons ?? []).filter((p) => !(p && p.id === id)) };
 }
 
 /** Muda UM ajuste e refaz a cópia. Valor inválido para o ajuste é ignorado. */
 export function definirAjuste(ficha, id, ajusteId, valor) {
-  const fonte = fonteComposta(id);
-  const ajuste = (fonte?.ajustes ?? []).find((a) => a.id === ajusteId);
-  if (!fonte || !ajuste || !valorValido(ajuste, valor)) return ficha;
-  return comCopia(ficha, fonte, { ...(ficha.addonAjustes?.[id] ?? {}), [ajusteId]: valor });
+  const fonte = fonteCompostaDaFicha(ficha, id);
+  const ajuste = ajustesDoSistema(fonte, sistemaDaFicha(ficha)).find((a) => a.id === ajusteId);
+  if (!ajuste || !valorValido(ajuste, valor)) return ficha;
+  const nativo = guerraNativaNaFicha(ficha, id);
+  const base = nativo ? hidratarNativos(ficha) : ficha;
+  if (nativo && base.addonAjustes?.[id]?.[ajusteId] === valor) return base;
+  return comCopia(base, fonte, { ...(base.addonAjustes?.[id] ?? {}), [ajusteId]: valor }, nativo);
 }

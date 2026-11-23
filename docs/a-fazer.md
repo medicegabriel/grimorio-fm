@@ -1033,6 +1033,50 @@ aprovada com esses limites, o teste real do autor continua pendente.
 
 ## PERGUNTAS AO AUTOR
 
+### Eclesiastes: Feitiços por pontos, furos e leituras para confirmar (2026-11-23)
+**Onde:** `docs/eclesiastes-feiticos.md` (texto), `src/systems/eclesiastes/feiticos/` (motor e tela)
+**Situação:** decisões tomadas pelo autor em 2026-11-22 estão no topo do guia. Os itens abaixo são furos do
+texto que o autor mandou implementar fiéis, e leituras adotadas onde o texto cala.
+
+Furos registrados (implementados fiéis ao texto):
+1. **Créditos sem teto.** Fadiga, Exaustão e Requisitos não têm teto por Feitiço. ND 1 com 5 de Exaustão e dois
+   Requisitos Impossíveis ganha 40 pontos.
+2. **Fadiga contra Exaustão.** Com BT 2 ou 3 o limiar é ⌊BT/2⌋ = 1: cada Fadiga vira Exaustão na hora e rende 1
+   ponto contra os 4 da Exaustão direta. Com BT 10 ou mais (nível 36+) o limiar é 5 e a Fadiga rende mais.
+3. **ND baixo.** A base 2×BT faz o ND 1 render 13 pontos por 1 PE com BT 6, contra 32 pontos por 20 PE no ND 20.
+4. **Duradouro com Concentração.** As rodadas 2 e 3 grátis dobram o Dano Contínuo sem custo (5d8 + 2d8 + 2d8).
+5. **Sustentado com Concentração.** Taxa zero e manutenção de 1 PE + 1 a cada 10 pontos. Com Dano Contínuo em Zona,
+   dano em área indefinido e barato.
+6. **TR para encerrar o Dano Contínuo** é opcional e não rende ponto.
+7. **Duração por Feitiço.** Comprar rodadas custa o mesmo para um efeito ou dez.
+8. **Área.** Custo linear no raio, cobertura ao quadrado: a Esfera domina Linha e Cone.
+9. **BT que sobe estoura Feitiço salvo.** O orçamento sobe 2 por degrau de BT, e cada taxa atrelada ao BT sobe 1.
+   A tela recalcula e avisa "Faltam N Pontos", nunca corta calada.
+10. **Créditos do Mestre livres.** Um Requisito Impossível vale 10 pontos só por ser escolhido. O site mostra o
+   Requisito e a dificuldade na linha do Feitiço.
+
+Leituras adotadas onde o texto cala:
+- CD e Acerto do Feitiço são os que a ficha já calcula (CD de Feitiçaria).
+- Tipo de dano e TR do alvo são escolha livre, sem custo. Dano e Cura podem conviver no mesmo Feitiço.
+- Bônus de área do Destrutivo conta só os pontos de dimensão pagos pelo orçamento geral (sem recursão).
+- Grupo Temático de Perícias fica indisponível: o texto não lista os grupos.
+- Classe de Dificuldade como Efeito Auxiliar soma na CD de tudo, não só na de Feitiço.
+- Semiativo "Um uso: +2" só quando ⌊BT/2⌋ passa de 1.
+- Feitiços Especiais e alcances de Cena, Mapa e Global não existem na edição até o texto chegar.
+- Condição montada por efeitos e descontos de remoção ficam como ajuste manual nomeado.
+
+Pendências de código que o rework abre (não bloqueiam a aba):
+- O botão Usar cobra só o custo base: o PE extra da Liberação Máxima não é descontado sozinho.
+- O interruptor de Passivo Condicional e Semiativo só liga com Em Combate, como os Auxiliares de hoje. Se o
+  Condicional tiver de valer fora de combate, o caminho é estado de sessão (como a Exaustão).
+- Fadiga na sessão, usos do Semiativo, manutenção do Sustentado, melhorias de Ritual e buffs de Feitiço Ativo
+  ligados no Motor: fase 2.
+- Alcance de ataque corpo a corpo e à distância: o canal `alcanceArma` não tem alvo "toda arma de um tipo".
+- Leem o Feitiço antigo e ficam sem efeito em Eclesiastes: Dominância em Feitiço, Manipulação Perfeita, Linhas
+  com `escolhaFeiticos`, canais `nivelFeitico` e `rodadasFeitico`, Bloodfeast, Feitiço Vinculado, Amplificação de
+  Técnica do Domínio, Criação de Itens e de Shikigami, Liberações do Ápice e Rituais.
+- A Aptidão Técnica Máxima mantém o texto de 25 PE e o atalho do nível de Conjurador no requisito.
+
 ### Era de Ouro: o conteúdo da aba Propriedades
 **Onde:** `src/systems/eradeouro/era-de-ouro.js` (regra `abaPropriedades`), `AftyCreatureBuilder.jsx` (`TABS`)
 **Situação:** o personagem da Guilda tem a aba Propriedades só com o título, porque as informações dela

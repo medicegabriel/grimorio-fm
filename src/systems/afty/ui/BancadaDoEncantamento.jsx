@@ -24,23 +24,24 @@ import {
 import { getCanal } from "../afty-efeitos";
 import { CATEGORIAS_DANO, TIPOS_DANO } from "../afty-equipamentos";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "../afty-schema";
+import { useOpcoesTR } from "./usar-resistencias";
 import { BoolChip } from "./primitivos";
 
 const ATRIBUTOS = AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }));
-const TRS = AFTY_RESISTENCIAS.filter((r) => r.escala !== "fixa").map((r) => ({ value: r.value, label: r.label }));
 const CATEGORIAS = CATEGORIAS_DANO.map((c) => ({ value: c.id, label: c.nome }));
 const INTERACOES_OK = TABELA_INTERACOES.filter((l) => l.implementado !== false);
 const LINHA = Object.fromEntries(TABELA_INTERACOES.map((l) => [l.id, l]));
 
 /* O que um tipo da tabela pede além do atributo: o TR ou a categoria de dano. */
 function AlvoDoTipo({ tipo, valor, onChange, rotulo }) {
+  const opcoesTR = useOpcoesTR({ incluiIntegridade: false });
   const alvo = LINHA[tipo]?.alvo;
   if (!alvo) return null;
   return (
     <Select
       value={valor}
       onChange={onChange}
-      options={alvo === "tr" ? TRS : CATEGORIAS}
+      options={alvo === "tr" ? opcoesTR : CATEGORIAS}
       placeholder={alvo === "tr" ? "Teste de Resistência" : "Categoria de Dano"}
       aria-label={rotulo}
     />

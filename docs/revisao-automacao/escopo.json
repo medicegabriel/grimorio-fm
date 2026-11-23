@@ -559,6 +559,10 @@
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 6a (2026-11-17): rótulos, ícones e o gancho de largura das telas do Encontro"
     },
+    "ui/usar-resistencias.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Contexto React para os seletores de Testes de Resistência da edição da ficha"
+    },
     "ui/usar-primitiva.js": {
       "modo": "INTERFACE",
       "justificativa": "Contexto React; as primitivas são catalogadas nos módulos nativos"

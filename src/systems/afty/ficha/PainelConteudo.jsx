@@ -13,7 +13,7 @@ import { limiteConcentrarAura, opcoesConcentrarAura, usaConcentrarAura } from ".
 import { alcancesDasAurasPassivas } from "./ficha-conteudo-expandir-aura";
 import { ataquesParaDragao, rolaDragaoConteudo, aplicaDragaoConteudo, metadesDoDragao } from "./ficha-conteudo-dragao";
 import { alcancePular, iniciaPulo, concluiPulo, puloLivreDisponivel, pulosPendentes, resultadoPulo } from "./ficha-conteudo-salto";
-import { usaTesteConteudo, rerrolaTreinoPericia, usaMentePlacida, rerrolaTesteDeClasse, usaAnaliseProfunda, concluiAnaliseProfunda, rerrolaFortuna, dadosDisponiveisFortuna } from "./ficha-conteudo-testes";
+import { usaTesteConteudo, rerrolaTesteDeTreino, testesParaRerrolarTreino, usaMentePlacida, rerrolaTesteDeClasse, usaAnaliseProfunda, concluiAnaliseProfunda, rerrolaFortuna, dadosDisponiveisFortuna } from "./ficha-conteudo-testes";
 import { deslocaAlvoTalento, usaMovimentosAcrobaticos, preparaOportunidadeConteudo,
   distanciaInvestidaConteudo, preparaInvestidaConteudo, danoDaInvestidaConteudo, rolaDisputaInvestida, aplicaDisputaInvestida, usaMobilidadeAvancada,
   rolaManobraDeBriga, aplicaManobraDeBriga, rolaEmpurraoEscudo, aplicaEmpurraoEscudo, preparaReacaoSentinela,
@@ -992,18 +992,19 @@ function AptidaoPessoalDoItem({ id, derived, sessao, onSessao, emSeuTurno = true
   </div>;
 }
 
-function TesteDoItem({ fonte, periciaId = null, derived, sessao, onSessao }) {
-  const [id, setId] = useState(periciaId ?? ""), [cd, setCd] = useState(""), [modo, setModo] = useState("normal"),
+function TesteDoItem({ fonte, testeId = null, derived, sessao, onSessao }) {
+  const [id, setId] = useState(testeId ?? ""), [cd, setCd] = useState(""), [modo, setModo] = useState("normal"),
     [confirmado, setConfirmado] = useState(false), [rolagemId, setRolagemId] = useState(""), [erro, setErro] = useState(null), [descontarPE, setDescontarPE] = useState(false), [manual, setManual] = useState(0), [pe, setPe] = useState(1);
-  const tr = ["guarda", "escudo", "resistir", "conhecimento"].includes(fonte), repetir = fonte === "treino-rerrolar";
+  const repetirTr = fonte === "treino-rerrolar-tr";
+  const tr = ["guarda", "escudo", "resistir", "conhecimento"].includes(fonte), repetir = fonte === "treino-rerrolar" || repetirTr;
   const gasto = ["resistir", "conhecimento"].includes(fonte);
   const lista = (tr ? derived.testes.resistencias : derived.testes.pericias).filter((p) =>
-    periciaId ? (p.id ?? p.value) === periciaId : fonte === "versatilidade" ? !!p.versatilidade : fonte === "resistir" ? ["fortitude", "reflexos"].includes(p.value) : fonte === "luta" ? ["acrobacia", "atletismo"].includes(p.id) : true);
-  const testes = (sessao.log ?? []).filter((r) => r.tipo === "teste" && r.periciaId === periciaId && r.natural < 5 && !r.treinoRerrolado && r.sorte?.escolha !== null);
+    testeId ? (p.id ?? p.value) === testeId : fonte === "versatilidade" ? !!p.versatilidade : fonte === "resistir" ? ["fortitude", "reflexos"].includes(p.value) : fonte === "luta" ? ["acrobacia", "atletismo"].includes(p.id) : true);
+  const testes = repetir ? testesParaRerrolarTreino(sessao, derived, testeId, repetirTr) : [];
   return <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
     {repetir ? <select aria-label="Teste do Treino a Repetir" className={campo} value={rolagemId} onChange={(e) => setRolagemId(e.target.value)}><option value="">Selecione a Rolagem</option>{testes.map((r) => <option key={r.id} value={r.id}>{r.rotulo}: {r.total}</option>)}</select>
       : <>
-        {!periciaId && <select aria-label="Teste do Benefício" className={campo} value={id} onChange={(e) => setId(e.target.value)}><option value="">Selecione o Teste</option>{lista.map((r) => <option key={r.id ?? r.value} value={r.id ?? r.value}>{r.nome ?? r.label}</option>)}</select>}
+        {!testeId && <select aria-label="Teste do Benefício" className={campo} value={id} onChange={(e) => setId(e.target.value)}><option value="">Selecione o Teste</option>{lista.map((r) => <option key={r.id ?? r.value} value={r.id ?? r.value}>{r.nome ?? r.label}</option>)}</select>}
         <label>CD <input aria-label="CD do Teste" className={`${campo} w-16`} type="number" value={cd} onChange={(e) => setCd(e.target.value)} /></label>
         <select aria-label="Modo do Teste" className={campo} value={modo} onChange={(e) => setModo(e.target.value)}><option value="normal">Normal</option><option value="vantagem">Vantagem</option><option value="desvantagem">Desvantagem</option></select>
       </>}
@@ -1011,8 +1012,8 @@ function TesteDoItem({ fonte, periciaId = null, derived, sessao, onSessao }) {
     {gasto && <label>PE <input aria-label="PE do Teste" type="number" min="1" max={fonte === "resistir" ? 2 : Math.floor(derived.maestria / 2)} className={`${campo} w-16`} value={pe} onChange={(e) => setPe(Number(e.target.value))} /></label>}
     {fonte === "conhecimento" && <label><input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} />Contra Efeito de Feitiço</label>}
     {(["aura-controlada", "versatilidade"].includes(fonte) || gasto) && <label><input type="checkbox" checked={descontarPE} onChange={(e) => setDescontarPE(e.target.checked)} />Descontar PE</label>}
-    <button type="button" className={botao} disabled={repetir ? !rolagemId : !id} onClick={() => {
-      const r = repetir ? rerrolaTreinoPericia(sessao, derived, { id: rolagemId }, pedido()) : usaTesteConteudo(sessao, derived, {
+    <button type="button" className={botao} disabled={repetir ? !testes.some((r) => r.id === rolagemId) : !id} onClick={() => {
+      const r = repetir ? rerrolaTesteDeTreino(sessao, derived, { id: rolagemId, alvo: testeId, tr: repetirTr }, pedido()) : usaTesteConteudo(sessao, derived, {
         fonte, id, cd: cd === "" ? null : Number(cd), modo, oposto: !confirmado, reduzDefesaOuTR: confirmado, descontarPE, pe, contraFeitico: confirmado,
       }, pedido()); setErro(r.erro ?? null); if (r.aplicado) { setManual(r.custo?.pe.naoDescontado ?? 0); onSessao(() => r.sessao); }
     }}>{repetir ? "Rolar Novamente" : fonte === "treino-sucesso" ? "Sucesso Garantido" : "Realizar Teste"}</button>
@@ -1027,15 +1028,24 @@ export function OperacaoConteudoDoItem(props) {
   const [erro, setErro] = useState(null), [descontarPE, setDescontarPE] = useState(false), [manual, setManual] = useState(0);
   const id = item.id.replace(/^.*__/, "");
   if (item.grupo === "treinamento") {
-    const [linha, alvo, etapa] = item.id.split(":");
+    const partesId = item.id.split(":");
+    const [alvo, etapa] = partesId.slice(-2);
+    const linha = partesId.slice(0, -2).join(":");
     if (linha === "luta" && etapa === "completo") return <TesteDoItem {...props} fonte="luta" />;
-    if (linha === "pericia" && ["2", "4", "completo"].includes(etapa)) return <TesteDoItem {...props}
-      fonte={etapa === "2" ? "treino" : etapa === "4" ? "treino-sucesso" : "treino-rerrolar"} periciaId={alvo} />;
+    if (etapa === "4" && linha === derived.conteudoTreinos?.treinoTR?.id) {
+      return <TesteDoItem {...props} fonte="treino-rerrolar-tr" testeId={alvo} />;
+    }
+    if (linha === "pericia") {
+      const sucessoGarantido = derived.conteudoTreinos?.sucessoGarantidoPericia !== false;
+      if (etapa === "2") return <TesteDoItem {...props} fonte="treino" testeId={alvo} />;
+      if (etapa === (sucessoGarantido ? "completo" : "4")) return <TesteDoItem {...props} fonte="treino-rerrolar" testeId={alvo} />;
+      if (sucessoGarantido && etapa === "4") return <TesteDoItem {...props} fonte="treino-sucesso" testeId={alvo} />;
+    }
   }
-  if (id === "tal_tempestade_de_ideias") return <TesteDoItem {...props} fonte="tempestade" periciaId={derived.conteudoTalentos?.vantagemTempestade} />;
-  if (id === "aura_controlada") return <TesteDoItem {...props} fonte="aura-controlada" periciaId="furtividade" />;
+  if (id === "tal_tempestade_de_ideias") return <TesteDoItem {...props} fonte="tempestade" testeId={derived.conteudoTalentos?.vantagemTempestade} />;
+  if (id === "aura_controlada") return <TesteDoItem {...props} fonte="aura-controlada" testeId="furtividade" />;
   if (id === "tal_guarda_infalivel") return <TesteDoItem {...props} fonte="guarda" />;
-  if (id === "tal_tecnicas_defensivas_de_escudo") return <TesteDoItem {...props} fonte="escudo" periciaId="reflexos" />;
+  if (id === "tal_tecnicas_defensivas_de_escudo") return <TesteDoItem {...props} fonte="escudo" testeId="reflexos" />;
   if (id === "lut_resistir") return <TesteDoItem {...props} fonte="resistir" />;
   if (id === "sup_versatilidade") return <TesteDoItem {...props} fonte="versatilidade" />;
   if (id === "cnj_conhecimento_aplicado") return <TesteDoItem {...props} fonte="conhecimento" />;

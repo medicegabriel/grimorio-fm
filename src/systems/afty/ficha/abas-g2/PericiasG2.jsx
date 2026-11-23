@@ -42,7 +42,8 @@ function LinhaTeste({ chave, nome, atributo, atributoPadrao = null, bonus, texto
   const raiz = useDestaqueG2(destaque?.chave === chave, destaque?.seq);
   const idMotivo = useId();
   const pedido = pedidoTeste({ nome, bonus, dados, margem, ataqueId, minimoNatural,
-    ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}) });
+    ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}),
+    ...(chave.startsWith("tr:") ? { resistenciaId: chave.slice(3) } : {}) });
   const motivo = motivoDaRecusa(prova(pedido), pedido);
   const treino = TREINO[prof] ?? null;
   const trocado = atributoPadrao && atributo && atributoPadrao !== atributo;

@@ -74,6 +74,7 @@
 import { registrarFamilia, remendarLista, partirId, nivelDaFicha } from "./afty-addons";
 import { evalNumber, validateExpression } from "./afty-dsl";
 import { sistemaDaFicha, regraDo } from "./afty-sistema";
+import { ehFichaEclesiastes } from "../eclesiastes/regras";
 
 /** Uma pega de Treino Especial custa isto em Focos, salvo a entrada dizer outro. */
 export const FOCOS_POR_TREINO_ESPECIAL = 1;
@@ -84,10 +85,12 @@ export const FOCOS_POR_TREINO_ESPECIAL = 1;
    `sucessosNecessarios`  quantos sucessos completam o treino. Sem ele a linha
                           não guarda sucesso nenhum.
    `cdTeste`              a CD, em expressão do Motor com `nd` sendo o Nível.
-                          Sem ela a linha não mostra CD.
+   `cdTesteEclesiastes`   substitui a expressão por uma CD fixa em Eclesiastes.
    `tetoJogador`          a escada do teto, degrau a degrau: vale o último
                           `nivel` alcançado, e `max: null` é sem teto. Sem ela o
                           jogador usa a conta da criatura. */
+const CD_TREINO_NATIVO = { cdTeste: "12 + piso(nd / 2)", cdTesteEclesiastes: 12 };
+
 export const AFTY_TREINOS_ESPECIAIS = [
   {
     id: "tes_feitico",
@@ -99,7 +102,7 @@ export const AFTY_TREINOS_ESPECIAIS = [
     // No jogador não há teto (autor, 2026-09-16, "Sem teto").
     tetoJogador: [{ nivel: 1, max: null }],
     sucessosNecessarios: 3,
-    cdTeste: "12 + piso(nd / 2)",
+    ...CD_TREINO_NATIVO,
     concede: "Vaga de Feitiço",
     descricao:
       "Focar seu Interlúdio em Treinamento de Feitiço significa buscar novos conhecimentos e " +
@@ -127,7 +130,7 @@ export const AFTY_TREINOS_ESPECIAIS = [
     // sem subir mais (autor, 2026-09-16, "Máximo 2").
     tetoJogador: [{ nivel: 1, max: 1 }, { nivel: 10, max: 2 }],
     sucessosNecessarios: 3,
-    cdTeste: "12 + piso(nd / 2)",
+    ...CD_TREINO_NATIVO,
     concede: "Vaga de Habilidade",
     // Verbatim, enviado pelo autor em 2026-09-16.
     descricao:
@@ -155,7 +158,7 @@ export const AFTY_TREINOS_ESPECIAIS = [
     vezesACada: 10,
     tetoJogador: [{ nivel: 1, max: 1 }, { nivel: 10, max: 2 }],
     sucessosNecessarios: 3,
-    cdTeste: "12 + piso(nd / 2)",
+    ...CD_TREINO_NATIVO,
     concede: "Vaga de Aptidão",
     // Texto adaptado da Habilidade conforme o pedido do autor, não transcrição do livro.
     descricao:
@@ -329,6 +332,7 @@ export function progressoTreinoEspecial(creature, id) {
 
 /** A CD do teste, pelo Nível da ficha. `null` quando a entrada não declara CD. */
 export function cdDoTreinoEspecial(def, creature) {
+  if (ehFichaEclesiastes(creature) && def?.cdTesteEclesiastes != null) return def.cdTesteEclesiastes;
   if (!def?.cdTeste) return null;
   return evalNumber(def.cdTeste, { nd: ndDaFicha(creature) }, null);
 }
@@ -424,6 +428,9 @@ export function validarCatalogoTreinosEspeciais() {
     // A CD só conhece o Nível: um nome a mais cairia no fallback e a linha perderia a CD calada.
     if (t.cdTeste != null && !validateExpression(t.cdTeste, new Set(["nd"])).ok) {
       problemas.push(`${t.id} com cdTeste inválida`);
+    }
+    if (t.cdTesteEclesiastes != null && !(Number.isInteger(t.cdTesteEclesiastes) && t.cdTesteEclesiastes > 0)) {
+      problemas.push(`${t.id} com cdTesteEclesiastes inválida`);
     }
     if (t.tetoJogador != null) {
       const escada = Array.isArray(t.tetoJogador) ? t.tetoJogador : [];

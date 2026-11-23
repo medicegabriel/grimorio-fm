@@ -765,7 +765,8 @@ tipo e marcadores, além de `nd` e `bt` do dono e das constantes `sempre` e `nun
 
 ### `escala_ataque`, a parcela de nível da Jogada de Ataque (2026-09-23, só no Afty)
 
-Vale `piso(nd / 1.5)` na criatura e `piso(nd / 2)` no jogador. É a mesma conta do `escalaFixa` de
+Vale `0` em fichas de Eclesiastes. Nas demais edições vale `piso(nd / 1.5)` na criatura e
+`piso(nd / 2)` no jogador. O `nd` da ficha continua disponível para outras fórmulas. É a mesma conta do `escalaFixa` de
 `resolveTestes` (`afty-pericias.js`), que muda de régua pela divergência `escalaDosTestes`. Montada
 no `afty-derive.js` e exposta em `buildCriaturaDslContext`.
 

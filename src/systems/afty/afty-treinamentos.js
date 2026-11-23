@@ -100,6 +100,13 @@ import { catalogoDoTipo, encantamentosDe, tiposDeDanoDaCategoria, canalRdEscudo 
 import { evalNumber } from "./afty-dsl";
 // O teto de instâncias da mesa da Guilda (rota /EraDeOuro). FOLHA, sem risco de ciclo.
 import { maxInstanciasDaMesa } from "../eradeouro/era-de-ouro";
+import { ehFichaEclesiastes, vetaTREclesiastes } from "../eclesiastes/regras";
+import { ID_TREINO_TR_ECLESIASTES } from "../eclesiastes/pacotes-nativos";
+
+const BENEFICIO_RERROLAGEM_PERICIA =
+  "Você treinou e se dedicou tanto a uma perícia específica, que ela se tornou algo no qual você é quase " +
+  "incapaz de falhar, mantendo uma consistência invejável. Caso realize um teste da perícia escolhida e " +
+  "obtenha um resultado menor do que 5 no d20, você pode o rolar novamente e manter o melhor resultado.";
 
 // Texto completo da aptidão concedida pelo Treino de Domínios (Completo).
 const MODIFICACAO_COMPLETA =
@@ -548,10 +555,7 @@ export const AFTY_TREINAMENTOS = [
         beneficio: "Uma vez por cena, você pode escolher obter um sucesso garantido em um teste da perícia escolhida, desde que não seja um teste oposto." },
     ],
     completo: {
-      beneficio:
-        "Você treinou e se dedicou tanto a uma perícia específica, que ela se tornou algo no qual você é quase " +
-        "incapaz de falhar, mantendo uma consistência invejável. Caso realize um teste da perícia escolhida e " +
-        "obtenha um resultado menor do que 5 no d20, você pode o rolar novamente e manter o melhor resultado.",
+      beneficio: BENEFICIO_RERROLAGEM_PERICIA,
     },
   },
 ];
@@ -592,8 +596,20 @@ registrarFamilia("treinamentos", {
 });
 
 
-export function getTreinamento(id) {
-  return BY_ID[id] || null;
+function treinamentoDaFicha(linha, creature) {
+  if (linha?.id !== "pericia" || !ehFichaEclesiastes(creature)) return linha;
+  return {
+    ...linha,
+    etapas: linha.etapas.map((etapa) => etapa.n === 4 ? { ...etapa, beneficio: BENEFICIO_RERROLAGEM_PERICIA } : etapa),
+    completo: {
+      beneficio: "Alcançando o ápice do seu conhecimento sobre essa perícia, você quebra os limites do imaginável no uso dela. Você recebe metade do seu bônus de treinamento em testes dessa perícia",
+      efeitos: [{ canal: "bonusPericia", alvo: "instancia", expr: "piso(bt / 2)" }],
+    },
+  };
+}
+
+export function getTreinamento(id, creature) {
+  return treinamentoDaFicha(BY_ID[id] || null, creature);
 }
 
 export function opcoesDeEscolhaTreino(escolha, sistema) {
@@ -696,7 +712,7 @@ export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
   const qualificadas = origensQualificadas(creature);
   const out = [];
   for (const [id, valor] of Object.entries(normalizeTreinamentos(creature?.treinamentos, creature))) {
-    const linha = getTreinamento(id);
+    const linha = getTreinamento(id, creature);
     if (!linha || linha.exibirNaFicha === false || !treinoDisponivel(linha, origemId, qualificadas)) continue;
     const instancias = Array.isArray(valor) ? valor : [{ progresso: valor, alvo: null }];
     for (const inst of instancias) {
@@ -720,10 +736,16 @@ export function beneficiosDeTreinoNaFicha(creature, ctx = {}) {
 
 /** Parâmetros dos clientes de uso, sob as mesmas travas de origem do treino. */
 export function operacoesDeTreino(creature) {
-  const treinos = normalizeTreinamentos(creature?.treinamentos);
+  const treinos = normalizeTreinamentos(creature?.treinamentos, creature);
   const disponivel = (id) => treinoDisponivel(getTreinamento(id), origemDosTreinos(creature), origensQualificadas(creature));
+  const linhaTr = ehFichaEclesiastes(creature) ? getTreinamento(ID_TREINO_TR_ECLESIASTES) : null;
+  const treinoTR = linhaTr && disponivel(linhaTr.id)
+    ? { id: linhaTr.id, instancias: instanciasQueValem(linhaTr, treinos[linhaTr.id], creature) }
+    : null;
   return { luta: disponivel("luta") ? treinos.luta ?? 0 : 0,
     resistencia: disponivel("resistencia") ? treinos.resistencia ?? 0 : 0,
+    sucessoGarantidoPericia: !ehFichaEclesiastes(creature),
+    treinoTR,
     pericias: disponivel("pericia") ? treinos.pericia ?? [] : [] };
 }
 
@@ -759,6 +781,7 @@ export function normalizeTreinamentos(treinos, ficha = null) {
         const alvo = String(it.alvo ?? "").trim();
         const key = alvo.toLowerCase();
         if (!alvo || (seen.get(key) ?? 0) >= limite) continue;
+        if (linha.alvoTipo === "tr" && vetaTREclesiastes(ficha, key)) continue;
         const p = clampProg(it.progresso);
         if (p > 0) { seen.set(key, (seen.get(key) ?? 0) + 1); list.push({ alvo, progresso: p }); }
       }
@@ -1061,7 +1084,8 @@ export const treinamentosDaOrigem = (origemId, qualificadas = null, creature = n
   const comProgresso = Object.entries(normalizeTreinamentos(creature?.treinamentos, creature) || {})
     .filter(([, v]) => (Array.isArray(v) ? v.length > 0 : Number(v) > 0))
     .map(([id]) => id);
-  return filtraForaDoJogador(daOrigem, creature, comProgresso);
+  return filtraForaDoJogador(daOrigem, creature, comProgresso)
+    .map((linha) => treinamentoDaFicha(linha, creature));
 };
 
 export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = []) {
@@ -1094,7 +1118,7 @@ export function efeitosDeTreino(creature, gatilhosAtivos = null, equipamentos = 
     }
   };
   for (const [id, val] of Object.entries(prog)) {
-    const linha = BY_ID[id];
+    const linha = getTreinamento(id, creature);
     if (!linha) continue;
     // Treino que a origem não alcança não rende efeito, mesmo gravado na ficha.
     if (!treinoDisponivel(linha, origemId, qualificadas)) continue;

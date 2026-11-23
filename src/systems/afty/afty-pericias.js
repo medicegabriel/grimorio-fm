@@ -39,7 +39,8 @@
 // afty-origens.js, que as lê durante a própria inicialização. Ver o cabeçalho de lá.
 import { AFTY_PERICIAS, AFTY_ATAQUES, ehPericiaOficio, ALVO_TODOS_OFICIOS, ALVO_QUATRO_MANOBRAS } from "./afty-pericias-catalogo";
 export { AFTY_PERICIAS, AFTY_ATAQUES };
-import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { AFTY_ATTRS } from "./afty-schema";
+import { DANO_CRIATURA_POR_PATAMAR, ehFichaEclesiastes, resistenciasDaFicha } from "../eclesiastes/regras";
 import {
   valorCanal, detalhesDoCanal, valorCanalEscopos, detalhesDoCanalEscopos, escoposDaArma,
   resolverEfeitosDanoFinal, casaEscopoDaLinha,
@@ -168,7 +169,7 @@ const atributosManuaisFechados = (bruto, ids) => {
   return out;
 };
 export const atributosDeTRManuais = (creature) =>
-  atributosManuaisFechados(creature?.trAtributoManual, AFTY_RESISTENCIAS.map((r) => r.value));
+  atributosManuaisFechados(creature?.trAtributoManual, resistenciasDaFicha(creature).map((r) => r.value));
 export const atributosDeAtaqueManuais = (creature) =>
   atributosManuaisFechados(creature?.ataqueAtributoManual, AFTY_ATAQUES.map((a) => a.id));
 
@@ -621,16 +622,15 @@ function partesDaMargem(base, fontes, total, label = "Margem Base") {
  * Superior) e "Nível de Dano" (Corpo Treinado) são coisas DIFERENTES.
  */
 function linhaDeDano({
-  nd, patamar, modChave, atributo, cl, grauArma, niveisDano, bonus,
+  nd, regraDano, modChave, atributo, cl, grauArma, niveisDano, bonus,
   dadosExtras = 0, margemBase = 20, reducaoMargem = 0, ignoraRD = 0,
   removeResistencia = false, fontes = [],
 }) {
-  const coef = COEF_DANO_PATAMAR[patamar];
+  const { nd: coefND, escala, escalaCL = escala, dado } = regraDano;
   const arma = ARMA_BY_VALUE[grauArma] ?? ARMA_BY_VALUE.desarmado;
   const ndDano = nd + niveisDano;
 
-  const total = coef.nd * ndDano + coef.escala * modChave + coef.escala * cl + arma.valor + bonus;
-  const dado = DADO_POR_PATAMAR[patamar] ?? "d8";
+  const total = coefND * ndDano + escala * modChave + escalaCL * cl + arma.valor + bonus;
   const dadosBase = Math.max(1, modChave + 1);
   const fixo = Math.ceil(total - dadosBase * MEDIA_DADO[dado]);
   const dados = dadosBase + Math.max(0, dadosExtras);
@@ -645,10 +645,10 @@ function linhaDeDano({
     ignoraRD, removeResistencia,
     texto: textoDeDano(dados, dado, fixo),
     partes: [
-      { label: niveisDano ? `Nível ${nd} + ${niveisDano} × ${coef.nd}` : `Nível × ${coef.nd}`,
-        valor: coef.nd * ndDano },
-      { label: `${rotuloAttr(atributo)} × ${coef.escala}`, valor: coef.escala * modChave },
-      ...(cl ? [{ label: `Controle e Leitura × ${coef.escala}`, valor: coef.escala * cl }] : []),
+      { label: niveisDano ? `Nível ${nd} + ${niveisDano} × ${coefND}` : `Nível × ${coefND}`,
+        valor: coefND * ndDano },
+      { label: `${rotuloAttr(atributo)} × ${escala}`, valor: escala * modChave },
+      ...(cl && escalaCL ? [{ label: `Controle e Leitura × ${escalaCL}`, valor: escalaCL * cl }] : []),
       ...(arma.valor ? [{ label: arma.label, valor: arma.valor }] : []),
       ...fontes,
     ],
@@ -792,7 +792,10 @@ function linhaDeDanoJogador({
  */
 export function resolveDano(creature, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
-  const patamar = COEF_DANO_PATAMAR[ctx.patamar] ? ctx.patamar : "comum";
+  const patamar = Object.hasOwn(COEF_DANO_PATAMAR, ctx.patamar) ? ctx.patamar : "comum";
+  const regraDano = ehFichaEclesiastes(creature)
+    ? DANO_CRIATURA_POR_PATAMAR[patamar]
+    : { ...COEF_DANO_PATAMAR[patamar], dado: DADO_POR_PATAMAR[patamar] };
   const mods = ctx.mods || {};
   const ef = ctx.efeitos || null;
   const cl = Math.max(0, Math.trunc(Number(ctx.aptidaoCL) || 0));
@@ -1004,7 +1007,7 @@ export function resolveDano(creature, ctx = {}) {
       removeResistencia: canal("removeResistencia", escopos) > 0,
       fontes: fontesDe("danoBonus", escopos),
     }) : linhaDeDano({
-      nd, patamar, atributo, modChave: modDe(atributo), cl, grauArma,
+      nd, regraDano, atributo, modChave: modDe(atributo), cl, grauArma,
       niveisDano: Math.max(0, niveisCrus),
       bonus: canal("danoBonus", escopos),
       dadosExtras,
@@ -1476,6 +1479,10 @@ export function totalPericias({ modInt = 0, modSab = 0, grauRank = 1, bonus = 0 
   return 3 + Math.max(modInt, modSab) + Math.max(0, Math.trunc(grauRank)) + Math.max(0, Math.trunc(bonus));
 }
 
+export function escalaNivelDoAtaque(nd, sistema) {
+  return regraDo(sistema, "escalaDosTestes") === "player" ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
+}
+
 /**
  * Resolve os três tipos de teste da criatura. Os três somam
  * `mod do atributo + uma escala de nível + bônus de treinamento + outros`,
@@ -1498,7 +1505,8 @@ export function resolveTestes(creature, ctx = {}) {
   const nd = Math.max(1, Math.trunc(Number(ctx.nd) || 1));
   const bt = Math.max(0, Math.trunc(Number(ctx.bt) || 0));
   const mods = ctx.mods || {};
-  const meioNivel = Math.floor(nd / 2);
+  const usaEscalaDeNivel = !ehFichaEclesiastes(creature);
+  const meioNivel = usaEscalaDeNivel ? Math.floor(nd / 2) : 0;
   const modDe = (attr) => Math.trunc(Number(mods[attr]) || 0);
   const extraMestreFisico = (attr, prof) => ctx.restricaoDefinitiva && prof === "mestre"
     && ["forca", "destreza", "constituicao"].includes(attr) ? bt - Math.floor(bt / 2) : 0;
@@ -1512,8 +1520,8 @@ export function resolveTestes(creature, ctx = {}) {
      personagem". Na criatura são três réguas diferentes, e é a planilha do autor
      de 2026-07-27 que as separa. Ver `escalaDosTestes` em afty-sistema.js. */
   const meiaEscala = regraDo(ctx.sistema, "escalaDosTestes") === "player";
-  const escalaFixa = meiaEscala ? meioNivel : Math.floor(nd / 1.5);
-  const ESCALA_TR = meiaEscala
+  const escalaFixa = usaEscalaDeNivel ? escalaNivelDoAtaque(nd, ctx.sistema) : 0;
+  const ESCALA_TR = !usaEscalaDeNivel || meiaEscala
     ? { cd: meioNivel, defesa: meioNivel, fixa: meioNivel }
     : {
       cd: Math.trunc(Number(ctx.escalaCD) || 0),
@@ -1531,6 +1539,9 @@ export function resolveTestes(creature, ctx = {}) {
       defesa: `Nível ÷ ${divisorTexto(ctx.divisorDefesa ?? 1.5)}`,
       fixa: "Nível ÷ 1,5",
     };
+  const partesEscalaPericia = usaEscalaDeNivel
+    ? [{ label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel }]
+    : [];
 
   const profBruta = creature?.pericias && typeof creature.pericias === "object" ? creature.pericias : {};
   const valida = (p) => (p === "treinado" || p === "mestre" ? p : null);
@@ -1730,7 +1741,7 @@ export function resolveTestes(creature, ctx = {}) {
       bonus: Math.max(bonusTreinado, fixo),
       partes: fixo > bonusTreinado ? [...partesFixo, ...partesDosDados] : [
         { label: rotuloAttr(atributo), valor: modDe(atributo) },
-        { label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel },
+        ...partesEscalaPericia,
         ...parteProficiencia("treinado", atributo), ...partePenalidade(atributo),
         ...partesPorAtributo("bonusPericia", p.id, atributo), ...partesDosDados,
       ],
@@ -1779,10 +1790,7 @@ export function resolveTestes(creature, ctx = {}) {
       ...versatilidade,
       partes: [
         { label: rotuloAttr(atributo), valor: modDe(atributo) },
-        /* "ND" é vocabulário de criatura, e a ficha de jogador tem Nível. O
-           número é o mesmo, e o rótulo passa a bater com o dos TR e dos Ataques,
-           que já dizem "Metade do Nível" no jogador. */
-        { label: meiaEscala ? "Metade do Nível" : "Metade do ND", valor: meioNivel },
+        ...partesEscalaPericia,
         ...parteProficiencia(prof, atributo),
         ...partePenalidade(atributo),
         ...partesPorAtributo("bonusPericia", p.id, atributo),
@@ -1824,7 +1832,7 @@ export function resolveTestes(creature, ctx = {}) {
      TR não tem outra fonte de troca para compor com ela. A troca arrasta o
      escopo `atr:` do Motor junto, como na perícia. */
   const trManual = atributosDeTRManuais(creature);
-  const resistencias = AFTY_RESISTENCIAS.map((doLivro) => {
+  const resistencias = resistenciasDaFicha(creature).map((doLivro) => {
     const r = { ...doLivro, atributo: trManual[doLivro.value] ?? doLivro.atributo, atributoPadrao: doLivro.atributo };
     // Mesma anatomia das perícias: a faixa ESCOLHIDA é a que gasta vaga, e a
     // resolvida ainda soma o que foi concedido de fora (Teste de Resistência
@@ -1896,7 +1904,7 @@ export function resolveTestes(creature, ctx = {}) {
         : null,
       partes: [
         { label: rotuloAttr(r.atributo), valor: modDe(r.atributo) },
-        { label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 },
+        ...(usaEscalaDeNivel ? [{ label: ESCALA_ROTULO[r.escala] ?? "Escala de Nível", valor: ESCALA_TR[r.escala] ?? 0 }] : []),
         ...parteProficiencia(prof, r.atributo),
         ...partesPorAtributo("bonusTR", r.value, r.atributo),
         ...casoJaNoTeste.map((d) => ({ label: d.nome, valor: d.faixa })),
@@ -1983,7 +1991,7 @@ export function resolveTestes(creature, ctx = {}) {
       textoBonus: comDados(modDe(attr) + escalaFixa + (treinado ? bt : 0) + bonusDeEfeito("bonusAcerto", a.id)),
       partes: [
         { label: a.id === "amaldicoado" || ataqueManual[a.id] ? rotuloAttr(attr) : rotuloDoAtaque(attr, semTroca), valor: modDe(attr) },
-        { label: ESCALA_ROTULO.fixa, valor: escalaFixa },
+        ...(usaEscalaDeNivel ? [{ label: ESCALA_ROTULO.fixa, valor: escalaFixa }] : []),
         ...(treinado ? [{ label: "Maestria", valor: bt }] : []),
         ...partesDeEfeito("bonusAcerto", a.id),
         ...partesDosDadosAtaque,

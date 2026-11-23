@@ -368,20 +368,21 @@ export const PAREDES_BASE = 6;
  * por isso alcança a Cortina três vezes e o domo doze. O Treino de Barreiras dá
  * +10 na 1ª e mais +10 na 3ª.
  */
-export function pvDaParede(bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) {
+export function pvDaParede(bar = 0, nd = 0, temParedesResistentes = false, bonus = 0, { usaEscalaDeNivel = true } = {}) {
   const b = Math.max(0, Math.trunc(Number(bar) || 0));
   const n = Math.max(0, Math.trunc(Number(nd) || 0));
-  const base = temParedesResistentes ? 10 + b * n : 5 + b * Math.floor(n / 2);
+  const metadeND = usaEscalaDeNivel ? Math.floor(n / 2) : 0;
+  const base = temParedesResistentes ? 10 + b * n : 5 + b * metadeND;
   return Math.max(0, base + (Math.trunc(Number(bonus)) || 0));
 }
 
 /** A CORTINA vale 3 paredes. */
-export const pvCortina = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) =>
-  PAREDES_NA_CORTINA * pvDaParede(bar, nd, temParedesResistentes, bonus);
+export const pvCortina = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0, opcoes) =>
+  PAREDES_NA_CORTINA * pvDaParede(bar, nd, temParedesResistentes, bonus, opcoes);
 
 /** O DOMO da Expansão de Domínio vale 12 paredes. */
-export const pvBarreira = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0) =>
-  PAREDES_NO_DOMO * pvDaParede(bar, nd, temParedesResistentes, bonus);
+export const pvBarreira = (bar = 0, nd = 0, temParedesResistentes = false, bonus = 0, opcoes) =>
+  PAREDES_NO_DOMO * pvDaParede(bar, nd, temParedesResistentes, bonus, opcoes);
 
 /**
  * RD de cada parede. ⚠ NÃO EXISTIA antes de 2026-08-26: o livro não dá RD a
@@ -423,14 +424,14 @@ export const maxParedes = (bonus = 0) =>
  */
 export const CONFLITO_FACES = 10;
 
-export function conflitoDeDominio({ dom = 0, nd = 0, bonus = 0 } = {}) {
+export function conflitoDeDominio({ dom = 0, nd = 0, bonus = 0, usaEscalaDeNivel = true } = {}) {
   const d = Math.max(0, Math.trunc(Number(dom) || 0));
   const n = Math.max(0, Math.trunc(Number(nd) || 0));
   const outros = Math.trunc(Number(bonus)) || 0;
-  const metadeND = Math.floor(n / 2);
+  const metadeND = usaEscalaDeNivel ? Math.floor(n / 2) : 0;
   const partes = [
     { label: "Nível de Aptidão em Domínio", valor: d },
-    { label: "Metade do Nível de Desafio", valor: metadeND },
+    ...(usaEscalaDeNivel ? [{ label: "Metade do Nível de Desafio", valor: metadeND }] : []),
   ];
   return {
     dados: 1,

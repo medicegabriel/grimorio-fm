@@ -120,6 +120,10 @@ const FOLHAS = [
   ["afty-alma-estados.js", "o derive e as telas leem a regra dos Estados da Alma"],
   ["afty-dsl.js", "o avaliador não pode depender de conteúdo"],
   ["afty-sistema.js", "regraDo() é lido de dentro dos catálogos"],
+  // Entraram em 2026-11-23 (Feitiços de Eclesiastes): as tabelas e o formato salvo.
+  // A aba nova entra pelo criador e o derive os lê, então não podem puxar o ciclo.
+  ["../eclesiastes/feiticos/tabelas.js", "a aba de Feitiços de Eclesiastes entra cedo no criador"],
+  ["../eclesiastes/feiticos/modelo.js", "o criador e o derive criam e normalizam o Feitiço por ele"],
 ];
 
 /* 1. NENHUM IMPORT, lido do próprio texto do arquivo. É a garantia estrutural:

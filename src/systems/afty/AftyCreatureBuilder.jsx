@@ -9,8 +9,10 @@ import {
 
 import { FieldLabel, TextInput, TextArea, Select, NumberInput, StatField, ExpandableText } from "../../components/builder-controls";
 import TabAddons from "./AftyTabAddons";
+import ControlesDeAjustes from "./ui/ControlesDeAjustes";
+import { ResistenciasDaFicha, useOpcoesTR } from "./ui/usar-resistencias";
 import { aplicarAddons, modelosPendentesDeAddon, nivelDaFicha, nivelMaximoDaFicha } from "./afty-addons";
-import { hidratarFicha, hidratarNativos, addonsDaFicha } from "./afty-addons-compostos";
+import { hidratarFicha, hidratarNativos, addonsDaFicha, definirAjuste } from "./afty-addons-compostos";
 import {
   mesclaFichaAfty, AFTY_ATTRS, AFTY_TIPOS, AFTY_PATAMARES, AFTY_QNT_PE,
   AFTY_TECNICA_ATTRS, AFTY_TAMANHOS, AFTY_RESISTENCIAS, getTamanho,
@@ -64,7 +66,7 @@ import {
   ATTR_LIMITE_PADRAO,
 } from "./afty-atributos";
 import {
-  ETAPAS_POR_LINHA, limiteTreinosPorAlvo, focosGastos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
+  ETAPAS_POR_LINHA, limiteTreinosPorAlvo, focosGastos, normalizeTreinamentos, avaliarRequisito, requisitosDaEtapa, rotuloAlvo, treinamentosDaOrigem, origemDosTreinos,
   SEP_ALVO_ACAO, linhasComEscolhaFeiticos, atributoDoAlvo,
   definirEscolhaTreino, opcoesDeEscolhaTreino, limiteEscolhaTreino, tetoDeInstancias, getTreinamento,
 } from "./afty-treinamentos";
@@ -136,7 +138,7 @@ import {
 } from "./afty-invocacoes";
 import { periciasParaInvocacao, DANO_ADICIONAL_ARMA } from "./afty-pericias";
 import {
-  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, tiposDeDanoDaCategoria, ARMAS,
+  EQUIP_TIPOS, CUSTOS, ARMA_CATEGORIAS, ARMA_GRUPOS, TIPOS_DANO, CATEGORIAS_DANO, tiposDeDanoDaCategoria, ARMAS,
   ITEM_CATEGORIAS, catalogoDoTipo, novaEntradaEquip,
   getEquipamento, podeEscolherAtaqueDaArma,
   orcamentoDoGrau, espacosDoEquipamento, custoDoEquipamento,
@@ -153,7 +155,11 @@ import {
 } from "./afty-equipamentos";
 import { evalNumber as evalNumberDsl, validateExpression } from "./afty-dsl";
 import { deriveAfty } from "./afty-derive";
-import { ECLESIASTES, prepararFichaEclesiastes } from "../eclesiastes/regras";
+import { ECLESIASTES, ehFichaEclesiastes, prepararFichaEclesiastes, resistenciasDaFicha, vetaEspecializacaoEclesiastes } from "../eclesiastes/regras";
+// A aba de Feitiços por pontos de Eclesiastes (2026-11-23). Só importa folhas e `ui/`.
+import { EditorFeiticoEcl, LinhaListaEcl } from "../eclesiastes/feiticos/AbaFeiticosEcl";
+import { criarFeiticoEcl } from "../eclesiastes/feiticos/modelo";
+import { GUERRA_NATIVA, guerraNativaNaFicha } from "../eclesiastes/pacotes-nativos";
 import { trocarCopiaImitacao } from "./afty-imitacao";
 import { carregarSessao, salvarSessao } from "./ficha/ficha-sessao";
 import { configuraArmaNaSessao } from "./afty-propriedades-armas";
@@ -485,15 +491,17 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
      (2026-10-12): "Características de Anatomia" no Vampiro. */
   const rotuloCaracteristicas = derived.caracteristicasAmaldicoadas?.rotulo ?? null;
   const mesaDoRascunho = draft.mesa;
+  const eclesiastes = ehFichaEclesiastes(draft);
   /* ⚠ NA GUILDA A MALDIÇÃO ERA DE OURO É NATIVA EM TODA FICHA (2026-11-09), e a
      primitiva dela abriria a aba de Características em quem nem é Maldição. Lá a aba
      só aparece com vaga ou com Característica já escolhida. Fora da Guilda, nada muda. */
   const semCaracteristicas = mesaDaFicha(draft) !== null
     && !(derived.caracteristicasAmaldicoadas?.vagas > 0) && !(derived.caracteristicasAmaldicoadas?.usadas > 0);
   const abasVisiveis = useMemo(() => tabsDoSistema(sistema, derived.primitivas, { mesa: mesaDoRascunho, rulesVersion: sistema })
+    .filter((t) => !eclesiastes || t.id !== "invocacoes")
     .filter((t) => t.id !== "caracteristicasAmaldicoadas" || !semCaracteristicas)
     .map((t) => (t.id === "caracteristicasAmaldicoadas" && rotuloCaracteristicas ? { ...t, label: rotuloCaracteristicas } : t)),
-  [sistema, derived.primitivas, rotuloCaracteristicas, mesaDoRascunho, semCaracteristicas]);
+  [sistema, derived.primitivas, rotuloCaracteristicas, mesaDoRascunho, semCaracteristicas, eclesiastes]);
   const umaAbaSo = regraDo(sistema, "abasIdentidade") === "player";
   const abaBase = umaAbaSo ? "identidade" : "informacoes";
   // Quem estava numa aba que sumiu (a Aptidões do Restringido, ou a Informações
@@ -507,6 +515,9 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
   // ---------- patches imutáveis ----------
   const patch = (partial) => setDraft((d) => ({ ...d, ...partial }));
+  // Feitiços de Eclesiastes: uma porta só, que recebe a lista atual e devolve a nova.
+  const mudarFeiticosEcl = (fn) => setDraft((d) => ({ ...d, feiticosEcl: fn(Array.isArray(d.feiticosEcl) ? d.feiticosEcl : []) }));
+  const mudarAjusteNativo = (id, ajusteId, valor) => setDraft((d) => definirAjuste(d, id, ajusteId, valor));
   // Focos de Interlúdio digitados, só na ficha de jogador. Ver `focosLivres`.
   const setFocosLivres = (v) => patch({ focosLivres: Math.max(0, Math.trunc(Number(v) || 0)) });
   const patchCore = (partial) => setDraft((d) => ({ ...d, core: { ...d.core, ...partial } }));
@@ -555,7 +566,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       // sair da origem Restringido também tira o TIPO Restringido: um
       // `tipoObrigatorio(id) ?? d.core.tipo` deixava a metade de volta gravada.
       core: { ...d.core, origem: { id }, tipo: tipoDaOrigem(id, d.core.tipo) },
-      especializacoes: normalizeEspecializacoes(d.especializacoes, id, [], sistemaDaFicha(d), nivelDaFicha(d)),
+      especializacoes: normalizeEspecializacoes(d.especializacoes, id, [], sistemaDaFicha(d), nivelDaFicha(d), d),
     }));
 
   // Clã do Herdado. Trocar de clã zera o que era do clã antigo: o bônus de
@@ -1692,6 +1703,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
     /* As primitivas de Addon que ESTA criatura enxerga. Elas descem por contexto
        porque os dois consumidores (`CanalPicker` e `VariavelPicker`) são folhas
        fundas deste arquivo. Ver `ui/usar-primitiva.js`. */
+    <ResistenciasDaFicha.Provider value={resistenciasDaFicha(draft)}>
     <PrimitivasDeAddon primitivas={derived.primitivas}>
     <div data-criador="" className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-purple-950/30 text-white">
       <CamadasDeCorrupcao corrupcao={derived.corrupcao} />
@@ -1847,8 +1859,8 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
 
         {/* formulário (aba ativa) */}
         <div className="lg:col-span-2 space-y-4">
-          {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} juntaInformacoes={umaAbaSo} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} />}
-          {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} />}
+          {tabAtiva === "identidade" && <TabIdentidade draft={draft} derived={derived} patch={patch} patchCore={patchCore} setOrigemBonus={setOrigemBonus} setOrigemId={setOrigemId} setOrigemCla={setOrigemCla} toggleEscolhaOrigem={toggleEscolhaOrigem} setOrigemPool={setOrigemPool} juntaInformacoes={umaAbaSo} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} mudarAjusteNativo={mudarAjusteNativo} />}
+          {tabAtiva === "informacoes" && <TabInformacoes draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} sistema={sistema} mudarAjusteNativo={mudarAjusteNativo} />}
           {tabAtiva === "pericias" && (
             <TabPericias
               draft={draft}
@@ -1862,7 +1874,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               removerPericia={removerPericia}
             />
           )}
-{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} testarGolpeDaArma={testarGolpeDaArma} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
+{tabAtiva === "habilidades" && <TabHabilidades draft={draft} derived={derived} testarGolpeDaArma={testarGolpeDaArma} patch={patch} patchCore={patchCore} toggleArmaDedicada={toggleArmaDedicada} setArmaDaOrigem={setArmaDaOrigem} addFeitico={addFeitico} updateFeitico={updateFeitico} removeFeitico={removeFeitico} patchFeitico={patchFeitico} duplicarFeitico={duplicarFeitico} setReducoesCustoFeitico={setReducoesCustoFeitico} setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos} mudarFeiticosEcl={mudarFeiticosEcl} removeEstilo={removeEstilo} patchEstilo={patchEstilo} addFuncionamento={addFuncionamento} removeFuncionamento={removeFuncionamento} patchFuncionamento={patchFuncionamento} setGeralVezes={setGeralVezes} addDominio={addDominio} removeDominio={removeDominio} patchDominio={patchDominio} setDominioAtivo={setDominioAtivo} patchEspinho={patchEspinho} sistema={sistema} estiloApi={estiloApi} />}
           {tabAtiva === "especializacoes" && <TabEspecializacoes draft={draft} derived={derived} setEspecializacoes={setEspecializacoes} toggleHabilidade={toggleHabilidade} setHabilidadeVezes={setHabilidadeVezes} toggleEscolhaHabilidade={toggleEscolhaHabilidade} toggleTalento={toggleTalento} setTalentoVezes={setTalentoVezes} toggleEscolhaTalento={toggleEscolhaTalento} setMelhoriaVezes={setMelhoriaVezes} toggleLendaria={toggleLendaria} toggleEscolhaAltoNivel={toggleEscolhaAltoNivel} patchTecnicasCombate={patchTecnicasCombate} patchTalentosConfig={patchTalentosConfig} patchEspecializacaoConfig={patchEspecializacaoConfig} ativarImitacao={ativarImitacao} />}
           {tabAtiva === "aptidoes" && <TabAptidoes draft={draft} derived={derived} setAptidaoNivel={setAptidaoNivel} setAptidaoExcedente={setAptidaoExcedente} toggleAptidao={toggleAptidao} setAptidaoOpcao={setAptidaoOpcao} setAptidaoVezes={setAptidaoVezes} setAptidaoOpcaoRepetida={setAptidaoOpcaoRepetida} />}
           {tabAtiva === "quimeras" && <TabQuimeras draft={draft} derived={derived} addQuimera={addQuimera} removeQuimera={removeQuimera} patchQuimera={patchQuimera} />}
@@ -1904,7 +1916,16 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
               onAlvo={setCaracteristicaAmaldicoadaAlvo}
             />
           )}
-          {tabAtiva === "calculos" && <TabCalculos derived={derived} setStatOverride={setStatOverride} patchCombate={patchCombate} gatilhosTreino={derived.gatilhosTreino} onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))} />}
+          {tabAtiva === "calculos" && (
+            <TabCalculos
+              derived={derived}
+              mostrarValores={!eclesiastes}
+              setStatOverride={setStatOverride}
+              patchCombate={patchCombate}
+              gatilhosTreino={derived.gatilhosTreino}
+              onGatilhoTreino={(id, v) => setTreinosAtivos((m) => ({ ...m, [id]: v }))}
+            />
+          )}
           {tabAtiva === "addons" && <TabAddons draft={draft} derived={derived} setAddons={setAddons} trocarFicha={setDraft}
             renderMotor={(efeitos, onChange) => <MotorEfeitosEditor efeitos={efeitos} onChange={onChange}
               rotulo="Efeito no Motor" comModo={false} pericias={derived.testes?.pericias}
@@ -1914,6 +1935,7 @@ export default function AftyCreatureBuilder({ existingCreature, onSave, onCancel
       </div>
     </div>
     </PrimitivasDeAddon>
+    </ResistenciasDaFicha.Provider>
   );
 }
 
@@ -2252,6 +2274,9 @@ function TabPericias({
   );
   const ataquePor = (id) => ataques.filter((a) => a.id === id).map(linhaAtaque);
 
+  const integridadeNaColuna = ehFichaEclesiastes(draft);
+  const integridade = resistencias.filter((r) => r.escala === "fixa").map(linhaTR);
+
   return (
     <>
       {/* O jogador não vê a lista: o Acerto mora na Arma e no Feitiço (divergência `jogadasDeAtaqueNaTela`). O derive segue calculando os ataques. */}
@@ -2275,10 +2300,8 @@ function TabPericias({
       )}
 
 
-      {/* Layout do autor (2026-07-27): Reflexos e Fortitude à esquerda, Vontade
-          e Astúcia à direita, Integridade sozinha embaixo em largura cheia.
-          Filtro pela `escala` e não por índice, porque o agrupamento que ele
-          pediu É o das escalas: os dois da Defesa, os dois da CD, e a fixa. */}
+      {/* Reflexos e Fortitude ficam à esquerda. Em Eclesiastes, Integridade
+          fica abaixo de Vontade, no espaço antes ocupado por Astúcia. */}
       {/* ⚠ O CONTADOR SÓ APARECE ONDE O TR GASTA VAGA. Na ficha de jogador o
           livro tira os Testes de Resistência do Limite de Perícias, então um
           medidor no cabeçalho estaria contando um caixa que não é o dele. */}
@@ -2291,12 +2314,11 @@ function TabPericias({
           {["defesa", "cd"].map((esc) => (
             <div key={esc} className="space-y-1">
               {resistencias.filter((r) => r.escala === esc).map(linhaTR)}
+              {esc === "cd" && integridadeNaColuna && integridade}
             </div>
           ))}
         </div>
-        <div className="space-y-1 mt-1">
-          {resistencias.filter((r) => r.escala === "fixa").map(linhaTR)}
-        </div>
+        {!integridadeNaColuna && <div className="space-y-1 mt-1">{integridade}</div>}
       </Card>
 
       <Card title="Perícias" headerRight={<ContadorVagas orcamento={orcamento} />}>
@@ -3083,7 +3105,7 @@ function DominioSimplesCard({ derived }) {
   );
 }
 
-function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, toggleArmaDedicada, setArmaDaOrigem, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
+function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, toggleArmaDedicada, setArmaDaOrigem, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, mudarFeiticosEcl, removeEstilo, patchEstilo, addFuncionamento, removeFuncionamento, patchFuncionamento, setGeralVezes, addDominio, removeDominio, patchDominio, setDominioAtivo, patchEspinho, sistema, estiloApi }) {
   /* A EXPANSÃO SE EDITA SÓ EM FEITIÇOS → ESPECIAL (DA-18). Aqui fica o resumo, e
      o atalho Editar em Feitiços sobe o pedido para o card de Feitiços: `foco`
      leva um contador para o mesmo id poder ser pedido duas vezes seguidas. */
@@ -3196,6 +3218,7 @@ function TabHabilidades({ draft, derived, testarGolpeDaArma, patch, patchCore, t
         duplicarFeitico={duplicarFeitico}
         setReducoesCustoFeitico={setReducoesCustoFeitico}
         setTreinoEscolhaFeiticos={setTreinoEscolhaFeiticos}
+        mudarFeiticosEcl={mudarFeiticosEcl}
         soExpansoes={soExpansoes}
         dominioApi={{ addDominio, removeDominio, patchDominio, setDominioAtivo, versoes: versoesDominio }}
         focoDominio={focoDominio}
@@ -4329,6 +4352,7 @@ function TecnicaMotorEditor({
   // shikigami, e a linha ganha o seletor de escopo. Ver `comInvocacao`.
   invocacoes = null,
 }) {
+  const opcoesTR = useOpcoesTR();
   const comInvocacao = Array.isArray(invocacoes) && invocacoes.length > 0;
   const lista = Array.isArray(efeitos) ? efeitos : [];
   // Devolve só os campos de DADO, nunca os resolvidos. ⚠ A lista dos campos mora
@@ -4419,7 +4443,8 @@ function TecnicaMotorEditor({
           const alvos = !ef.alvoTipo
             ? null
             : naInvocacao ? alvoOpcoesInvocacao(ef.alvoTipo)
-            : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo) : alvoOpcoes(ef.alvoTipo, pericias, fontesDano, ef.canal);
+            : alvoOpcoesDe ? alvoOpcoesDe(ef.alvoTipo)
+            : ef.alvoTipo === "tr" ? opcoesTR : alvoOpcoes(ef.alvoTipo, pericias, fontesDano, ef.canal);
           const tamanhoSimples = simplificarTamanho && ef.canal === "tamanho";
           const tamanhoValor = Math.trunc(Number(ef.expr) || 1);
           const tamanhoDirecao = tamanhoValor < 0 ? -1 : 1;
@@ -5274,8 +5299,15 @@ function ExpansaoLinha({ dominio: d, ativa, selecionado }) {
 }
 
 /* Card dos Feitiços: orçamento no cabeçalho, fileira de miniaturas e UM editor. */
-function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, soExpansoes = false, dominioApi = null, focoDominio = null }) {
-  const lista = Array.isArray(draft.feiticos) ? draft.feiticos : [];
+function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico, patchFeitico, duplicarFeitico, setReducoesCustoFeitico, setTreinoEscolhaFeiticos, mudarFeiticosEcl = null, soExpansoes = false, dominioApi = null, focoDominio = null }) {
+  /* ⚠ ECLESIASTES TROCA O FEITIÇO POR NÍVEL PELO FEITIÇO POR PONTOS (2026-11-23).
+     O card continua sendo o dono da lista lateral e das Expansões de Domínio, e
+     só os itens de Feitiço e o editor passam a ser os de
+     `src/systems/eclesiastes/feiticos/`. O Feitiço antigo não aparece: o derive
+     já o descartou, e mostrá-lo seria oferecer para editar o que não conta. */
+  const ecl = ehFichaEclesiastes(draft) && !soExpansoes && !!mudarFeiticosEcl;
+  const lista = ecl ? [] : Array.isArray(draft.feiticos) ? draft.feiticos : [];
+  const listaEcl = ecl && Array.isArray(draft.feiticosEcl) ? draft.feiticosEcl : [];
   const feiticosBase = lista.filter((feitico) => !feitico.variacaoDe);
   /* Os tipos que esta criatura pode criar. Vem do MOTOR, e não de uma pergunta
      de origem aqui dentro: com o Addon de liberação o Restringido tem só dois
@@ -5424,7 +5456,8 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
     ? dominios.find((d) => idDaExpansao(d.id) === escolhidoId) ?? null
     : null;
   const escolhido = dominioEscolhido ? null : lista.find((f) => f.id === escolhidoId) ?? lista[0] ?? null;
-  const dominioAberto = dominioEscolhido ?? (escolhido ? null : dominios[0] ?? null);
+  const escolhidoEcl = ecl && !dominioEscolhido ? listaEcl.find((f) => f.id === escolhidoId) ?? listaEcl[0] ?? null : null;
+  const dominioAberto = dominioEscolhido ?? (escolhido || escolhidoEcl ? null : dominios[0] ?? null);
   /* O atalho Editar em Feitiços da aba Habilidades chega aqui. Ajuste de estado
      durante o render, e não efeito: o pedido é um contador, então o mesmo id
      pedido duas vezes seguidas ainda abre. */
@@ -5468,6 +5501,12 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
      com o chip dele aceso e nenhum caminho de volta que não fosse adivinhar. */
   const novoFeitico = (modelo = null) => {
     if (!podeCriar) return;
+    if (ecl) {
+      const criado = criarFeiticoEcl({ nd: 1 });
+      mudarFeiticosEcl((l) => [...l, criado]);
+      setEscolhidoId(criado.id);
+      return;
+    }
     const criado = addFeitico(modelo ?? (tiposPermitidos.includes("dano") ? null : { tipo: tiposPermitidos[0] }));
     if (criado?.id) setEscolhidoId(criado.id);
   };
@@ -5486,7 +5525,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           Você tem mais Feitiços do que recebeu. Remova um ou suba de nível.
         </p>
       )}
-      {modelosAddon.length > 0 && podeCriar && (
+      {!ecl && modelosAddon.length > 0 && podeCriar && (
         <div className="mb-3 space-y-1.5 border-b border-slate-800 pb-3">
           <FieldLabel>Modelos do Addon</FieldLabel>
           <div className="flex flex-wrap gap-1.5">
@@ -5580,7 +5619,7 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
         </div>
       )}
 
-      {lista.length === 0 && dominios.length === 0 ? (
+      {lista.length === 0 && listaEcl.length === 0 && dominios.length === 0 ? (
         <div className="text-center py-8 border border-dashed border-slate-700 rounded-lg">
           <p className="text-sm text-slate-400">{soExpansoes ? "Nenhuma Expansão criada ainda." : "Nenhum Feitiço criado ainda."}</p>
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -5620,6 +5659,10 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               nivel: f.nivel === "max" ? 6 : Number(f.nivel) || 0,
               feitico: f,
             })),
+            ...listaEcl.map((f) => {
+              const linha = resumoDe(f.id);
+              return { id: f.id, nome: f.nome || "Sem nome", tipo: linha?.tipo ?? "auxiliar", nivel: Number(f.nd) || 0, ecl: f, linha };
+            }),
             // A Expansão vem depois de tudo na ordem por Nível: ela não tem nível.
             ...dominios.map((d) => ({
               id: idDaExpansao(d.id),
@@ -5631,12 +5674,13 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
           ]}
           tipos={TIPOS_FEITICO_DA_LISTA}
           IconeTipo={IconeDeTipo}
-          rotuloNivel="Nível"
-          selecionadoId={dominioAberto ? idDaExpansao(dominioAberto.id) : escolhido?.id ?? null}
+          rotuloNivel={ecl ? "ND" : "Nível"}
+          selecionadoId={dominioAberto ? idDaExpansao(dominioAberto.id) : (escolhido ?? escolhidoEcl)?.id ?? null}
           onSelecionar={setEscolhidoId}
           renderItem={(item, selecionado) => (item.dominio
             // "Ativa" só diz algo quando há mais de uma: a única é sempre a escolhida.
             ? <ExpansaoLinha dominio={item.dominio} ativa={dominios.length > 1 && derived.dominios?.ativoId === item.dominio.id} selecionado={selecionado} />
+            : item.ecl ? <LinhaListaEcl feitico={item.ecl} linha={item.linha} />
             : <FeiticoLinha feitico={item.feitico} resumo={resumoDe(item.id)} selecionado={selecionado} />
           )}
           onNova={podeCriar ? () => novoFeitico() : temExpansao ? novaExpansao : null}
@@ -5663,6 +5707,33 @@ function FeiticosCard({ draft, derived, addFeitico, updateFeitico, removeFeitico
               onDuplicate={() => duplicar(escolhido.id)}
               temExpansao={temExpansao}
               onAbrirExpansao={() => abrirExpansao(escolhido)}
+            />
+          )}
+          {escolhidoEcl && (
+            <EditorFeiticoEcl
+              key={escolhidoEcl.id}
+              feitico={escolhidoEcl}
+              calc={(derived.feiticos.ecl ?? []).find((x) => x.f.id === escolhidoEcl.id)?.calc ?? null}
+              ctx={{
+                ...(derived.feiticos.ctxEcl ?? { bt: derived.maestria ?? 2, nd: derived.nd ?? 1 }),
+                trs: resistenciasDaFicha(draft).map((r) => ({ value: r.value, label: r.label })),
+                pericias: AFTY_PERICIAS.map((p) => ({ value: p.id, label: p.nome })),
+                atributos: AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label })),
+                tiposDano: Object.entries(TIPOS_DANO).map(([value, label]) => ({ value, label })),
+                gruposDano: CATEGORIAS_DANO.map((c) => ({ value: c.id, label: c.nome })),
+              }}
+              TextoLongo={TextoLongo}
+              onPatch={(parcial) => mudarFeiticosEcl((l) => l.map((x) => (x.id === escolhidoEcl.id ? { ...x, ...parcial } : x)))}
+              onRemove={() => {
+                const resto = listaEcl.filter((x) => x.id !== escolhidoEcl.id);
+                mudarFeiticosEcl((l) => l.filter((x) => x.id !== escolhidoEcl.id));
+                setEscolhidoId(resto[0]?.id ?? null);
+              }}
+              onDuplicate={() => {
+                const copia = criarFeiticoEcl({ ...JSON.parse(JSON.stringify(escolhidoEcl)), id: undefined, nome: `${escolhidoEcl.nome || "Feitiço"} (Cópia)` });
+                mudarFeiticosEcl((l) => [...l, copia]);
+                setEscolhidoId(copia.id);
+              }}
             />
           )}
           {dominioAberto && dominioApi && (
@@ -6622,6 +6693,7 @@ function TecnicaAtaqueEditor({ feitico, calc, onPatch, aba }) {
    nível dos efeitos permite, e o TR único do alvo. A escada que sai disso é o
    resultado, e por isso aparece sem legenda. */
 function CondicoesDoAtaque({ feitico, calc, onPatch }) {
+  const opcoesTR = useOpcoesTR();
   const f = feitico;
   const cond = calc.condicao;
   if (!cond) return null;
@@ -6646,7 +6718,7 @@ function CondicoesDoAtaque({ feitico, calc, onPatch }) {
           <Select
             value={f.trCondicaoAtaque ?? ""}
             onChange={(v) => onPatch({ trCondicaoAtaque: v })}
-            options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+            options={opcoesTR}
             placeholder="-"
           />
         </div>
@@ -8254,6 +8326,7 @@ function AtributosDoAuxiliar({ config, feitico, total, onPatch }) {
  * a calculadora SUGERE, ela nunca é a única fonte de verdade da linha.
  */
 function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDano, dslGrupos, invocacoes, vetos = null }) {
+  const opcoesTR = useOpcoesTR();
   const f = feitico;
   /* ⚠ O SELETOR COMEÇA EM "-" (autor, 2026-09-17), e a escolha mora em
      `categoriaPassivo`. O `efeitoPassivo` antigo tinha "defesa" gravado em todo
@@ -8295,7 +8368,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
             <Select
               value={f.alvoPassivoTR || "reflexos"}
               onChange={(v) => onPatch({ alvoPassivoTR: v })}
-              options={alvoOpcoes("tr")}
+              options={opcoesTR}
             />
           </div>
         )}
@@ -8360,6 +8433,7 @@ function FeiticoPassivoEditor({ feitico, calc, onPatch, efeitosPassivo, fontesDa
 }
 
 function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba, vetos = null }) {
+  const opcoesTR = useOpcoesTR();
   const f = feitico;
   // A sub-aba Trocas serve os dois modos: ela lista os efeitos que aceitam troca.
   if (aba === "trocas") return <PermutasDoAuxiliar feitico={f} calc={calc} onPatch={onPatch} />;
@@ -8471,7 +8545,7 @@ function FeiticoAuxiliarEditor({ feitico, calc, onPatch, aba, vetos = null }) {
               <Select
                 value={f.alvoAuxTR || "reflexos"}
                 onChange={(v) => onPatch({ alvoAuxTR: v })}
-                options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+                options={opcoesTR}
               />
             </div>
           )}
@@ -8679,6 +8753,7 @@ function SubControleEfeito({ rotulo, children }) {
    nome + valor em COLUNAS FIXAS (o valor não empurra o resto), linha 2 são os
    controles do efeito. Sem recolher, o valor sempre visível. */
 function EfeitoMultLinha({ entry, sub, feitico, nivelFeitico, opcoesEfeito, onChange, onRemove }) {
+  const opcoesTR = useOpcoesTR();
   const meta = AUX_EFEITOS.find((m) => m.value === (entry.efeito || "defesa"));
   // O pool que esta linha reparte, para o contador não deixar dividir a mais.
   const valorDoEfeito = sub?.valor;
@@ -8730,7 +8805,7 @@ function EfeitoMultLinha({ entry, sub, feitico, nivelFeitico, opcoesEfeito, onCh
             <Select
               value={entry.alvoAuxTR || "reflexos"}
               onChange={(v) => onChange({ alvoAuxTR: v })}
-              options={AFTY_RESISTENCIAS.map((r) => ({ value: r.value, label: r.label }))}
+              options={opcoesTR}
             />
           </SubControleEfeito>
         )}
@@ -8930,7 +9005,7 @@ function TamanhoDerivado({ derived }) {
    move todo o resto da ficha, e deixá-lo depois do card de Origem, que é alto,
    obrigaria a rolar a tela para preencher a primeira coisa que se preenche. É
    decisão de layout, e vira uma linha se o autor preferir a ordem crua. */
-function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool, juntaInformacoes = false, patchAttr, patchNivel, sistema }) {
+function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOrigemId, setOrigemCla, toggleEscolhaOrigem, setOrigemPool, juntaInformacoes = false, patchAttr, patchNivel, sistema, mudarAjusteNativo }) {
   return (
     <>
       <Card title="Identidade">
@@ -8960,7 +9035,7 @@ function TabIdentidade({ draft, derived, patch, patchCore, setOrigemBonus, setOr
       </Card>
 
       {juntaInformacoes && (
-        <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} />
+        <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} mudarAjusteNativo={mudarAjusteNativo} />
       )}
 
       {/* A Origem saiu de dentro da Identidade e virou card próprio: ela carrega
@@ -9112,7 +9187,7 @@ function OrigemCard({ draft, derived, patch, patchCore, setOrigemId, setOrigemBo
               <span className="text-base font-bold text-purple-200 leading-none">{cla.nome}</span>
             </>
           )}
-          {origem.especializacaoExclusivaId && (
+          {origem.especializacaoExclusivaId && !vetaEspecializacaoEclesiastes(draft, origem.especializacaoExclusivaId) && (
             <OrigemChip tom="purple">Destrava Especialização Exclusiva</OrigemChip>
           )}
           {fixedBonus.map(([k, v]) => (
@@ -9981,7 +10056,7 @@ function AttributesCard({ draft, derived, patch, patchCore, patchAttr, patchNive
    Player passou a juntar Identidade e Informações numa aba só: as duas metades
    precisavam ser compostas em ordens diferentes, e um componente por metade é o
    que evita a segunda cópia do formulário. */
-function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
+function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema, mudarAjusteNativo }) {
   /* Os três campos que a ficha de jogador não tem (autor, 2026-08-30). Eles
      saíram em duas levas, e a ordem foi de propósito: um campo só sai da tela
      depois que existe fórmula para o que ele alimentava, senão o jogador deriva
@@ -10093,6 +10168,11 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
             </div>
           </div>
         </div>
+        {guerraNativaNaFicha(draft, GUERRA_NATIVA.id) && (
+          <div className="mt-4 grid items-center gap-3 border-t border-slate-800 pt-4 sm:grid-cols-2">
+            <ControlesDeAjustes draft={draft} fonte={GUERRA_NATIVA} onAjuste={mudarAjusteNativo} noCriador />
+          </div>
+        )}
         {/* O contador de Níveis de Aptidão saiu daqui em 2026-07-29: era
             duplicata do card da aba Aptidões, que é onde os níveis são alocados.
             Orçamento mora junto do que ele paga, não numa vitrine à parte. */}
@@ -10100,10 +10180,10 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema }) {
   );
 }
 
-function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNivel, sistema }) {
+function TabInformacoes({ draft, derived, patch, patchCore, patchAttr, patchNivel, sistema, mudarAjusteNativo }) {
   return (
     <>
-      <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} />
+      <ValoresBasicosCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} sistema={sistema} mudarAjusteNativo={mudarAjusteNativo} />
       <AttributesCard draft={draft} derived={derived} patch={patch} patchCore={patchCore} patchAttr={patchAttr} patchNivel={patchNivel} />
     </>
   );
@@ -10290,7 +10370,7 @@ const alvoLabelDe = rotuloAlvo;
    que a criatura tem. Vale a arma CARREGADA, e não só a equipada, porque
    treinar não é empunhar. A lista já vem sem repetição, que é o que sobra de
    duas entradas do mesmo modelo (duas Adagas são uma opção só). */
-function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], invocacoes = [], limite = 1) {
+function opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limite, opcoesTR) {
   const contagem = new Map();
   for (const { alvo } of instances) contagem.set(alvo, (contagem.get(alvo) ?? 0) + 1);
   const usados = new Set([...contagem].filter(([, n]) => n >= limite).map(([alvo]) => alvo));
@@ -10302,8 +10382,7 @@ function opcoesDeAlvo(linha, instances, pericias = AFTY_PERICIAS, armas = [], in
   }
   // Integridade é optativa por linha, preservando os treinos que a excluem.
   if (linha.alvoTipo === "tr") {
-    const resistencias = linha.incluiIntegridade === true ? AFTY_RESISTENCIAS : resistenciasTreinaveis();
-    return resistencias.filter((r) => !usados.has(r.value)).map((r) => ({ value: r.value, label: r.label }));
+    return opcoesTR.filter((r) => !usados.has(r.value));
   }
   if (linha.alvoTipo === "arma") {
     const vistos = new Set();
@@ -10375,7 +10454,8 @@ function TreinoLinha({
   /* O teto de instâncias da mesa (a Guilda, 2026-11-09: 2 TRs no Treino de Testes de
      Resistência). Cheio, não nasce instância nova. */
   const noTeto = repetivel && tetoInstancias != null && instances.length >= tetoInstancias;
-  const alvoOptions = noTeto ? [] : opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limitePorAlvo);
+  const opcoesTR = useOpcoesTR({ incluiIntegridade: linha.incluiIntegridade === true });
+  const alvoOptions = noTeto ? [] : opcoesDeAlvo(linha, instances, pericias, armas, invocacoes, limitePorAlvo, opcoesTR);
   // Pool vazio tem duas causas, e a mensagem muda: ou tudo já foi treinado, ou
   // não havia o que treinar (nenhuma arma no inventário / nenhuma invocação).
   const poolVazio = noTeto
@@ -11478,8 +11558,8 @@ function TabEspecializacoes({ draft, derived, setEspecializacoes, toggleHabilida
   // Físico Abençoado do Restringido diz que dá acesso à Especialização
   // Restringido, e sem passar isso aqui a lista da tela negaria o que o
   // resolveEspecializacoes já aceita.
-  const disponiveis = especializacoesDisponiveis(draft.core.origem?.id, origensQualificadas(draft));
-  /* O que a ficha GUARDA e a origem de hoje não permite. Some da conta e é DITO,
+  const disponiveis = especializacoesDisponiveis(draft.core.origem?.id, origensQualificadas(draft), draft);
+  /* O que a ficha GUARDA e a origem ou edição não permite. Some da conta e é DITO,
      em vez de sumir calado: existe ficha gravada de Sem Técnica com Conjurador,
      de quando a proibição do livro era só um chip de texto (2026-09-07). */
   const recusadas = especializacoesRecusadas(draft);
@@ -12087,6 +12167,7 @@ function HabilidadeMedidor({ habilidade, vezes, max, onSetVezes }) {
 }
 
 function HabilidadeCard({ habilidade, escolhida, concedida = false, fonteConcessao = "Especialização", acesso, nivelEspec, escolhaEstado, onToggleOpcao, extra, medidor }) {
+  const opcoesTR = useOpcoesTR();
   const [open, setOpen] = useState(() => !!habilidade.escolha?.abertaPorPadrao);
   // Já escolhida nunca trava: senão redividir a multiclasse prenderia a
   // habilidade na ficha, sem como remover (mesma regra do AptidaoCard).
@@ -12216,7 +12297,8 @@ function HabilidadeCard({ habilidade, escolhida, concedida = false, fonteConcess
                 )}
               </p>
               <OpcoesDeEscolha
-                escolha={habilidade.escolha}
+                escolha={{ ...habilidade.escolha, opcoes: habilidade.escolha.opcoes.filter((o) =>
+                  !o.resistenciaId || opcoesTR.some((r) => r.value === o.resistenciaId)) }}
                 opcoesEscolhidas={opcoesEscolhidas}
                 escolhida={escolhida}
                 onToggleOpcao={onToggleOpcao}
@@ -13587,6 +13669,7 @@ function MotorEfeitosEditor({
   // próprio item. `grau`, por exemplo, é o grau REAL da Ferramenta, não o grau
   // do feiticeiro. O seletor precisa mostrar exatamente os valores que a
   // expressão vai receber para servir de guia de verdade.
+  const opcoesTR = useOpcoesTR();
   const contextoItem = efeitos.find((e) => e?.contextoDsl)?.contextoDsl;
   // O grupo Marcas é de Addon, igual ao `useDslGrupos`.
   const contar = usePrimitiva("contar");
@@ -13616,7 +13699,8 @@ function MotorEfeitosEditor({
       <FieldLabel>{rotulo}</FieldLabel>
       {efeitos.map((ef, i) => {
         const chk = validateExpression(ef.expr || "", conhecidas);
-        const alvos = alvoOpcoes(getCanal(ef.canal)?.alvo, pericias, fontesDano, ef.canal);
+        const tipoAlvo = getCanal(ef.canal)?.alvo;
+        const alvos = tipoAlvo === "tr" ? opcoesTR : alvoOpcoes(tipoAlvo, pericias, fontesDano, ef.canal);
         return (
           <div
             key={i}
@@ -16673,8 +16757,10 @@ function TabInterludios({
   setTreinoEscolha, setTreinoEspecialVezes, setTreinoEspecialProgresso, sistema, setFocosLivres,
   addForja, patchForja, removeForja,
 }) {
-  const treinos = (draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
-    ? draft.treinamentos : {};
+  const treinos = ehFichaEclesiastes(draft)
+    ? normalizeTreinamentos(draft.treinamentos, draft)
+    : ((draft.treinamentos && !Array.isArray(draft.treinamentos) && typeof draft.treinamentos === "object")
+      ? draft.treinamentos : {});
   // Pool do Treino de Manejo de Arma: as armas do INVENTÁRIO, carregadas ou
   // não. Ver `opcoesDeAlvo`.
   const armasDoInventario = (derived.equip?.entradas ?? [])
@@ -16796,11 +16882,13 @@ function TabInterludios({
               onSetProgresso={(partial) => setTreinoEspecialProgresso(t.id, partial)}
             />
           ))}
-          <InterludioInfo icon={BookOpen} titulo="Estudos">
-            Estudar uma perícia sem maestria (4 testes de INT/SAB, CD 12 + maestria, 2 sucessos
-            concedem maestria), ou tornar-se especialista numa perícia já dominada (3 testes,
-            CD 15 + nível, 2 sucessos). Ativa quando a aba de Perícias existir.
-          </InterludioInfo>
+          {!ehFichaEclesiastes(draft) && (
+            <InterludioInfo icon={BookOpen} titulo="Estudos">
+              Estudar uma perícia sem maestria (4 testes de INT/SAB, CD 12 + maestria, 2 sucessos
+              concedem maestria), ou tornar-se especialista numa perícia já dominada (3 testes,
+              CD 15 + nível, 2 sucessos). Ativa quando a aba de Perícias existir.
+            </InterludioInfo>
+          )}
         </div>
       </Card>
 
@@ -17125,9 +17213,8 @@ const CALC_ROWS = [
   { key: "iniciativa",   label: "Iniciativa" },
 ];
 
-function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, onGatilhoTreino }) {
+function ValoresCalculadosCard({ derived, setStatOverride }) {
   return (
-    <>
     <Card title="Cálculos">
       <div className="flex gap-2.5 bg-purple-950/30 border border-purple-800 rounded-lg p-3 mb-4 text-xs text-purple-200">
         <FlaskConical className="w-4 h-4 flex-shrink-0 text-purple-400 mt-0.5" />
@@ -17166,14 +17253,15 @@ function TabCalculos({ derived, setStatOverride, patchCombate, gatilhosTreino, o
         A <span className="text-amber-400/80">Guarda</span> ainda não entra nestes valores (em desenvolvimento).
       </p>
     </Card>
+  );
+}
 
-    {/* Bancada de balanceamento, embaixo dos números que ela mexe: liga um
-        estado e a grade acima se move. Some para quem não tem estado nenhum.
-        ⚠ Arranjo PROVISÓRIO (autor, 2026-07-30). */}
-    <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
-
-    <CondicoesSimuladasCard derived={derived} patchCombate={patchCombate} />
-
+function TabCalculos({ derived, mostrarValores, setStatOverride, patchCombate, gatilhosTreino, onGatilhoTreino }) {
+  return (
+    <>
+      {mostrarValores && <ValoresCalculadosCard derived={derived} setStatOverride={setStatOverride} />}
+      <SimulacaoCombateCard derived={derived} patchCombate={patchCombate} gatilhosTreino={gatilhosTreino} onGatilhoTreino={onGatilhoTreino} />
+      <CondicoesSimuladasCard derived={derived} patchCombate={patchCombate} />
     </>
   );
 }

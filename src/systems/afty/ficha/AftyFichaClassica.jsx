@@ -8,6 +8,7 @@ import {
 import "./ficha.css";
 import { mesclaFichaAfty, AFTY_TIPOS, AFTY_PATAMARES } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
+import { ehFichaEclesiastes } from "../../eclesiastes/regras";
 // A Herança criada pela mesa (2026-10-01, Etapa 11). O derive já carregou o módulo.
 import { criaHeranca } from "../afty-invocacoes";
 import { preparaAtivacaoComCustoVida } from "../afty-feiticos";
@@ -164,6 +165,7 @@ export default function AftyFicha({
     () => mesclaFichaAfty(cofreAberto ? comTextoAberto(creature, cofreAberto) : creature),
     [creature, cofreAberto],
   );
+  const semAbaInvocacoes = ehFichaEclesiastes(ficha);
 
   // ⚠ A sessão nasce com os recursos CHEIOS, e para isso precisa dos máximos,
   // que só existem depois de derivar. O derive da montagem roda sem
@@ -416,11 +418,12 @@ export default function AftyFicha({
       }
       if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
       const n = Number(e.key);
-      if (n >= 1 && n <= TABS.length) setTab(TABS[n - 1].id);
+      const abas = semAbaInvocacoes ? TABS.filter((t) => t.id !== "invocacoes") : TABS;
+      if (n >= 1 && n <= abas.length) setTab(abas[n - 1].id);
     };
     window.addEventListener("keydown", aoTeclar);
     return () => window.removeEventListener("keydown", aoTeclar);
-  }, []);
+  }, [semAbaInvocacoes]);
 
   const setVital = useCallback((chave, valor) => {
     atualiza((s) => ({ ...s, [chave]: Math.max(0, Math.trunc(valor) || 0) }));
@@ -540,7 +543,8 @@ export default function AftyFicha({
   // a criatura sabe fazer" e esta é "o que ela carrega". Junta-las faria a aba
   // Habilidades mostrar espada no meio de Habilidade.
   const equipamentos = useMemo(() => equipamentosDaFicha(derived), [derived]);
-  const alvos = useMemo(() => alvosDeBusca(derived), [derived]);
+  const alvos = useMemo(() => alvosDeBusca(derived)
+    .filter((a) => a.aba !== "invocacoes" || !semAbaInvocacoes), [derived, semAbaInvocacoes]);
   // A busca global varre as DUAS listas, e cada resultado sabe para qual aba ir.
   const itensBuscaveis = useMemo(() => [...itens, ...equipamentos], [itens, equipamentos]);
 
@@ -1165,7 +1169,7 @@ export default function AftyFicha({
             {[
               ...TABS.flatMap((t) => (t.id === "invocacoes" && quimerasEmAbaPropria ? [t, { id: "quimeras", label: "Quimeras" }] : [t])),
               ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : []),
-            ].map((t) => (
+            ].filter((t) => t.id !== "invocacoes" || !semAbaInvocacoes).map((t) => (
               <button
                 key={t.id}
                 type="button"

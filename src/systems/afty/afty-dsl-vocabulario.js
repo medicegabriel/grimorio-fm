@@ -45,7 +45,7 @@ const POR_NOME = [
       ["nd", "Nível de Desafio"],
       ["bt", "Bônus de Treinamento"],
       ["maestria", "Maestria, o mesmo valor do Bônus de Treinamento"],
-      ["escala_ataque", "Parcela de nível da Jogada de Ataque (Nível ÷ 1,5 na criatura, metade do Nível no jogador)"],
+      ["escala_ataque", "Parcela de nível da Jogada de Ataque (zero em Eclesiastes, ND ÷ 1,5 na criatura e metade do Nível no jogador nas demais edições)"],
       ["grau", "Grau da ficha, Quarto 1 até Semi-Grau Especial 5"],
       ["vez", "Qual repetição está sendo avaliada"],
       ["alma_atual", "Integridade da Alma"],

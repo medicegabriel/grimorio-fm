@@ -21,7 +21,7 @@ import { comAddons, deriveAfty, ehPlayer } from "./ponte";
 import { CANAIS_PACOTE, DURACOES_PACOTE, comPacoteGravado, canalDoPacote, montarArquivo, nomeDoArquivo, novoIdPacote, novoPacoteDoEmissor, pacotesDoEmissor, rotuloFamilia, semPacote } from "../pacotes-aliados";
 import { escolhasPadrao, fontesParaAliados, paraArquivo, resolverItem } from "../pacotes-familias";
 import { AFTY_PERICIAS } from "../../afty-pericias-catalogo";
-import { AFTY_RESISTENCIAS } from "../../afty-schema";
+import { resistenciasDaFicha } from "../../../eclesiastes/regras";
 import { TIPOS_DANO } from "../../afty-equipamentos";
 import { buscarOrigem } from "./recebidos";
 import { baixarJson, semAcento } from "./util";
@@ -33,9 +33,9 @@ const conteudo = (p) => JSON.stringify({ nome: p?.nome ?? "", itens: p?.itens ??
 const NOME_ATRIBUTO = [["forca", "Força"], ["destreza", "Destreza"], ["constituicao", "Constituição"], ["inteligencia", "Inteligência"], ["sabedoria", "Sabedoria"], ["presenca", "Presença"]];
 /* Os canais que a definição à mão oferece: os do pacote, menos o Alcance (o alvo dele é um escopo de arma, sem seletor fiel aqui). */
 const CANAIS_MANUAIS = CANAIS_PACOTE.filter((c) => c.id !== "alcanceArma");
-function opcoesDeAlvo(tipo) {
+function opcoesDeAlvo(tipo, ficha) {
   if (tipo === "pericia") return AFTY_PERICIAS.filter((p) => !p.complementar).map((p) => [p.id, p.nome]);
-  if (tipo === "tr") return AFTY_RESISTENCIAS.map((r) => [r.value, r.label]);
+  if (tipo === "tr") return resistenciasDaFicha(ficha).map((r) => [r.value, r.label]);
   if (tipo === "tipoDano") return Object.entries(TIPOS_DANO);
   if (tipo === "atributo") return NOME_ATRIBUTO;
   if (tipo === "dadoNomeado") return ["d4", "d6", "d8", "d10", "d12"].map((d) => [d, `1${d}`]);
@@ -53,7 +53,7 @@ function Selecao({ rotulo, valor, opcoes, onChange, campo }) {
 }
 
 /* ---------------- a definição à mão ---------------- */
-function EditorManual({ manual, onMuda }) {
+function EditorManual({ manual, onMuda, ficha }) {
   const [busca, setBusca] = useState(false);
   const achados = manual.regra === "catalogo" && busca && !manual.origemId ? buscarOrigem(manual.origemNome ?? "") : [];
   const ben = manual.beneficios ?? [];
@@ -89,11 +89,11 @@ function EditorManual({ manual, onMuda }) {
       <div className="g-campo"><span>Benefícios</span>
         {ben.map((b, i) => {
           const c = canalDoPacote(b.canal);
-          const alvos = c?.alvo ? opcoesDeAlvo(c.alvo) : [];
+          const alvos = c?.alvo ? opcoesDeAlvo(c.alvo, ficha) : [];
           return (
             <div key={i} className="g-beneficio pa-beneficio">
               <span className="m-select"><select className="afty-campo" value={b.canal} aria-label="Valor afetado" data-campo={`manual-canal-${i}`}
-                onChange={(e) => mudaBen(i, { canal: e.target.value, alvo: canalDoPacote(e.target.value)?.alvo && !canalDoPacote(e.target.value)?.opcional ? opcoesDeAlvo(canalDoPacote(e.target.value).alvo)[0]?.[0] ?? null : null })}>
+                onChange={(e) => mudaBen(i, { canal: e.target.value, alvo: canalDoPacote(e.target.value)?.alvo && !canalDoPacote(e.target.value)?.opcional ? opcoesDeAlvo(canalDoPacote(e.target.value).alvo, ficha)[0]?.[0] ?? null : null })}>
                 {CANAIS_MANUAIS.map((x) => <option key={x.id} value={x.id}>{x.rotulo}</option>)}
               </select><ChevronDown aria-hidden="true" /></span>
               {alvos.length > 0 && (
@@ -251,7 +251,7 @@ export default function ParaAliadosG2({ m, topo }) {
           <Selecao key={e.id} rotulo={e.rotulo} valor={itemSel.escolhas?.[e.id] ?? e.padrao} opcoes={e.opcoes.map((o) => [o.id, o.rotulo])} campo={`escolha-${e.id}`}
             onChange={(v) => mudaItem(itemSel.id, (i) => ({ ...i, escolhas: { ...i.escolhas, [e.id]: v } }))} />
         ))}
-        {itemSel.fonte === "manual" && <EditorManual manual={itemSel.manual ?? MANUAL_NOVO()} onMuda={(patch) => mudaItem(itemSel.id, (i) => ({ ...i, manual: { ...i.manual, ...patch } }))} />}
+        {itemSel.fonte === "manual" && <EditorManual ficha={ficha} manual={itemSel.manual ?? MANUAL_NOVO()} onMuda={(patch) => mudaItem(itemSel.id, (i) => ({ ...i, manual: { ...i.manual, ...patch } }))} />}
         {r.indisponivel ? <span className="x-atencao"><AlertTriangle aria-hidden="true" />{r.indisponivel}</span> : <ResumoDaOpcao o={r} papel="emissor" />}
         <span className="x-linha"><button type="button" className="m-botao" onClick={() => tirar(itemSel.id)} data-tirar-item><Trash2 aria-hidden="true" />Tirar do Pacote</button></span>
       </article>

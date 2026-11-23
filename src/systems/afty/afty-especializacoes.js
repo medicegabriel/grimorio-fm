@@ -69,8 +69,9 @@
 
 import { registrarFamilia, remendarLista, nivelDaFicha } from "./afty-addons";
 import { getOrigem, origensQualificadas, origemMae, atributoSuporteDaOrigem } from "./afty-origens";
-import { AFTY_TIPOS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { AFTY_TIPOS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
+import { especializacoesDaOrigemEclesiastes, resistenciasDaFicha, vetaEspecializacaoEclesiastes, vetaTREclesiastes } from "../eclesiastes/regras";
 
 /** Teto inicial da criatura. A terceira classe abre no ND 31 ou no jogador. */
 export const ESPECIALIZACAO_MAX = 2;
@@ -413,7 +414,7 @@ export const peModTecnicaDaFicha = (classes = []) =>
  * Devolve `null` quando não há Classe nenhuma: uma ficha sem Especialização não
  * tem pacote, e isso é diferente de ter um pacote vazio.
  */
-export function pacoteInicialDaFicha(escolhidas = []) {
+export function pacoteInicialDaFicha(escolhidas = [], ficha = null) {
   const primeira = (Array.isArray(escolhidas) ? escolhidas : [])[0];
   const c = caracteristicasDaClasse(primeira?.id);
   if (!c) return null;
@@ -435,8 +436,9 @@ export function pacoteInicialDaFicha(escolhidas = []) {
   const periciasFixas = Array.isArray(pericias.fixas) ? pericias.fixas : [];
 
   const trEscolhe = Math.max(0, Math.trunc(Number(resistencias.escolhe) || 0));
-  const trEntre = Array.isArray(resistencias.entre) ? resistencias.entre : [];
-  const trFixos = Array.isArray(resistencias.fixas) ? resistencias.fixas : [];
+  const trDisponiveis = (ids) => Array.isArray(ids) ? ids.filter((id) => !vetaTREclesiastes(ficha, id)) : [];
+  const trEntre = trDisponiveis(resistencias.entre);
+  const trFixos = trDisponiveis(resistencias.fixas);
   /* ⚠ ESCOLHA QUE SÓ TEM UM CAMINHO NÃO É ESCOLHA (autor, 2026-08-30: "faça com
      que eu receba de forma obrigatória os TRs e Perícias já selecionados"). O
      Restringido recebe "uma perícia de Ofício", que é `escolhe: 1` sobre uma
@@ -493,8 +495,6 @@ export function pacoteInicialDaFicha(escolhidas = []) {
   };
 }
 
-const TR_IDS = AFTY_RESISTENCIAS.map((r) => r.value);
-
 /**
  * Os Testes de Resistência que a Classe inicial dá na ficha de JOGADOR, e a
  * faixa de cada um. É a peça que faltava para o Teste de Resistência Mestre
@@ -539,7 +539,7 @@ export function resistenciasDaClasse(pacote, ficha = {}, { comMestre = false } =
   // qual dos dois da lista ele pode ser.
   const segundoPermitido = mestreAtivo && !!mestre.segundo && !escolhaPendente;
   // O segundo é "um segundo teste de resistência": nenhum que a classe já dá.
-  const opcoesSegundo = segundoPermitido ? TR_IDS.filter((id) => !daClasse.includes(id)) : [];
+  const opcoesSegundo = segundoPermitido ? resistenciasDaFicha(ficha).map((r) => r.value).filter((id) => !daClasse.includes(id)) : [];
   const segundo = opcoesSegundo.includes(ficha?.trSegundo) ? ficha.trSegundo : null;
 
   const faixas = {};
@@ -846,27 +846,26 @@ function permitidasDaOrigem(origemId) {
   return Array.isArray(lista) && lista.length ? lista : null;
 }
 
-export function especializacoesDisponiveis(origemId, extras = []) {
+export function especializacoesDisponiveis(origemId, extras = [], ficha = null) {
   const exclusiva = exclusivaDaOrigem(origemId);
-  if (exclusiva) return [exclusiva];
-  const permitidas = permitidasDaOrigem(origemId);
+  if (exclusiva && !vetaEspecializacaoEclesiastes(ficha, exclusiva.id)) return [exclusiva];
+  const permitidas = permitidasDaOrigem(origemId)
+    ?? especializacoesDaOrigemEclesiastes(ficha, origemMae(origemId));
+  /* A origem própria veta. As origens copiadas só abrem especializações. */
+  const vetadas = new Set(getOrigem(origemId)?.especializacoesVetadas ?? []);
+  const permitida = (e) => !vetadas.has(e.id) && !vetaEspecializacaoEclesiastes(ficha, e.id);
   if (permitidas) {
-    const vetadas = new Set(getOrigem(origemId)?.especializacoesVetadas ?? []);
-    return AFTY_ESPECIALIZACOES.filter((e) => permitidas.includes(e.id) && !vetadas.has(e.id));
+    return AFTY_ESPECIALIZACOES.filter((e) => permitidas.includes(e.id) && permitida(e));
   }
   const abertas = extras.filter((x) => x && x !== origemId);
   /* As origens que a criatura CONTA como suas, para o `restritaOrigemIds`. A
      extra entra aqui porque ela só ABRE, que é a mesma regra do
      `exclusivaOrigemId` logo acima. */
   const alcanca = [origemId, ...abertas];
-  /* ⚠ O VETO SAI DA ORIGEM PRÓPRIA, e não das extras. É a metade que TRANCA, e
-     a regra escrita três parágrafos acima diz que a própria tranca e a extra só
-     abre. Um Gêmeo que copiou do Sem Técnica não herda a proibição dele. */
-  const vetadas = new Set(getOrigem(origemId)?.especializacoesVetadas ?? []);
   return AFTY_ESPECIALIZACOES.filter((e) =>
     (e.exclusivaOrigemId == null || abertas.includes(e.exclusivaOrigemId))
     && (!Array.isArray(e.restritaOrigemIds) || e.restritaOrigemIds.some((id) => alcanca.includes(id)))
-    && !vetadas.has(e.id));
+    && permitida(e));
 }
 
 /**
@@ -892,8 +891,8 @@ export function especializacaoIncompativel(id, jaEscolhidasIds = []) {
 }
 
 /** Quantas Especializações a origem, o sistema e o nível efetivo permitem. */
-export function maxEspecializacoes(origemId, extras = [], sistema = "afty", nivel = 0) {
-  if (especializacoesDisponiveis(origemId, extras).length === 1) return 1;
+export function maxEspecializacoes(origemId, extras = [], sistema = "afty", nivel = 0, ficha = null) {
+  if (especializacoesDisponiveis(origemId, extras, ficha).length === 1) return 1;
   return regraDo(sistema, "terceiraClasse") === "player"
     ? ESPECIALIZACAO_MAX_PLAYER
     : ESPECIALIZACAO_MAX + (nivel >= 31 ? 1 : 0);
@@ -903,9 +902,9 @@ export function maxEspecializacoes(origemId, extras = [], sistema = "afty", nive
  * Especialização que a origem OBRIGA, ou null quando a escolha é livre.
  * Hoje só a Origem Restringido obriga.
  */
-export function especializacaoObrigatoria(origemId) {
+export function especializacaoObrigatoria(origemId, ficha = null) {
   const exclusiva = exclusivaDaOrigem(origemId);
-  return exclusiva ? exclusiva.id : null;
+  return exclusiva && !vetaEspecializacaoEclesiastes(ficha, exclusiva.id) ? exclusiva.id : null;
 }
 
 /**
@@ -980,12 +979,12 @@ export function tipoDaOrigem(origemId, tipoAtual) {
  * gravar o rótulo junto faria uma errata de nome deixar fichas velhas
  * mentindo. Quem precisa do nome chama getEspecializacao(id).
  */
-export function normalizeEspecializacoes(lista, origemId, extras = [], sistema = "afty", nivel = 0) {
+export function normalizeEspecializacoes(lista, origemId, extras = [], sistema = "afty", nivel = 0, ficha = null) {
   const arr = Array.isArray(lista) ? lista : [];
   const vistos = new Set();
-  const disponiveis = new Set(especializacoesDisponiveis(origemId, extras).map((e) => e.id));
+  const disponiveis = new Set(especializacoesDisponiveis(origemId, extras, ficha).map((e) => e.id));
   const out = [];
-  const max = maxEspecializacoes(origemId, extras, sistema, nivel);
+  const max = maxEspecializacoes(origemId, extras, sistema, nivel, ficha);
   for (const item of arr) {
     const id = item?.id;
     if (!BY_ID[id] || vistos.has(id) || !disponiveis.has(id)) continue;
@@ -1002,7 +1001,7 @@ export function normalizeEspecializacoes(lista, origemId, extras = [], sistema =
 }
 
 /**
- * As Especializações que a ficha GUARDA mas que a origem de hoje não permite.
+ * As Especializações que a ficha GUARDA mas que a origem ou a edição não permite.
  *
  * ⚠ Existe porque `normalizeEspecializacoes` as descarta CALADO, e descartar
  * calado é perda de escolha do jogador. O caso real: a proibição do Conjurador
@@ -1017,7 +1016,7 @@ export function especializacoesRecusadas(creature) {
   if (!arr.length) return [];
   const origemId = creature?.core?.origem?.id;
   const disponiveis = new Set(
-    especializacoesDisponiveis(origemId, origensQualificadas(creature)).map((e) => e.id),
+    especializacoesDisponiveis(origemId, origensQualificadas(creature), creature).map((e) => e.id),
   );
   const origem = getOrigem(origemId);
   const out = [];
@@ -1030,9 +1029,11 @@ export function especializacoesRecusadas(creature) {
     out.push({
       id,
       nome: def.nome,
-      motivo: (origem?.especializacoesVetadas ?? []).includes(id)
-        ? `A origem ${origem?.nome ?? origemId} não pode ter esta Especialização.`
-        : `Esta Especialização não é acessível à origem ${origem?.nome ?? origemId}.`,
+      motivo: vetaEspecializacaoEclesiastes(creature, id)
+        ? "Esta Especialização foi removida de Eclesiastes."
+        : (origem?.especializacoesVetadas ?? []).includes(id)
+          ? `A origem ${origem?.nome ?? origemId} não pode ter esta Especialização.`
+          : `Esta Especialização não é acessível à origem ${origem?.nome ?? origemId}.`,
     });
   }
   return out;
@@ -1100,9 +1101,9 @@ export function resolveEspecializacoes(creature) {
   // no valor digitado (autor, 2026-09-08). Ver `nivelDaFicha`.
   const total = nivelDaFicha(creature);
   const sistema = sistemaDaFicha(creature);
-  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras, sistema, total);
-  const max = maxEspecializacoes(origemId, extras, sistema, total);
-  const obrigatoria = especializacaoObrigatoria(origemId);
+  const lista = normalizeEspecializacoes(creature?.especializacoes, origemId, extras, sistema, total, creature);
+  const max = maxEspecializacoes(origemId, extras, sistema, total, creature);
+  const obrigatoria = especializacaoObrigatoria(origemId, creature);
 
   const cabem = lista.slice(0, total);
   let restante = total;

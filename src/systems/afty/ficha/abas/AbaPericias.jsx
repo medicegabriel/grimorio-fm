@@ -77,7 +77,8 @@ function LinhaTeste({ nome, atributo, bonus, textoBonus, dados, partes, prof, ta
         className={`afty-valor text-[13px] text-right ${textoBonus ? "w-20" : "w-10"}`}
         ancora="direita"
         onRolar={() => rolar({ tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural,
-          ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}) })}
+          ...(chave.startsWith("pericia:") ? { periciaId: chave.slice(8) } : {}),
+          ...(chave.startsWith("tr:") ? { resistenciaId: chave.slice(3) } : {}) })}
       />
     </div>
   );

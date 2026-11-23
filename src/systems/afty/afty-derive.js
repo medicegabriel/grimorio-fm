@@ -86,7 +86,7 @@ import {
   expansaoDominioNoAr, amplificacaoDeTecnica, resumoAcertoGarantido, contestacaoDoDominio, faseDoDominio,
 } from "./afty-dominios";
 import { resolveEspecializacoes, AFTY_ESPECIALIZACOES, treinamentosDasEspecializacoes, getEspecializacao, especializacaoMae } from "./afty-especializacoes";
-import { derivarEclesiastes, ehFichaEclesiastes } from "../eclesiastes/regras";
+import { derivarEclesiastes, ehFichaEclesiastes, resistenciasDaFicha, vetaEspecializacaoEclesiastes, vetaTREclesiastes } from "../eclesiastes/regras";
 import {
   resolveHabilidades, efeitosInvocacaoControlador, getHabilidade, OPCAO_ESCOLHA_NOME, USOS_RECARGAS, RECARGAS_COM_PREFIXO,
   avaliarAcessoHabilidade, contaOrcamentoHabilidades, refecharVagasEscolha,
@@ -139,9 +139,17 @@ import {
   estadosDoVislumbre, efeitosDoVislumbre, resolveVislumbre, olhosDescobertos, fadigaAtual,
   ESTADO_DESCOBERTO, ESTADO_FADIGA,
 } from "./afty-vislumbre-celeste";
-import { resolveOlhosAgulha, efeitosOlhosAgulha } from "./afty-olhos-agulha";
+import { resolveOlhosAgulha, efeitosOlhosAgulha, habilidadeOcularAgulha } from "./afty-olhos-agulha";
+import {
+  feiticosAntigosVigentesEcl, calcularFeiticosEcl, aquisicoesEcl, linhasDoMotorEcl, estadosDosPassivosEcl,
+  linhasDeResumoEcl,
+} from "../eclesiastes/feiticos/derivar";
+import { feiticosEclDaFicha } from "../eclesiastes/feiticos/modelo";
 import { estadosManipulacaoCeu, resolveManipulacaoCeu } from "./afty-manipulacao-ceu";
-import { resolveTestes, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio, atributosDePericiaManuais, FACES_NOMEADAS } from "./afty-pericias";
+import {
+  resolveTestes, escalaNivelDoAtaque, resolveDano, catalogoPericiasDaFicha, ehPericiaOficio,
+  atributosDePericiaManuais, FACES_NOMEADAS,
+} from "./afty-pericias";
 import { configuracaoServo, efeitosServos } from "./afty-servos";
 import { resolverDominioInato } from "./afty-dominio-inato";
 import { danoDoServo } from "./afty-servos-combate";
@@ -530,7 +538,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   const condicoes = resolveCondicoes(temBloodfeast(creature) && estadoBloodfeast?.agua
     ? [...condicoesDaMesa, { nome: "Exposto" }, { nome: "Abalado" }] : condicoesDaMesa, {
     pericias: catalogoPericiasFicha.map((p) => ({ id: p.id, nome: p.nome })),
-    trs: AFTY_RESISTENCIAS.map((r) => ({ id: r.value, nome: r.label })),
+    trs: resistenciasDaFicha(creature).map((r) => ({ id: r.value, nome: r.label })),
     ataques: AFTY_ATAQUES.map((x) => ({ id: x.id, nome: x.nome })),
   });
 
@@ -566,7 +574,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      Suporte ou Combatente), e usa Estamina. Ver `origemSemEnergia`. */
   const semEnergiaDaOrigem = origemSemEnergia(creature);
   const semEnergia = semEnergiaDaOrigem || (ehJogador("pvPePorEspecializacao")
-    ? (creature?.especializacoes ?? []).some((e) => especializacaoMae(e?.id) === "restringido")
+    ? (creature?.especializacoes ?? []).some((e) =>
+      especializacaoMae(e?.id) === "restringido" && !vetaEspecializacaoEclesiastes(creature, e?.id))
     : tipo === "restringido");
   // Nome do recurso na UI. O número é o mesmo dos outros Tipos.
   const recursoLabel = semEnergia ? "Estamina" : "Energia";
@@ -586,12 +595,23 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   const nomeDoFundamento = padraoMarcial ? "Fundamento Marcial" : "Técnica";
   const feiticosMarcados = marcarTecnicasMarciais(creature?.feiticos, padraoMarcial);
   if (feiticosMarcados !== creature?.feiticos) creature = { ...creature, feiticos: feiticosMarcados };
+  /* ⚠ ECLESIASTES NÃO TEM FEITIÇO POR NÍVEL (rework de 2026-11-22). O Feitiço
+     dela mora em `feiticosEcl`, e o antigo que a pessoa criou sai do array AQUI,
+     depois da marcação acima, que é quem diz o que é Técnica Marcial. Ver
+     `feiticosAntigosVigentesEcl` e docs/eclesiastes-feiticos.md. */
+  const edicaoEcl = ehFichaEclesiastes(creature);
+  if (edicaoEcl) {
+    const vigentes = feiticosAntigosVigentesEcl(creature?.feiticos, {
+      ehTecnicaMarcial, ehOlhosDeAgulha: habilidadeOcularAgulha,
+    });
+    if (vigentes !== creature?.feiticos) creature = { ...creature, feiticos: vigentes };
+  }
   /* O requisito "Possuir Feitiços" de Talento (Adepto) conta Feitiço, e a Técnica
      Marcial não é um (provisório, a-fazer.md). Os dois lugares que montam o
      contexto dos Talentos leem esta lista, e a lista cheia segue indo para o
-     resto do Motor. */
+     resto do Motor. Em Eclesiastes os Feitiços novos entram na conta. */
   const feiticosDeRequisito = Array.isArray(creature?.feiticos)
-    ? creature.feiticos.filter((f) => !ehTecnicaMarcial(f))
+    ? [...creature.feiticos.filter((f) => !ehTecnicaMarcial(f)), ...(edicaoEcl ? feiticosEclDaFicha(creature) : [])]
     : creature?.feiticos;
   /* ⚠ O JOGADOR NÃO TEM PATAMAR (autor, 2026-08-31: "Não existe PATAMAR para
      Jogadores, isso é algo exclusivo de criaturas"). O aparo entra AQUI, na
@@ -631,6 +651,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   const tetoDaOrigem = nivelMaximoDaOrigem(creature);
   const ndSemOrigem = ndBruto;
   const nd = tetoDaOrigem ? Math.min(tetoDaOrigem, ndSemOrigem) : ndSemOrigem;
+  const usaEscalaDeNivel = !ehFichaEclesiastes(creature);
+  const metadeDoNivel = usaEscalaDeNivel ? Math.floor(nd / 2) : 0;
   /* As Habilidades que a origem CONCEDE (`concedeHabilidades`, 2026-10-09): entram
      pela mesma porta da concessão de sessão, sem gastar vaga e sem pedir a
      classe. A Percepção do Invisível dá o Perceber o Ar do Restringido. */
@@ -763,6 +785,13 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // efetivo. A CARGA não sai daqui, porque depende do mod de Força final.
   // BT antecipado só para as Cargas de Encantamento das Ferramentas (= BT).
   const bt = maestria(nd);                                          // Maestria == Treinamento
+  /* Os Feitiços de Eclesiastes (2026-11-23), calculados uma vez com o BT acima.
+     O teto do ND é o nível do personagem ou o ND da criatura (autor, 2026-11-22). */
+  const feiticosEcl = edicaoEcl ? calcularFeiticosEcl(creature, {
+    bt, ndMax: nd, rotuloNivel: creature?.rulesVersion === "player" ? "nível" : "ND",
+    temTecnicaMaxima: aptidoesIds.includes("tecnica_maxima"),
+    temEnergiaReversa: aptidoesIds.includes("energia_reversa"),
+  }) : [];
   const regrasAddon = regrasAftyDaCriatura(creature);
   const regrasVotos = regrasAftyDeVotosAtivos(creature, bt);
   const passivasSemCustoPeMaximo = regrasAddon.passivasSemCustoPeMaximo
@@ -916,7 +945,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     : resolveGerais(creature, { nd, maestria: bt, concedidos: concedido.gerais });
   // A parcela de nível da Jogada de Ataque, na régua do sistema. É a mesma conta
   // do `escalaFixa` de `resolveTestes` (afty-pericias.js), para o DSL enxergar.
-  const escalaAtaque = ehJogador("escalaDosTestes") ? Math.floor(nd / 2) : Math.floor(nd / 1.5);
+  const escalaAtaque = usaEscalaDeNivel ? escalaNivelDoAtaque(nd, sistema) : 0;
   // ORIGEM entra no montante junto do resto: ela concede vaga de habilidade, de
   // perícia, de feitiço e de aptidão, e vaga é lida antes de os stats existirem.
   // As escolhas aninhadas dela (Treinamentos de Clã, Empenho Implacável) saem
@@ -1536,6 +1565,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     // Passivos / Características criados pelo jogador usam o mesmo Motor, mas
     // entram na família exclusiva própria dos Feitiços Passivos.
     ...semFeiticoExausto(semTecnicaBloqueada(efeitosDosPassivos(creature))),
+    // Os Passivos de Eclesiastes, no mesmo formato e na mesma família dos de cima.
+    ...semFeiticoExausto(semTecnicaBloqueada(linhasDoMotorEcl(creature, feiticosEcl, { tiposDaCategoria: tiposDeDanoDaCategoria }))),
     // Buffs de MESA, escritos na Ficha Final durante o jogo. Mesmo shape do
     // Funcionamento Básico, e por isso entram na mesma linha. Só existem quando
     // a Ficha injeta `buffsSessao`: o criador nunca os vê.
@@ -1867,6 +1898,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     const domNivel = aptidao.efetivo?.dom ?? 0;
     const barNivel = aptidao.efetivo?.bar ?? 0;
     const paredesResistentes = aptidoesIds.includes("paredes_resistentes");
+    const opcoesBarreira = { usaEscalaDeNivel };
     /* ⚠ OS SEIS SAEM DO PASSE PÓS-APTIDÃO, e não do `canal()` do estágio
        principal, que só nasce umas 300 linhas abaixo daqui. É o mesmo passe do
        `imbuicoesEstilo`, e pelo mesmo motivo: eles dependem de `dom` e `bar` e
@@ -1913,7 +1945,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
         duracao: duracaoDominio(domNivel, versao),
         area: areaDominio(versao, bt, false, bonusArea, { legacy }),
         temDomo: domo,
-        pvBarreira: domo ? pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede) : null,
+        pvBarreira: domo ? pvBarreira(barNivel, nd, paredesResistentes, bonusPvParede, opcoesBarreira) : null,
         acertoGarantidoValido: comAG,
         // O Acerto Garantido estruturado, pronto para a Ficha (Etapa 8). `null` quando não vale.
         acertoGarantidoResumo: resumoAcertoGarantido(d, versao, temAcertoGarantido, { nomesFeiticos }),
@@ -1941,13 +1973,13 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     /* A BARREIRA da aptidão Técnicas de Barreira, que é irmã do domo e nunca teve
        tela: PV e RD de CADA parede, e quantas cabem. O domo continua valendo
        `PAREDES_NO_DOMO × pvDaParede`, então melhorar a parede melhora os dois. */
-    const pvUnidade = pvDaParede(barNivel, nd, paredesResistentes, bonusPvParede);
+    const pvUnidade = pvDaParede(barNivel, nd, paredesResistentes, bonusPvParede, opcoesBarreira);
     const partesPvParede = [
       { label: paredesResistentes ? "Base (Paredes Resistentes)" : "Base", valor: 5 + (paredesResistentes ? 5 : 0) },
-      { label: paredesResistentes
-        ? "Nível de Aptidão em Barreira × ND"
-        : "Nível de Aptidão em Barreira × metade do ND",
-        valor: paredesResistentes ? barNivel * nd : barNivel * Math.floor(nd / 2) },
+      ...(paredesResistentes || usaEscalaDeNivel ? [{
+        label: paredesResistentes ? "Nível de Aptidão em Barreira × ND" : "Nível de Aptidão em Barreira × metade do ND",
+        valor: barNivel * (paredesResistentes ? nd : metadeDoNivel),
+      }] : []),
       ...detalhesDoCanal(efPosAptidao, "pvParede").map((x) => ({ label: x.nome, valor: x.valor })),
     ];
     const barreira = {
@@ -1957,7 +1989,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
       /* ⚠ A CORTINA vale 3 paredes (autor, 2026-08-26). Ela é aptidão própria e
          não tinha número nenhum: o texto dela diz o custo e a área, e nunca a
          vida. Só aparece para quem tem a aptidão. */
-      pvCortina: pvCortina(barNivel, nd, paredesResistentes, bonusPvParede),
+      pvCortina: pvCortina(barNivel, nd, paredesResistentes, bonusPvParede, opcoesBarreira),
       temCortina: aptidoesIds.includes("cortina"),
       /* ⚠ A aptidão é o que faz a Barreira EXISTIR. Sem ela os números acima
          valem, mas não há o que erguer, e a tela não mostra o card. */
@@ -1986,7 +2018,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
        expansão, então mora no resumo: quem confronta é o feiticeiro, e o número
        existe desde que ele tenha Nível de Aptidão em Domínio. */
     const conflitoBase = conflitoDeDominio({
-      dom: domNivel, nd, bonus: canalDominio("conflitoDominio"),
+      dom: domNivel, nd, bonus: canalDominio("conflitoDominio"), usaEscalaDeNivel,
     });
     /* ⚠ O +2 DA EXPANSÃO JÁ ATIVA (2026-10-08, E-13). É um dos efeitos de abrir
        ("Um aumento de +2 em testes de Confronto de Domínio") e era só texto. Vale
@@ -2114,6 +2146,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
       // Técnica: o que se ATIVA. Estilo, Domínio, Feitiço Auxiliar e Transformação.
       ...comDonoDeBancada(estilo.estados, SUB_TECNICA),
       ...comDonoDeBancada(estadosConjurador, SUB_TECNICA),
+      // Interruptor de Passivo Condicional e Semiativo de Eclesiastes (2026-11-23).
+      ...comDonoDeBancada(estadosDosPassivosEcl(feiticosEcl), SUB_TECNICA),
       ...comDonoDeBancada(estadosAptidoes, SUB_APTIDOES),
       ...estadosAddon,
       ...comDonoDeBancada(estadosVislumbre, SUB_OUTROS),
@@ -2249,7 +2283,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      2026-10-03). Nenhum dos dois depende de stat, só das Especializações e dos
      campos da ficha, então subir não abre laço. */
   const pacoteInicial = ehJogador("pacoteDaClasseInicial")
-    ? pacoteInicialDaFicha(especializacoes.escolhidas)
+    ? pacoteInicialDaFicha(especializacoes.escolhidas, creature)
     : undefined;
   /* O TR que a Classe inicial deu, com a faixa, e o Teste de Resistência Mestre
      por cima (2026-09-23). */
@@ -2257,6 +2291,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     ? resistenciasDaClasse(pacoteInicial, creature, { comMestre: ehJogador("trMestreDoJogador") })
     : undefined;
 
+  const resistenciasProf = Object.fromEntries(Object.entries(creature?.resistenciasProf ?? {})
+    .filter(([id]) => !vetaTREclesiastes(creature, id)));
   const montarCtx = (attrs, mods) => buildCriaturaDslContext({
     nd, bt, escalaAtaque, grauRank: grau.rank, patamar, tipo, almaAtual: almaAtualDsl, invocacoesEmCampo,
     nivelFeiticoMax: acessoFeitico,
@@ -2269,7 +2305,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     iniciativaIrmao: creature?.core?.origem?.iniciativaIrmao,
     attrEff: attrs, mods, modTecnica: mods[tecnicaAttr] ?? 0, tecnicaAttr,
     aptidao: aptidao.efetivo, nivelEspec, periciasProf: creature?.pericias,
-    resistenciasProf: creature?.resistenciasProf, combate,
+    resistenciasProf, combate,
     faixasTrDaClasse: trDaClasse?.faixas,
     aptidaoOpcoes: semEnergia ? {} : creature?.aptidaoOpcoes,
     rdEscudoBase: equip.rdEscudoBase,
@@ -3058,7 +3094,6 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      ⚠ E o Patamar não existe no jogador, então o multiplicador é 1. */
   /* "Metade do seu Nível" é a régua que substitui a escala por Tipo em TODAS as
      fórmulas do jogador. Piso, pela regra geral do sistema. */
-  const metadeDoNivel = Math.floor(nd / 2);
   const valoresDoJogador = ehJogador("valoresAdicionais");
 
   const classesDaFicha = especializacoes.escolhidas ?? [];
@@ -3186,8 +3221,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
   // Restringido não tem nenhuma: o seletor some do formulário e a parcela é 0.
   const peQnt = semEnergia ? 0 :
     qntPE === "muito_pouca" ? -nd :
-    qntPE === "pouca" ? -Math.floor(nd / 2) :
-    qntPE === "grande" ? Math.floor(nd / 2) :
+    qntPE === "pouca" ? -metadeDoNivel :
+    qntPE === "grande" ? metadeDoNivel :
     qntPE === "muito_grande" ? nd : 0;
   /* A Quantidade de PE é campo só de criatura (autor, 2026-08-30), então o
      jogador não tem o ajuste. O +ND do Raio Negro chega pelo canal `pe`, que é
@@ -3300,8 +3335,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      sim sem RD DE GRAÇA. */
   const rdSemBase = ehJogador("rdBase");
   const rdGeralBase = rdSemBase ? 0 : (
-    tipo === "conjurador" ? (nd >= 10 ? Math.floor(nd / 2) : 0) :
-    tipo === "misto" ? (nd >= 10 ? nd : Math.floor(nd / 2)) :
+    tipo === "conjurador" ? (nd >= 10 ? metadeDoNivel : 0) :
+    tipo === "misto" ? (nd >= 10 ? nd : metadeDoNivel) :
     /* combatente | restringido */ (nd >= 10 ? maxAllMods : 0) + nd);
   /* ⚠ FRAGILIZADO ZERA TODA RD (Geral, Específica, Física, a da Alma e a por
      tipo), e não subtrai: "não pode ter sua Redução de Dano aumentada". O zero
@@ -3340,7 +3375,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     tipo === "conjurador" ? 1.25 :
     tipo === "misto" ? 1.5 :
     /* combatente | restringido */ 1.75;
-  const cdTipo = INT(nd / divisorCD);
+  const cdTipo = usaEscalaDeNivel ? INT(nd / divisorCD) : 0;
   /* No jogador a escala por Tipo vira a metade do nível. O BT continua, porque
      o texto do livro em afty-schema.js diz "10 + metade do nível + mod de um
      atributo + BT + outros". */
@@ -3370,7 +3405,9 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      Feitiço: `tecnicasGastas` mais abaixo. Um Gêmeo Restringido pode ter as duas
      listas, e cada uma gasta a sua pilha. */
   const feiticosGastos = feiticosLista.filter((f) => !ehTecnicaMarcial(f) && !f.variacaoDe && !ehTecnicaMaximaOficial(f)
-    && f.id !== beneficiosOrigemFeiticos.manualId).length;
+    && f.id !== beneficiosOrigemFeiticos.manualId).length
+    // Eclesiastes: um por Feitiço novo, mais os aprimoramentos de Passivo.
+    + aquisicoesEcl(feiticosEcl);
   const tecnicasGastas = feiticosLista.filter((f) => ehTecnicaMarcial(f) && !f.variacaoDe).length;
   // ⚠ A Técnica de Estilo LEGACY gasta o MESMO caixa que o Feitiço (autor,
   // 2026-08-07): "Consome o Contador de Habilidades. E Talentos e coisas do
@@ -3782,7 +3819,7 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     tipo === "conjurador" ? 1.75 :
     tipo === "misto" ? 1.5 :
     /* combatente | restringido */ 1.25;
-  const defTipo = INT(nd / divisorDefesa);
+  const defTipo = usaEscalaDeNivel ? INT(nd / divisorDefesa) : 0;
 
   // Qual atributo entra na Defesa. Destreza por padrão, e o canal
   // `defesaAtributo` TROCA (Músculos Desenvolvidos: "você pode optar por somar
@@ -4048,6 +4085,24 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
       return linha ? marcaBloqueio(comTesteDeRitual(linha)) : null;
     },
   };
+  /* Eclesiastes (2026-11-23): as linhas novas entram na MESMA lista, no formato do
+     `linhaDoFeitico`, e o extrato inteiro fica em `feiticos.ecl` para a aba do
+     criador. Elas não passam pelo Ritual nem pela marca da Técnica Máxima antiga:
+     o motor novo já traz a recarga e as travas dele. */
+  if (edicaoEcl) {
+    const trs = resistenciasDaFicha(creature);
+    feiticos = {
+      ...feiticos,
+      ecl: feiticosEcl,
+      // O que a aba do criador precisa para dizer por que um Tipo está fechado.
+      ctxEcl: { bt, nd, temTecnicaMaxima: aptidoesIds.includes("tecnica_maxima") },
+      lista: [...(feiticos.lista ?? []), ...linhasDeResumoEcl(feiticosEcl, {
+        cd: cdFeitico,
+        trLabel: (id) => trs.find((r) => r.value === id)?.label ?? id,
+        tipoDanoLabel: (id) => TIPOS_DANO[id] ?? id,
+      })],
+    };
+  }
 
   // ---------- Dano (planilha do autor, 2026-07-27) ----------
   // Uma linha por FONTE: o Ataque Básico e mais uma para cada arma equipada.
@@ -4816,8 +4871,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     ],
     defesa: [
       { label: "Base", valor: 10 },
-      { label: valoresDoJogador ? "Metade do Nível" : `Nível ÷ ${divTexto(divisorDefesa)}`,
-        valor: defEscala },
+      ...(usaEscalaDeNivel ? [{ label: valoresDoJogador ? "Metade do Nível" : `Nível ÷ ${divTexto(divisorDefesa)}`,
+        valor: defEscala }] : []),
       // O atributo TROCADO aparece com o nome dele, e não somado por baixo de
       // uma "Destreza" que não está mais na conta. Quem trocou vem junto no
       // rótulo, senão o jogador vê "Força" e não sabe de onde saiu.
@@ -4837,8 +4892,8 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     ],
     cd: [
       { label: "Base", valor: 10 },
-      { label: valoresDoJogador ? "Metade do Nível" : `Nível ÷ ${divTexto(divisorCD)}`,
-        valor: cdEscala },
+      ...(usaEscalaDeNivel ? [{ label: valoresDoJogador ? "Metade do Nível" : `Nível ÷ ${divTexto(divisorCD)}`,
+        valor: cdEscala }] : []),
       { label: `Mod. da Técnica (${rotulo[tecnicaAttr] ?? tecnicaAttr})`, valor: modTecnica },
       { label: "Maestria", valor: bt },
       ...(equip.cdBonus ? [{ label: "Equipamento", valor: equip.cdBonus }] : []),

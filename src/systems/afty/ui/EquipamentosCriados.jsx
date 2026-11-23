@@ -42,7 +42,8 @@ import {
   TEXTO_MAXIMIZAR, TIPOS_FORA_DO_MUDAR_DANO, TOPICOS_FORMA,
   efeitosOferecidos, formaDoItemCusto, itemCustoParaCatalogo, quantasPericias, saneiaItemCusto, valorDoEfeito,
 } from "../afty-criacao-equipamentos-itens";
-import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "../afty-schema";
+import { AFTY_ATTRS } from "../afty-schema";
+import { useOpcoesTR } from "./usar-resistencias";
 import { regraDo } from "../afty-sistema";
 import { BoolChip, Card } from "./primitivos";
 
@@ -439,7 +440,6 @@ export function EscudosCriadosCard({ brutos, entradas, podeCriar, sistema, onAdd
 /* ------------------------------------------------------------ */
 
 const fmtM = (m) => `${String(m).replace(".", ",")}m`;
-const TRS = AFTY_RESISTENCIAS.filter((r) => r.escala !== "fixa").map((r) => ({ value: r.value, label: r.label }));
 const ATRIBUTOS = AFTY_ATTRS.map((a) => ({ value: a.key, label: a.label }));
 const LINHA_ITEM = Object.fromEntries(TABELA_ITENS_CUSTO.map((l) => [l.id, l]));
 const ehOficio = (id) => id === "oficio" || /^oficio__\d+$/.test(id);
@@ -452,6 +452,7 @@ const tiposDoMudarDano = (custo) => (CATEGORIAS_MUDAR_DANO[custo] ?? [])
   .map((t) => ({ value: t.id, label: t.label }));
 
 function ItemCustoEditor({ bruto, estado, pericias, onPatch, onRemove }) {
+  const opcoesTR = useOpcoesTR({ incluiIntegridade: false });
   const [aberto, setAberto] = useState(!bruto.nome);
   const item = saneiaItemCusto(bruto);
   if (!item) return null;
@@ -467,7 +468,7 @@ function ItemCustoEditor({ bruto, estado, pericias, onPatch, onRemove }) {
   );
   const opcoesPericia = pericias.filter((p) => !ehOficio(p.id)).map((p) => ({ value: p.id, label: p.nome }));
   const opcoesOficio = pericias.filter((p) => ehOficio(p.id)).map((p) => ({ value: p.id, label: p.nome }));
-  const opcoesAlvo = { ataque: ATAQUES_ITEM, pericia: opcoesPericia, oficio: opcoesOficio, tr: TRS, atributo: ATRIBUTOS };
+  const opcoesAlvo = { ataque: ATAQUES_ITEM, pericia: opcoesPericia, oficio: opcoesOficio, tr: opcoesTR, atributo: ATRIBUTOS };
   const n = quantasPericias(item.efeito, item.custo);
   const valorTexto = valor == null ? null
     : linha?.alvo === "pericias" ? `${valor} ${valor === 1 ? "Perícia" : "Perícias"}`

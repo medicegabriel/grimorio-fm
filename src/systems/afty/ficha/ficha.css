@@ -40,7 +40,11 @@
   .afty-aparencia .afty-aparencia-seletor { grid-template-columns: minmax(0, 1fr); }
 }
 
-.afty-ficha {
+/* Os TOKENS valem também na aba de Feitiços de Eclesiastes (2026-11-23), que mora
+   no criador e não tem o `.afty-ficha` em volta. Só as variáveis: o leiaute da
+   ficha (altura, fundo, posição) fica na regra logo abaixo, só para ela. */
+.afty-ficha,
+.ecl-feiticos {
   /* ---------- superfícies ---------- */
   --afty-fundo: #060910;
   --afty-fundo-brilho: radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%);
@@ -97,7 +101,9 @@
   --afty-imagem-opacidade-banner: 0.15;
   --afty-imagem-encaixe: cover;
   --afty-imagem-posicao: center top;
+}
 
+.afty-ficha {
   position: relative;
   min-height: 100dvh;
   /* Compactar o cabeçalho não deve corrigir scrollY e expandi-lo de novo. */

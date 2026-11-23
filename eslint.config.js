@@ -37,7 +37,7 @@ export default defineConfig([
     // Só o Grimório do Afty. O da 2.5.2 (src/components/) é somente-leitura e
     // usa o emoji ⚠️ em vários avisos: incluí-lo aqui quebraria o lint num
     // código que não pode ser alterado.
-    files: ['src/systems/afty/**/*.{js,jsx}'],
+    files: ['src/systems/afty/**/*.{js,jsx}', 'src/systems/eclesiastes/**/*.{js,jsx}'],
     rules: {
       // Emoji de aviso RENDERIZADO na tela fica torto, e não é problema de
       // CSS: U+26A0 é resolvido para a fonte de emoji do sistema (Segoe UI

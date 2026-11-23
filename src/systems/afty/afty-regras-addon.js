@@ -5,6 +5,8 @@
  * enquanto cada JSON informa quais deles usa e com quais multiplicadores.
  */
 
+import { hidratarNativos } from "./afty-addons-compostos";
+
 const CHAVES = new Set([
   "multiplicadorPeMaximo",
   "multiplicadorPvFinal",
@@ -134,7 +136,8 @@ export function regrasAftyDaCriatura(creature) {
        Atenção fica como está. */
     atencaoSoPercepcao: false,
   };
-  for (const pacote of Array.isArray(creature?.addons) ? creature.addons : []) {
+  const addons = hidratarNativos(creature)?.addons;
+  for (const pacote of Array.isArray(addons) ? addons : []) {
     const regras = normalizarRegrasAfty(pacote?.regrasAfty);
     const fonte = { id: pacote?.id ?? null, nome: pacote?.nome || pacote?.id || "Addon" };
     out.nivelJogadorSemTeto ||= regras.nivelJogadorSemTeto === true;

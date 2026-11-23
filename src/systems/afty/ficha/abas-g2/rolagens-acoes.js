@@ -58,8 +58,9 @@ export const pedidoManobra = (m, lado = "executar") => (lado === "resistir"
   : { tipo: "teste", rotulo: m.resistir != null ? `${m.nome} · Executar` : m.nome, bonus: m.executar });
 
 /** Um teste da aba Perícias (Jogada de Ataque, TR ou perícia). */
-export const pedidoTeste = ({ nome, bonus, dados, margem, ataqueId, minimoNatural, periciaId }) => ({
-  tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural, ...(periciaId ? { periciaId } : {}),
+export const pedidoTeste = ({ nome, bonus, dados, margem, ataqueId, minimoNatural, periciaId, resistenciaId }) => ({
+  tipo: "teste", rotulo: nome, bonus, dados, margem, ataqueId, minimoNatural,
+  ...(periciaId ? { periciaId } : {}), ...(resistenciaId ? { resistenciaId } : {}),
 });
 
 /** O teste puro de um atributo. */

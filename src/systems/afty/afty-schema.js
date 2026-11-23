@@ -565,6 +565,9 @@ export function createBlankAfty() {
     // afty-feiticos.js computa dano/alcance/custo/CD. Variações de Liberação
     // (variacaoDe apontando outro feitiço) não contam no orçamento.
     feiticos: [],               // [ feiticoCriado ] — ver afty-feiticos.js
+    // Feitiços por pontos de Eclesiastes (2026-11-23). Só a edição lê. Ver
+    // src/systems/eclesiastes/feiticos/modelo.js.
+    feiticosEcl: [],
     // Feitiços-base escolhidos pelas Habilidades de Conjurador que reduzem custo.
     // Variações de Liberação herdam a escolha de `variacaoDe` e não aparecem como
     // opções separadas no criador.

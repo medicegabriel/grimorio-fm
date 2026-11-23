@@ -83,6 +83,7 @@ import { nivelDaCarteira } from "./afty-carteira";
 import { carteiraDaGuilda, PROGRESSAO_ERA_DE_OURO, mesaDaFicha, addonNativo } from "../eradeouro/era-de-ouro";
 /* As fontes dos pacotes nativos da Guilda. Também folha (só JSON e o módulo acima). */
 import { fontesNativasDaGuilda } from "../eradeouro/pacotes-nativos";
+import { GUERRA_NATIVA, guerraNativaNaFicha } from "../eclesiastes/pacotes-nativos";
 import { normalizarRegrasAfty, validarRegrasAfty, regrasAftyDaCriatura } from "./afty-regras-addon";
 import { TIPOS_VINCULO } from "./afty-recursos-addon";
 
@@ -2429,6 +2430,7 @@ export function aplicarAddons(pacotes = []) {
  * são todos os pacotes ativos que remendam alguma coisa.
  */
 let remendosNoMundo = [];
+let pacotesNoCatalogo = pacotesAtivos;
 
 const temRemendo = (p) => Object.values(p?.substitui ?? {}).some((l) => Array.isArray(l) && l.length > 0);
 
@@ -2516,9 +2518,26 @@ function reconstruirMundo(limpos, donosDoRemendo = null) {
   remendosNoMundo = limpos
     .filter((p) => temRemendo(p) && (!donosDoRemendo || donosDoRemendo.has(p.id)))
     .map((p) => p.id);
+  pacotesNoCatalogo = limpos;
 }
 
 const mesmosIds = (a, b) => a.length === b.length && a.every((id, i) => id === b[i]);
+
+const copiasNativasNormalizadas = new WeakMap();
+
+function pacotesNoEscopoDaFicha(creature) {
+  if (!guerraNativaNaFicha(creature, GUERRA_NATIVA.id)) return pacotesAtivos;
+  const nativo = listaDeAddons(creature).find((p) => p?.id === GUERRA_NATIVA.id);
+  const indice = pacotesAtivos.findIndex((p) => p.id === nativo.id);
+  if (pacotesAtivos[indice]?.composicao?.chave === nativo.composicao.chave) return pacotesAtivos;
+  let pacote = copiasNativasNormalizadas.get(nativo);
+  if (!pacote) {
+    pacote = normalizarPacote(nativo);
+    copiasNativasNormalizadas.set(nativo, pacote);
+  }
+  // Em um Encontro, o mesmo ID carrega remendos distintos para jogador e criatura.
+  return indice < 0 ? [pacote, ...pacotesAtivos] : pacotesAtivos.map((p, i) => i === indice ? pacote : p);
+}
 
 /**
  * Roda `fn` com o catálogo como ESTA ficha o enxerga: os acréscimos do mundo
@@ -2532,24 +2551,29 @@ const mesmosIds = (a, b) => a.length === b.length && a.every((id, i) => id === b
  *
  * O caso comum não custa nada: sem remendo de pacote alheio no ar, `fn` roda
  * direto. Quando há, o mundo é reescrito com os remendos da ficha, `fn` roda, e o
- * mundo anterior volta no `finally`, inclusive dentro de outro escopo. A época
- * não muda, porque os ids do mundo (que é o que ela guarda) continuam os mesmos,
- * e o mundo que sobra depois é idêntico ao de antes.
+ * mundo anterior volta no `finally`, inclusive dentro de outro escopo. Se a
+ * derivação direta acrescentar um pacote nativo ao mundo, a época também muda
+ * para o vocabulário acompanhar os IDs disponíveis durante a derivação.
  *
  * `deriveAfty` é síncrona e o JavaScript não intercala, então o escopo aberto e
  * fechado em volta dela vale para todo leitor de catálogo lá dentro.
  */
 export function comEscopoDaFicha(creature, fn) {
-  if (!pacotesAtivos.some(temRemendo)) return fn();
+  const pacotes = pacotesNoEscopoDaFicha(creature);
+  if (pacotes === pacotesNoCatalogo && !remendosNoMundo.length && !pacotes.some(temRemendo)) return fn();
   const donos = pacotesDaFicha(creature);
-  const desejado = pacotesAtivos.filter((p) => temRemendo(p) && donos.has(p.id)).map((p) => p.id);
+  const desejado = pacotes.filter((p) => temRemendo(p) && donos.has(p.id)).map((p) => p.id);
+  const pacotesAnteriores = pacotesNoCatalogo;
   const anterior = remendosNoMundo;
-  if (mesmosIds(desejado, anterior)) return fn();
-  reconstruirMundo(pacotesAtivos, new Set(desejado));
+  if (mesmosIds(pacotes, pacotesAnteriores) && mesmosIds(desejado, anterior)) return fn();
+  const mudaIds = pacotes.length !== pacotesAnteriores.length;
+  reconstruirMundo(pacotes, new Set(desejado));
+  if (mudaIds) epoca += 1;
   try {
     return fn();
   } finally {
-    reconstruirMundo(pacotesAtivos, new Set(anterior));
+    reconstruirMundo(pacotesAnteriores, new Set(anterior));
+    if (mudaIds) epoca += 1;
   }
 }
 
@@ -2654,8 +2678,9 @@ export function addonsDaCriatura(creature) {
 
 /** Os mesmos, sem os NATIVOS da mesa da ficha: é o que a marca de addons da Ficha
  *  mostra. O nativo da Guilda vale sempre e não é escolha de ninguém. */
+export const addonNativoDaFicha = (creature, id) => addonNativo(creature, id) || guerraNativaNaFicha(creature, id);
 export const addonsVisiveisDaCriatura = (creature) =>
-  addonsDaCriatura(creature).filter((p) => !addonNativo(creature, p.id));
+  addonsDaCriatura(creature).filter((p) => !addonNativoDaFicha(creature, p.id));
 
 /* ============================================================ */
 /* PACOTES QUE NÃO LIGAM JUNTOS                                  */

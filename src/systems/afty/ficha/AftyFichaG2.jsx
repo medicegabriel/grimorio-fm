@@ -6,6 +6,7 @@ import "./ficha.css";
 import "./efeitos/efeitos-g2.css";
 import { mesclaFichaAfty } from "../afty-schema";
 import { deriveAfty } from "../afty-derive";
+import { ehFichaEclesiastes } from "../../eclesiastes/regras";
 // A Herança criada pela mesa (2026-10-01, Etapa 11). O derive já carregou o módulo.
 import { criaHeranca } from "../afty-invocacoes";
 import { Guarda } from "../ui/guarda";
@@ -174,6 +175,8 @@ export default function AftyFicha({
     () => mesclaFichaAfty(cofreAberto ? comTextoAberto(creature, cofreAberto) : creature),
     [creature, cofreAberto],
   );
+  const semAbaInvocacoes = ehFichaEclesiastes(ficha);
+  const abas = useMemo(() => semAbaInvocacoes ? TABS.filter((t) => t.id !== "invocacoes") : TABS, [semAbaInvocacoes]);
 
   // ⚠ A sessão nasce com os recursos CHEIOS, e para isso precisa dos máximos,
   // que só existem depois de derivar. O derive da montagem roda sem
@@ -187,7 +190,7 @@ export default function AftyFicha({
      não devolvia. Caso que pegou: Desenvolvimento Físico da Maldição Era de Ouro em Constituição, 1872 de PV na Ficha contra 2184. */
   const sessaoDaLoja = useSessaoDaLoja(alvoId, () => comAddons(ficha, () => deriveAfty(ficha)), !embutida);
   const sessaoBruta = embutida ? sessaoDeFora : sessaoDaLoja;
-  const [tab, setTab] = useState(abaInicial);
+  const [tab, setTab] = useState(() => semAbaInvocacoes && abaInicial === "invocacoes" ? "acoes" : abaInicial);
   /* A apresentação ANTERIOR da aba Efeitos (a antiga aba Buffs), mantida só como comparação e compatibilidade: desde 2026-10-20 o G2 faz sozinho a
      Imitação, o Concedido pelo Mestre, a Exaustão desde zero, o Sangramento e o buff de mesa. O G2 é o padrão e a escolha não é gravada: recarregar
      volta ao G2. Ver docs/afty-ficha-final.md. */
@@ -442,14 +445,14 @@ export default function AftyFicha({
       }
       if (digitando || e.ctrlKey || e.metaKey || e.altKey) return;
       const n = Number(e.key);
-      if (n >= 1 && n <= TABS.length) irParaAbaRef.current(TABS[n - 1].id);
+      if (n >= 1 && n <= abas.length) irParaAbaRef.current(abas[n - 1].id);
     };
     /* EMBUTIDA, O TECLADO É SÓ DO PAINEL (etapa 6a): com o foco na lista de iniciativa, as teclas 1 a 6 e o Ctrl+K não mexem na Ficha. */
     const alvo = embutida ? raizRef.current : window;
     if (!alvo) return undefined;
     alvo.addEventListener("keydown", aoTeclar);
     return () => alvo.removeEventListener("keydown", aoTeclar);
-  }, [embutida]);
+  }, [embutida, abas]);
 
   /* OS SHIKIGAMIS NA MESA (2026-08-31). Um objeto só de escritores, porque a aba
      precisa dos seis e passá-los como seis props faria a assinatura dela crescer
@@ -565,7 +568,8 @@ export default function AftyFicha({
   // a criatura sabe fazer" e esta é "o que ela carrega". Junta-las faria a aba
   // Habilidades mostrar espada no meio de Habilidade.
   const equipamentos = useMemo(() => equipamentosDaFicha(derived), [derived]);
-  const alvos = useMemo(() => alvosDeBusca(derived), [derived]);
+  const alvos = useMemo(() => alvosDeBusca(derived)
+    .filter((a) => a.aba !== "invocacoes" || !semAbaInvocacoes), [derived, semAbaInvocacoes]);
   // A busca global varre as DUAS listas, e cada resultado sabe para qual aba ir.
   const itensBuscaveis = useMemo(() => [...itens, ...equipamentos], [itens, equipamentos]);
 
@@ -1081,7 +1085,7 @@ export default function AftyFicha({
               duas continuam empilhadas. A linha é o que define quanto do cabeçalho sai ao rolar (`--afty-cabecalho-recolhido`). */}
           <div className="e-linha-abas">
           <div className="afty-abas e-g2 e-abas" role="tablist" aria-label="Seções da ficha">
-            {[...TABS, ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : [])].map((t) => (
+            {[...abas, ...(derived.dharma?.ativo ? [{ id: "roda", label: "Roda" }] : [])].map((t) => (
               <button
                 key={t.id}
                 type="button"

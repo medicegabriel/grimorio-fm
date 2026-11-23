@@ -73,7 +73,7 @@ export function recalculaTesteD20(rolagem, d20) {
  * de 2 aplicado). Sem ela, crítico é só no 20 natural.
  */
 export function rolarTeste(
-  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0, tipoTeste = "teste", linhaArma = null, periciaId = null, contextoConteudo = null, contextoTurno = null, fontes = null },
+  { rotulo, detalhe, bonus = 0, dados = [], modo = "normal", margem = 20, cd = null, minimoNatural = 0, tipoTeste = "teste", linhaArma = null, periciaId = null, resistenciaId = null, contextoConteudo = null, contextoTurno = null, fontes = null },
   rng = Math.random,
 ) {
   const bonusInt = Math.trunc(Number(bonus) || 0);
@@ -97,6 +97,7 @@ export function rolarTeste(
     margemCritico: Math.max(2, Math.trunc(margem) || 20),
     minimoNatural: Math.max(0, Math.trunc(minimoNatural) || 0),
     ...(periciaId ? { periciaId } : {}),
+    ...(resistenciaId ? { resistenciaId } : {}),
     ...(contextoConteudo ? { contextoConteudo } : {}),
     ...(contextoTurno ? { contextoTurno } : {}),
     ...(fontes ? { fontes } : {}),

@@ -36,6 +36,7 @@ import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
 import { regraDo, sistemaDaFicha } from "./afty-sistema";
 // A troca da Maldição no seletor da Guilda (rota /EraDeOuro). FOLHA, sem risco de ciclo.
 import { origemForaDoSeletor } from "../eradeouro/era-de-ouro";
+import { ehFichaEclesiastes, vetaTREclesiastes } from "../eclesiastes/regras";
 // Do módulo FOLHA, não de ./afty-pericias.js: os geradores de opção abaixo
 // rodam na INICIALIZAÇÃO deste arquivo, e afty-pericias.js puxa afty-efeitos.js,
 // que volta até aqui por combate → habilidades → especializações. Ver o
@@ -49,6 +50,7 @@ import { getAnatomia } from "./afty-anatomias";
    importa daqui, e não o contrário. */
 
 const ATTR_LABEL = Object.fromEntries(AFTY_ATTRS.map((a) => [a.key, a.label]));
+const ACESSO_ESPECIALIZACAO_RESTRINGIDO = " Além disso, você recebe acesso a especialização Restringido.";
 const FISICOS = ["forca", "destreza", "constituicao"];
 
 /* ============================================================ */
@@ -103,6 +105,7 @@ const opcoesAtaqueOuTR = (prefixo, valor) => [
   })),
   ...AFTY_RESISTENCIAS.map((r) => ({
     id: `${prefixo}_tr_${r.value}`,
+    resistenciaId: r.value,
     nome: `TR de ${r.label}`,
     descricao: `Você recebe +${valor} em testes de resistência de ${r.label}.`,
   })),
@@ -424,7 +427,7 @@ export const AFTY_ORIGENS_CATALOG = [
           "Seu físico é esculpido de maneira única, potencializando suas capacidades. Seu Deslocamento " +
           "aumenta em 3 metros, você se torna imune a doenças mundanas e recebe vantagem em testes de " +
           "resistência contra venenos, em um descanso curto você adiciona metade do seu bônus de treinamento " +
-          "à quantidade de dados curados. Além disso, você recebe acesso a especialização Restringido.",
+          "à quantidade de dados curados." + ACESSO_ESPECIALIZACAO_RESTRINGIDO,
       },
       {
         id: "apice_corporal_humano",
@@ -1537,7 +1540,14 @@ export function caracteristicasEfetivas(creature) {
       ...(cla.caracteristicas || []).filter((c) => valeParaEsta(c, creature)),
     ]
     : proprias;
-  return [...base, ...caracteristicaCopiada(creature)].map(comOpcoesDaCriatura(creature));
+  const caracteristicas = [...base, ...caracteristicaCopiada(creature)].map(comOpcoesDaCriatura(creature));
+  if (!ehFichaEclesiastes(creature)) return caracteristicas;
+  return caracteristicas.map(semAcessoAoRestringido);
+}
+
+function semAcessoAoRestringido(entrada) {
+  const descricao = entrada.descricao?.replace(ACESSO_ESPECIALIZACAO_RESTRINGIDO, "");
+  return descricao === entrada.descricao ? entrada : { ...entrada, descricao };
 }
 
 /**
@@ -1597,9 +1607,14 @@ export function gatilhosDeOrigem(creature) {
  * entrada de Addon passar a ser clonada.
  */
 const comOpcoesDaCriatura = (creature) => {
-  const opcoes = opcoesVerdadeirasOrigens(liberacoesDaCriatura(creature));
+  const catalogo = opcoesVerdadeirasOrigens(liberacoesDaCriatura(creature));
   return (c) => {
-    if (c?.escolha?.id !== "verdadeiras_origens") return c;
+    if (c?.escolha?.id === "verdadeiras_origens") {
+      const opcoes = ehFichaEclesiastes(creature) ? catalogo.map(semAcessoAoRestringido) : catalogo;
+      return { ...c, escolha: { ...c.escolha, opcoes } };
+    }
+    if (!ehFichaEclesiastes(creature) || !c?.escolha?.opcoes?.some((o) => vetaTREclesiastes(creature, o.resistenciaId))) return c;
+    const opcoes = c.escolha.opcoes.filter((o) => !vetaTREclesiastes(creature, o.resistenciaId));
     return { ...c, escolha: { ...c.escolha, opcoes } };
   };
 };
@@ -1694,7 +1709,13 @@ export function armasEscolhidasDaOrigem(creature) {
 }
 
 /** A origem diz que a ficha NÃO TEM Energia Amaldiçoada (`semEnergia`), seja qual for a classe. */
-export const origemSemEnergia = (creature) => !!getOrigem(creature?.core?.origem?.id)?.semEnergia;
+export function origemSemEnergia(creature) {
+  const origemId = creature?.core?.origem?.id;
+  return !!getOrigem(origemId)?.semEnergia || (ehFichaEclesiastes(creature) && (
+    origemMae(origemId) === "restringido"
+    || (origemId === "gemeos" && tipoDaFicha(creature) === "restringido")
+  ));
+}
 
 /**
  * O atributo que a origem põe NO LUGAR de Presença e Sabedoria nas habilidades

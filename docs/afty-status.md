@@ -1,5 +1,49 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-23 · PUBLICAÇÃO DAS ATUALIZAÇÕES DE ECLESIASTES
+
+- Integração na base publicada do Grimório dos Feitiços por pontos, dos ajustes de Valores Básicos e das regras de dano, testes, especializações, treinos e Guerra de Feiticeiros de Eclesiastes.
+
+## SESSÃO DE 2026-11-23 · FEITIÇOS POR PONTOS EM ECLESIASTES (ENTREGA 1)
+
+- O rework de Feitiços do autor (`docs/eclesiastes-feiticos.md`) virou a aba de Feitiços das fichas de personagem e criatura de Eclesiastes. As outras rotas seguem com o Feitiço por Nível: o retrato do derive de 30 fichas fora da edição ficou idêntico byte a byte.
+- Motor em `src/systems/eclesiastes/feiticos/`: `tabelas.js` e `modelo.js` (folhas), `orcamento.js` (o extrato com fontes de pontos restritas: geral, Permuta, Condicional, Semiativo e Liberação), `motor.js` (Passivo no Motor, família `feiticoAuxiliarPassivo`, RD líquida no agregado), `resumo.js` (linha no formato do `linhaDoFeitico`) e `derivar.js`. O Feitiço salva em `creature.feiticosEcl`, com compras guardadas como quantidade.
+- No derive, só com `ehFichaEclesiastes`: o Feitiço antigo criado pela pessoa sai depois de `marcarTecnicasMarciais` (ficam Técnicas Marciais, recebidos de aliado e Olhos de Agulha), os novos contam no caixa de aquisições e no requisito Possuir Feitiços, os Passivos entram no Motor, os Condicionais e Semiativos ganham interruptor de bancada, e `feiticos.lista` recebe as linhas novas (`feiticos.ecl` guarda o extrato).
+- A tela (`AbaFeiticosEcl.jsx`, `ecl-feiticos.css`) entra dentro do `FeiticosCard`, que segue dono da lista lateral e das Expansões de Domínio. Quatro faixas: identidade, saldo grudado, sub-abas Base, Alcance e Efeitos com os pontos no chip, e detalhe (Descrição com o `TextoLongo` formatado do criador, recebido por prop). Pinta só com tokens `--afty-*`, que passaram a valer em `.ecl-feiticos` pelo `ficha.css`.
+- Liberação Máxima refeita no mesmo dia, a pedido do autor ("Pode Tudo", Chave de Camada): a sub-aba própria saiu, e uma chave Normal | Liberação no saldo faz Alcance e Efeitos editarem o Feitiço liberado. A camada guarda só o que soma ao base (extras, chaves que ligam, efeitos e Condições novos, `aplicarLiberacaoEcl` e `diferencaLiberacaoEcl` em `modelo.js`), e o orçamento roda o mesmo cálculo no Feitiço liberado e cobra a diferença da fonte da Liberação, então toda compra e todo teto valem nela. O saldo em Liberação mostra o PE junto (8 + 4 = 12 PE), a Fadiga e os pontos da camada. O campo Componentes do Ritual saiu da tela e da linha da Ficha.
+- Conferido no navegador: criação, estouro com Faltam em âmbar, Passivo somando no Preview, 375 px sem rolagem lateral, e a linha na Ficha G2 rolando o dado com as propriedades.
+- Fica para a fase 2: Fadiga na sessão, desconto do PE extra da Liberação, manutenção do Sustentado, usos do Semiativo, melhorias de Ritual e buffs de Feitiço Ativo no Motor. Furos e leituras em `docs/a-fazer.md`, seção Eclesiastes: Feitiços por pontos.
+- Assert novo `asserts/t-ecl-feiticos.mjs`. As duas folhas entraram no `t-ordem-modulos.mjs`, e a regra do U+26A0 do lint passou a cobrir `src/systems/eclesiastes/`.
+
+## SESSÃO DE 2026-11-23 · VALORES BÁSICOS DE ECLESIASTES
+
+- Talentos Iniciais começa em 0 nas fichas de personagem e criatura de Eclesiastes. Valores salvos continuam valendo. O campo ganhou botões de menos e mais. O ajuste de Progressão Épica aparece em Valores Básicos como o interruptor Calamidade.
+
+## SESSÃO DE 2026-11-22 · TESTES DE RESISTÊNCIA EM ECLESIASTES
+
+- O TR Astúcia saiu do cálculo das fichas de jogador e criatura de Eclesiastes. Proficiências manuais e treinos antigos em Astúcia deixam de consumir vagas e Focos. Quando o pacote de classe oferecia Astúcia ou Vontade, a ficha passa a conceder Vontade automaticamente.
+
+- Na aba Perícias do Criador, Integridade ocupa a segunda linha da coluna de Vontade, ao lado de Fortitude.
+
+## SESSÃO DE 2026-11-22 · DANO DE CRIATURA EM ECLESIASTES
+
+- Eclesiastes usa `ND + MOD` com d6 no Comum, `2 × ND + (MOD + CL)` com d8 no Desafio, `3 × ND + 2 × (MOD + CL)` com d10 na Calamidade e `3 × ND + 3 × (MOD + CL)` com d12 no Beyond. Controle e Leitura deixa de aparecer nas fontes de dano do Comum.
+
+## SESSÃO DE 2026-11-22 · GUERRA DE FEITICEIROS EM ECLESIASTES
+
+- As fichas novas e existentes de Eclesiastes recebem as regras e os catálogos de Guerra de Feiticeiros 1.0.4 automaticamente. O pacote nativo fica oculto na aba Addons e reaproveita ajustes e escolhas das fichas antigas.
+- Talentos Iniciais fica em Valores Básicos de personagens e criaturas, com faixa de 0 a 4. O ajuste de Calamidade fica no mesmo cartão dos personagens e começa desligado.
+- Criação de Equipamentos permanece como addon separado. O Treinamento para Habilidade usa o limite de progressão do Guerra de Feiticeiros e preserva a CD 12 da edição. Em Encontros mistos, os remendos de jogador e de criatura seguem a ficha.
+- A 4ª etapa do Treino de TR permite repetir um d20 abaixo de 5 e manter o maior resultado. O sucesso garantido saiu do treino nativo de Eclesiastes. O Treinamento Completo soma metade do Bônus de Treinamento ao Teste de Resistência escolhido, com arredondamento para baixo.
+
+## SESSÃO DE 2026-11-22 · ESCALA DE NÍVEL EM ECLESIASTES
+
+- Eclesiastes retirou as parcelas de metade do Nível ou ND e de ND dividido por 1,25, 1,5 ou 1,75 da Defesa, da CD, do Acerto, dos TRs, das Perícias e dos números que herdam essas bases. A mesma mudança cobre Conflito de Domínio, PV de barreiras comuns, CDs dos três Treinos Especiais nativos e os casos de RD Geral e Quantidade de PE que usavam metade do ND. A regra segue a marca da ficha também dentro dos Encontros.
+- A aba Invocações saiu do Criador e da Ficha Final de Criaturas e Jogadores de Eclesiastes. A especialização Controlador saiu da seleção e dos cálculos da edição. Fichas antigas com a especialização recebem um aviso na aba Especializações.
+- Eclesiastes retirou a especialização Restringido. A origem Restringido oferece Lutador, Combatente, Conjurador e Suporte pelas regras usuais de multiclasse. A Estamina continua vinculada à origem.
+- No Criador de Criaturas e Jogadores de Eclesiastes, a aba Cálculos mostra Condições e Simulação de Combate quando disponíveis. O painel de valores editáveis saiu da aba, e o cartão Estudos saiu dos Interlúdios.
+- Em Eclesiastes, a 4ª etapa do Treino de Perícia permite repetir um d20 abaixo de 5 e manter o maior resultado. O sucesso garantido saiu da edição. O Treinamento Completo soma metade do Bônus de Treinamento aos testes da perícia escolhida, com arredondamento para baixo.
+
 ## SESSÃO DE 2026-11-22 · ECLESIASTES NO REPOSITÓRIO
 
 - Integração de `/Eclesiastes` com a versão atual do Grimório. A biblioteca, os rascunhos e os Encontros têm armazenamento próprio. A edição é marcada em `edicaoDeRegras` e o tipo continua em `rulesVersion`. Especializações e Feitiços ainda usam a base compartilhada.

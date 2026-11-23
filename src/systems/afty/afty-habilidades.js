@@ -61,6 +61,7 @@ import {
 } from "./afty-invocacoes-caracteristicas";
 import { ARMA_GRUPOS, ENCANTAMENTOS_ARMA, CATEGORIAS_DANO, TIPOS_DANO } from "./afty-equipamentos";
 import { AFTY_RESISTENCIAS } from "./afty-schema";
+import { vetaTREclesiastes } from "../eclesiastes/regras";
 // Quem lê a divergência das Bases automáticas. Módulo folha, sem ciclo.
 import { regraDo } from "./afty-sistema";
 // Do módulo FOLHA: afty-pericias.js importa afty-efeitos.js, que volta até aqui.
@@ -106,7 +107,7 @@ const opcoesDeEncantamentoArma = () =>
     descricao: e.descricao,
   }));
 const opcoesDeResistencia = (prefixo, descricao) =>
-  AFTY_RESISTENCIAS.map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
+  AFTY_RESISTENCIAS.map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label), resistenciaId: r.value }));
 
 /**
  * O que devolve os usos de uma habilidade com contador (campo `usos`). O livro
@@ -3030,6 +3031,7 @@ export const AFTY_HABILIDADES = [
         const r = AFTY_RESISTENCIAS.find((x) => x.value === v);
         return {
           id: `cnj_focalizada_${v}`,
+          resistenciaId: v,
           nome: r?.label ?? v,
           descricao: `Metade do seu modificador de Inteligência ou Sabedoria entra no TR de ${r?.label ?? v}.`,
         };
@@ -6415,7 +6417,7 @@ export function escolhasMaximas(habilidade, nivelEspec, bt = 0) {
 export function resolveEscolhasHabilidade({
   escolhidasIds = [], niveisPorEspec = {}, niveisEscalonamento = {}, nivelPorHabilidade = {},
   escolhasHabilidade = {}, bt = 0, vezes = {}, vagasMotor = {},
-  escolhasPorHabilidade = {},
+  escolhasPorHabilidade = {}, ficha = null,
 } = {}) {
   const porHab = {};
   const mapa = {};
@@ -6451,7 +6453,8 @@ export function resolveEscolhasHabilidade({
     const original = BY_ID[habId];
     const hab = original && { ...original, escolha: escolhasPorHabilidade[habId] ?? original.escolha };
     if (!hab?.escolha) continue;
-    const opcoesValidas = new Set(hab.escolha.opcoes.map((o) => o.id));
+    const opcoesValidas = new Set(hab.escolha.opcoes
+      .filter((o) => !vetaTREclesiastes(ficha, o.resistenciaId)).map((o) => o.id));
     const brutas = Array.isArray(escolhasHabilidade?.[habId]) ? escolhasHabilidade[habId] : [];
     const vistos = new Set();
     const opcoes = [];
@@ -7561,7 +7564,7 @@ export function resolveHabilidades(
     escolhasMescladas[id] = [...new Set([...(escolhasMescladas[id] ?? []), ...(lista ?? [])])];
   }
   let escolhas = resolveEscolhasHabilidade({
-    escolhasPorHabilidade,
+    ficha: creature, escolhasPorHabilidade,
     escolhidasIds: escolhidas,
     niveisPorEspec,
     // O nível que trava a OPÇÃO com `nivelMin`. Ver resolveEscolhasHabilidade.
@@ -7593,7 +7596,7 @@ export function resolveHabilidades(
   const vagasExtrasDoRoubo = escolhas.vagasExtras;
   if (roubadas.length) {
     escolhas = resolveEscolhasHabilidade({
-      escolhasPorHabilidade,
+      ficha: creature, escolhasPorHabilidade,
       escolhidasIds: [...new Set([...escolhidas, ...roubadas])], niveisPorEspec,
       niveisEscalonamento: Object.fromEntries((escolhidasEspec || [])
         .map((e) => [e.id, e.nivelEscalonamento ?? e.nivel ?? 0])),

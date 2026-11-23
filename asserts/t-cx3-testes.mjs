@@ -4,6 +4,8 @@ const R = new URL("../src/systems/afty/", import.meta.url).href;
 const { deriveAfty } = await import(R + "afty-derive.js");
 const { createBlankAfty } = await import(R + "afty-schema.js");
 const { aplicarAddons } = await import(R + "afty-addons.js");
+const { origemDosTreinos, treinamentosDaOrigem } = await import(R + "afty-treinamentos.js");
+const { prepararFichaEclesiastes } = await import("../src/systems/eclesiastes/regras.js");
 const O = await import(R + "ficha/ficha-conteudo-testes.js");
 const S = await import(R + "ficha/ficha-sessao.js");
 const { rolarTeste } = await import(R + "ficha/ficha-rolagem.js");
@@ -44,6 +46,21 @@ for (const sistema of ["player", "afty"]) {
   t(`${sistema} Luta usa limite conjunto da rodada`, O.usaTesteConteudo(l.sessao, d, { fonte: "luta", id: "acrobacia" }, p()).aplicado, false);
   const sem = deriveAfty({ ...c, treinamentos: {} });
   t(`${sistema} retirar treino suspende usos`, O.usaTesteConteudo(s, sem, { fonte: "treino", id: "acrobacia" }, p()).aplicado, false);
+
+  const eclesiastes = prepararFichaEclesiastes(c);
+  const linha = treinamentosDaOrigem(origemDosTreinos(eclesiastes), null, eclesiastes).find((l) => l.id === "pericia");
+  const completo = deriveAfty(eclesiastes);
+  const terceira = deriveAfty({ ...eclesiastes, treinamentos: { pericia: [{ alvo: "acrobacia", progresso: 3 }], luta: 4 } });
+  const bonus = (fichaDerivada, id) => fichaDerivada.testes.pericias.find((l) => l.id === id).bonus;
+  t(`${sistema} Eclesiastes aplica metade do BT ímpar à perícia escolhida`,
+    [completo.maestria, bonus(completo, "acrobacia") - bonus(terceira, "acrobacia"), bonus(completo, "atletismo") - bonus(terceira, "atletismo")], [5, 2, 0]);
+  t(`${sistema} Eclesiastes exibe os mesmos benefícios no Criador e na Ficha Final`,
+    completo.beneficiosTreinamento.filter((item) => ["pericia:acrobacia:4", "pericia:acrobacia:completo"].includes(item.id)).map((item) => item.texto),
+    [linha.etapas[3].beneficio, linha.completo.beneficio]);
+  t(`${sistema} Eclesiastes move a rerrolagem para a 4ª etapa`, linha.etapas[3].beneficio, d.beneficiosTreinamento.find((item) => item.id === "pericia:acrobacia:completo").texto);
+  t(`${sistema} Eclesiastes impede sucesso garantido`, O.usaTesteConteudo(S.sessaoEmBranco(completo), completo, { fonte: "treino-sucesso", id: "acrobacia", oposto: false }, p()).aplicado, false);
+  t(`${sistema} Eclesiastes habilita a rerrolagem ao concluir a 4ª etapa`, [terceira, completo].map((derivada) =>
+    O.rerrolaTreinoPericia(original, derivada, { id: baixo.id, rng: () => 0.5 }, p()).rolagem?.natural), [undefined, 11]);
 
   const talentos = ficha(sistema); talentos.talentos = ["tal_tempestade_de_ideias", "tal_guarda_infalivel", "tal_tecnicas_defensivas_de_escudo"];
   talentos.talentosConfig.tal_tempestade_de_ideias = { vantagemPericia: "acrobacia" };

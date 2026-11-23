@@ -26,7 +26,7 @@ import {
   TIPOS_ESPECIAL,
 } from "../afty-criacao-equipamentos-armas";
 import { AFTY_GRAUS } from "../afty-equipamentos";
-import { AFTY_RESISTENCIAS } from "../afty-schema";
+import { useOpcoesTR } from "./usar-resistencias";
 import { BoolChip } from "./primitivos";
 
 const CABECALHO = "text-[10px] uppercase tracking-wider text-slate-500";
@@ -45,7 +45,6 @@ function Ladrilho({ rotulo, valor, dica, tom = "normal" }) {
   );
 }
 
-const TRS = AFTY_RESISTENCIAS.filter((r) => r.escala !== "fixa").map((r) => ({ value: r.value, label: r.label }));
 const TITULO_DO_TIPO = {
   bonus: TEXTO_PROPRIEDADES_ESPECIAIS.bonus,
   treinoPericias: TEXTO_PROPRIEDADES_ESPECIAIS.treino,
@@ -61,6 +60,7 @@ const NOVO_DO_TIPO = {
 
 /* UM efeito da Propriedade Especial personalizada, com o botão de tirar. */
 function EfeitoEspecial({ efeito, pericias, onChange, onRemove, indice }) {
+  const opcoesTR = useOpcoesTR({ incluiIntegridade: false });
   const opcoesPericia = pericias.map((p) => ({ value: p.id, label: p.nome }));
   const rotulo = TIPOS_ESPECIAL.find((t) => t.value === efeito.tipo)?.label ?? efeito.tipo;
   return (
@@ -90,7 +90,7 @@ function EfeitoEspecial({ efeito, pericias, onChange, onRemove, indice }) {
             <Select
               value={efeito.alvo}
               onChange={(v) => onChange({ alvo: v })}
-              options={efeito.rolagem === "tr" ? TRS : opcoesPericia}
+              options={efeito.rolagem === "tr" ? opcoesTR : opcoesPericia}
               placeholder={efeito.rolagem === "tr" ? "Teste de Resistência" : "Perícia"}
               aria-label={`Alvo do efeito ${indice + 1}`}
             />
@@ -122,7 +122,7 @@ function EfeitoEspecial({ efeito, pericias, onChange, onRemove, indice }) {
         <Select
           value={efeito.alvo}
           onChange={(v) => onChange({ alvo: v })}
-          options={TRS}
+          options={opcoesTR}
           placeholder="Teste de Resistência"
           aria-label={`Teste de Resistência do efeito ${indice + 1}`}
         />

@@ -32,6 +32,7 @@ import { registrarFamilia, remendarLista, filtraForaDoJogador } from "./afty-add
 import { evalNumber, validateExpression } from "./afty-dsl";
 import { getOrigem, getCla, origensQualificadas } from "./afty-origens";
 import { AFTY_ATTRS, AFTY_RESISTENCIAS } from "./afty-schema";
+import { vetaTREclesiastes } from "../eclesiastes/regras";
 // Requisito de treino em perícia ou TR. Módulo FOLHA, então não há ciclo.
 import {
   AFTY_PERICIAS, avaliarRequisitoDeTreino, conferirRequisitoDeTreino, ehPericiaOficio,
@@ -166,7 +167,7 @@ const opcoesDeTrilha = (prefixo, descricao) =>
 const opcoesDeTR = (prefixo, descricao, fora = []) =>
   AFTY_RESISTENCIAS
     .filter((r) => !fora.includes(r.value))
-    .map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label) }));
+    .map((r) => ({ id: `${prefixo}_${r.value}`, nome: r.label, descricao: descricao(r.label), resistenciaId: r.value }));
 
 /* Nome da Aptidão para o chip de requisito. Procurado na hora, e não
    memorizado num índice, porque um Addon pode acrescentar aptidão depois de
@@ -1558,7 +1559,7 @@ export function resolveTalentos(creature, ctx = {}) {
     creature?.escolhasTalento,
     ctx.nd ?? 1,
     ctx.especializacoes,
-    ctx,
+    { ...ctx, ficha: creature },
   );
   return {
     escolhidas,
@@ -1618,6 +1619,7 @@ export function resolveEscolhasTalento(
       ? Math.max(...AFTY_ATTRS.map((a) => Number(limites[a.key])).filter(Number.isFinite))
       : null;
     const disponiveis = tal.escolha.opcoes.filter((o) => {
+      if (vetaTREclesiastes(ctx.ficha, o.resistenciaId)) return false;
       if (tal.addonId && addonsAtivos && !addonsAtivos.has(tal.addonId)) return false;
       if (o.addonId && addonsAtivos && !addonsAtivos.has(o.addonId)) return false;
       if (o.habilidadeId) {

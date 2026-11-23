@@ -369,8 +369,15 @@ export function conteudoDaFicha(creature, derived) {
      gravado sem marca, numa ficha sem energia, só vira Técnica lá. A chave segue
      `passivo:<id>`, que é o alvo do destaque e da busca. */
   const marciais = new Set(derived?.tecnicasMarciais?.ids ?? []);
+  /* Eclesiastes (2026-11-23): `feiticos.ecl` só existe na edição. Lá o Feitiço
+     antigo criado pela pessoa foi descartado no derive, então a lista crua passa
+     pelo mesmo filtro (fica o que a lista do motor ou as Técnicas reconhecem), e
+     os Passivos novos entram logo abaixo, lidos do extrato. */
+  const extratoEcl = Array.isArray(derived?.feiticos?.ecl) ? derived.feiticos.ecl : null;
+  const idsVigentes = extratoEcl ? new Set((derived?.feiticos?.lista ?? []).map((l) => l.id)) : null;
   for (const f of Array.isArray(creature?.feiticos) ? creature.feiticos : []) {
     if (f?.tipo !== "passivo") continue;
+    if (idsVigentes && !idsVigentes.has(f.id) && !marciais.has(f.id)) continue;
     const custoPe = custoPassivaPorId.get(f.id) ?? null;
     itens.push(item({
       id: f.id,
@@ -384,6 +391,20 @@ export function conteudoDaFicha(creature, derived) {
            uso. Some na criatura e na Passiva de Nível 0, que custa zero. */
         custoPe ? { label: `-${custoPe} PE`, tipo: "nivel" } : null,
       ],
+    }));
+  }
+  for (const { calc } of extratoEcl ?? []) {
+    const f = calc.feitico;
+    if (f.natureza !== "passivo") continue;
+    const linha = (derived?.feiticos?.lista ?? []).find((l) => l.id === f.id);
+    const efeitos = linha?.propriedades?.find((p) => p.id === "efeitos")?.valor ?? "";
+    itens.push(item({
+      id: f.id,
+      chave: `passivo:${f.id}`,
+      nome: f.nome || "Passivo Sem Nome",
+      texto: [efeitos, f.descricao].filter(Boolean).join("\n\n"),
+      grupo: "passivo",
+      tags: [{ permanente: "Permanente", condicional: "Condicional", semiativo: "Semiativo" }[f.passivo.modo]],
     }));
   }
 
