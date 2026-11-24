@@ -516,6 +516,15 @@ aplicarAddons([]);
 const textosDaGuilda = JSON.stringify([G.MISSOES_ERA_DE_OURO, G.EVENTOS_ERA_DE_OURO, G.FILTROS_DA_GUILDA, G.MOEDA_ERA_DE_OURO]);
 t("textos da Carteira da Guilda sem travessão nem ponto e vírgula", new RegExp("[\u2014;]").test(textosDaGuilda), false);
 
+/* A criatura da Guilda desce até o ND 1 (autor, 2026-11-23). O motor deriva o ND 1 e o 2 sem quebrar, e o campo do criador
+   só segura em 3 fora da Guilda. */
+const criaturaNoPiso = (nd) => ({ ...createBlankAfty(), id: `piso_${nd}`, mesa: "eradeouro", core: { ...createBlankAfty().core, nd } });
+const pisos = [1, 2, 3].map((nd) => { try { const d = derivarNoMundo(criaturaNoPiso(nd)); return [d.nd, d.hp > 0, d.pe >= 0]; } catch (e) { return String(e); } });
+t("criatura da Guilda no ND 1, 2 e 3 deriva", pisos, [[1, true, true], [2, true, true], [3, true, true]]);
+aplicarAddons([]);
+const CRIADOR = (await import("node:fs")).readFileSync(new URL("../src/systems/afty/AftyCreatureBuilder.jsx", import.meta.url), "utf8");
+t("o campo do Nível desce a 1 na Guilda e fica em 3 fora dela", [CRIADOR.includes("const pisoUmNaMesa = mesaDaFicha(draft) !== null;"), CRIADOR.includes("min={tetoDeNivel || pisoUmNaMesa ? 1 : 3}")], [true, true]);
+
 if (bad.length) {
   console.error(`FALHARAM ${bad.length}:\n` + bad.join("\n"));
   process.exit(1);

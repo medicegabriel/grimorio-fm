@@ -333,7 +333,7 @@ export function createBlankAfty() {
     core: {
       tipo: "combatente",       // dirige coeficientes
       patamar: "comum",         // multiplica HP, escala Resistência/Atributos
-      nd: 20,                   // Nível de Desafio (piso 3 na UI, → ∞ sem teto)
+      nd: 20,                   // Nível de Desafio (piso 3 na UI, 1 na Guilda, → ∞ sem teto)
       // ⚠ MORTO desde 2026-08-08, e mantido só para não quebrar ficha antiga na
       // leitura: o tamanho virou DERIVADO (Médio mais o canal `tamanho` do
       // Motor). Nada lê este campo. Ver `tamanhoPorDegraus`.
