@@ -64,7 +64,10 @@ t("sob demanda tem rede para o pedaço que não chega", lê("../src/celular/sob-
 const VERCEL = JSON.parse(lê("../vercel.json"));
 t("os arquivos com hash ficam em cache longo",
   VERCEL.headers?.find((h) => h.source === "/assets/(.*)")?.headers?.[0]?.value, "public, max-age=31536000, immutable");
-t("a reescrita não cobre /assets", VERCEL.rewrites?.[0]?.source, "/((?!assets/).*)");
+const rewrite = new RegExp(`^${VERCEL.rewrites[0].source}$`);
+t("a reescrita cobre a tela e preserva assets e API",
+  ["/Jogador/balanceamento", "/assets/chunk.js", "/api/balanceamento/relatorio"].map((path) => rewrite.test(path)),
+  [true, false, false]);
 
 /* 2026-11-20: o ficha.css entra na abertura. Sob demanda ele chegava DEPOIS do CSS do Encontro na Sala, e
    `.afty-ficha { min-height: 100dvh }` vencia a faixa da luta (mesma especificidade, ganha a ordem). */

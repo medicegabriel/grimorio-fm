@@ -299,6 +299,14 @@
     }
   ],
   "modulosAdicionais": {
+    "balanceamento/coleta.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Preferência local e envio dos resumos de balanceamento de Jogador"
+    },
+    "balanceamento/resumo.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Projeção de escolhas dos catálogos existentes para análise de balanceamento"
+    },
     "criador-celular/secoes.js": {
       "modo": "INTERFACE",
       "justificativa": "App Era de Ouro, etapa E6 (2026-11-20): ordem e vizinhas das seções do criador no celular e os números da faixa de resumo, lidos do derive; sem catálogo de regra do Livro"

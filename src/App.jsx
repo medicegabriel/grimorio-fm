@@ -39,6 +39,8 @@ import AvisoNovaVersao from "./celular/AvisoNovaVersao";
 import { ativarNovaVersao, desligarServiceWorker, registrarServiceWorker } from "./celular/registrar-sw";
 import { podeRegistrar } from "./celular/sw-regras";
 import { SW_LIGADO } from "./celular/pwa-config";
+import { coletaLigada, enviarResumoDaFicha } from "./systems/afty/balanceamento/coleta.js";
+import { AvisoDeColeta, PreferenciaDeColeta } from "./systems/afty/balanceamento/PreferenciaDeColeta.jsx";
 
 /* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
    abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
@@ -49,6 +51,7 @@ const CombatTracker = telaSobDemanda(() => import("./components/CombatTracker"))
 const CreatureBuilder = telaSobDemanda(() => import("./components/CreatureBuilder"));
 const AftyCreatureBuilder = telaSobDemanda(() => import("./systems/afty/AftyCreatureBuilder"));
 const TemplateLibrary = telaSobDemanda(() => import("./components/TemplateLibrary"));
+const PainelBalanceamento = React.lazy(() => import("./systems/afty/balanceamento/PainelBalanceamento.jsx"));
 /* O Encontro unificado (etapa 6a, 2026-11-17): as três listas e o novo Encontro, no lugar do AftyEncontros e do
    EncountersDashboard e EncounterTracker da 2.5.2 (que seguem em src/components/, intocados e sem uso aqui). */
 const ListaDeEncontros = telaSobDemanda(() => import("./systems/afty/encontros/telas/ListaDeEncontros"));
@@ -70,6 +73,13 @@ const findCreatureAnywhere = (id, storageList, compendium) =>
   storageList.find((c) => c.id === id) ?? compendium.find((c) => c.id === id) ?? null;
 
 export default function App() {
+  if (typeof location !== "undefined" && /^\/(Jogador|Player)\/balanceamento\/?$/i.test(location.pathname)) {
+    return <React.Suspense fallback={<Carregando />}><PainelBalanceamento /></React.Suspense>;
+  }
+  return <GrimorioApp />;
+}
+
+function GrimorioApp() {
   // Gatilho de teste da tela de erro: abrir o site com "?testar-erro=1" na URL
   // força um erro de propósito para validar o ErrorBoundary (útil pra testar no
   // celular). Só afeta quem adiciona o parâmetro manualmente — inofensivo.
@@ -483,15 +493,17 @@ export default function App() {
       editLog: [...(prior?.editLog ?? data.editLog ?? []), now],
     };
 
+    let ficha = stamped;
     if (isEditing) {
       /* O Atualizar da Ficha (etapa 6b, 2026-11-17) trocou a janela que abria aqui (`EncounterSyncModal`): a criatura editada não
          reescreve mais nenhum Encontro. Quem está numa luta vê o botão Atualizar da Ficha no combatente. */
       storage.update(stamped.id, stamped);
     } else {
-      storage.create(stamped);
+      ficha = storage.create(stamped);
     }
     sairDoCriador();
-  }, [storage, sairDoCriador]);
+    if (coletaLigada && rotaId === "player") void enviarResumoDaFicha(ficha, now);
+  }, [storage, sairDoCriador, rotaId]);
 
   const activeCreature = view.creatureId
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
@@ -613,18 +625,21 @@ export default function App() {
     },
     builder: () => (
       criadorDoAfty ? (
-        <AftyCreatureBuilder
-          existingCreature={activeCreature}
-          onSave={handleCreatureSave}
-          onCancel={sairDoCriador}
-          // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
-          // da própria ficha, e não da rota. Ver afty-sistema.js.
-          sistema={view.sistemaNovo ?? sistemaDaRota}
-          mesa={mesa}
-          edicaoDeRegras={eclesiastes ? ECLESIASTES.id : null}
-          // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
-          // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
-        />
+        <>
+          {coletaLigada && rotaId === "player" && <AvisoDeColeta />}
+          <AftyCreatureBuilder
+            existingCreature={activeCreature}
+            onSave={handleCreatureSave}
+            onCancel={sairDoCriador}
+            // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
+            // da própria ficha, e não da rota. Ver afty-sistema.js.
+            sistema={view.sistemaNovo ?? sistemaDaRota}
+            mesa={mesa}
+            edicaoDeRegras={eclesiastes ? ECLESIASTES.id : null}
+            // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
+            // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
+          />
+        </>
       ) : (
         <CreatureBuilder
           existingCreature={activeCreature}
@@ -691,6 +706,7 @@ export default function App() {
         </div>
         {rotaPublica && !rotaSala && view.name === "dashboard" && (
           <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
+            {coletaLigada && rotaId === "player" && <PreferenciaDeColeta />}
             <a href="/privacidade.html" className="underline underline-offset-4 hover:text-white">
               Política de Privacidade
             </a>

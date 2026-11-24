@@ -1,5 +1,10 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-23 · DADOS DE BALANCEAMENTO DE JOGADOR
+
+- O salvamento explícito do criador de Jogador envia, após o aviso, um resumo de escolhas de catálogo. A recusa e o identificador aleatório por ficha ficam no navegador.
+- O painel privado em `/Jogador/balanceamento` consulta contagens, distribuições e combinações agregadas no Supabase. A coleta permanece desligada por padrão. O guia de ativação está em `docs/nuvem-supabase.md`, na seção Balanceamento de Jogador.
+
 ## SESSÃO DE 2026-11-23 · PUBLICAÇÃO DAS ATUALIZAÇÕES DE ECLESIASTES
 
 - Integração na base publicada do Grimório dos Feitiços por pontos, dos ajustes de Valores Básicos e das regras de dano, testes, especializações, treinos e Guerra de Feiticeiros de Eclesiastes.

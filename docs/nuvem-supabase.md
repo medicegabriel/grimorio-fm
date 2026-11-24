@@ -1,5 +1,17 @@
 # Nuvem (Supabase), Login e Mudança de Endereço
 
+## Balanceamento de Jogador
+
+A coleta fica desligada por padrão. Os dados das fichas e os resumos de balanceamento usam tabelas distintas. O painel privado fica em `/Jogador/balanceamento` e usa o login já disponível no site.
+
+1. Em um projeto de teste, execute [`supabase/balanceamento.sql`](../supabase/balanceamento.sql) pelo SQL Editor. Confira que o job `balanceamento-apagar-expiradas` aparece em Cron. Ele apaga os resumos vencidos de hora em hora. O relatório aplica o corte de 90 dias mesmo entre execuções do job.
+2. Use Node.js 24.x nas funções da Vercel. Em Preview, configure a URL de teste em `SUPABASE_URL` e a chave secreta desse projeto em `SUPABASE_SECRET_KEY`. Ambas são variáveis de servidor. Para o login do painel, configure também as variáveis públicas da nuvem descritas mais abaixo, apontando para o mesmo projeto de teste. Use `BALANCEAMENTO_ADMIN_ID` com o UID da conta autorizada, disponível em Authentication → Users no Supabase. O UID depende da conta e do projeto. Escolha a conta do provedor que será usada para consultar o painel.
+3. No Firewall da Vercel, configure uma regra de limite para `POST /api/balanceamento/contribuicao`, por IP, com 60 requisições por minuto e resposta 429. O IP é usado para o limite na Vercel. O resumo e o banco de balanceamento dispensam esse dado.
+4. Ative `BALANCEAMENTO_ATIVO=1` no servidor e `VITE_BALANCEAMENTO_ATIVO=1` no site da prévia. Publique a prévia com essas variáveis e confira um salvamento de Jogador sem login, a recusa pelo aviso, e o painel com a conta autorizada e com outra conta. Verifique a amostra em duas edições da mesma ficha.
+5. Repita a configuração no ambiente de produção com as credenciais e o UID desse ambiente. Publique a política de privacidade junto com o recurso. Para pausar a coleta, retire as duas variáveis de ativação e publique a configuração atualizada.
+
+Os períodos do painel usam a data em que o último resumo chegou ao servidor. Fichas salvas antes do lançamento podem entrar ao serem editadas e salvas de novo. Cada navegador e domínio conserva seu próprio código por ficha e sua preferência de coleta.
+
 Implementado em 2026-11-16. O código fica INERTE até as variáveis de ambiente existirem: sem elas o
 site é o de sempre, só com localStorage, e a biblioteca do Supabase nem é baixada.
 
