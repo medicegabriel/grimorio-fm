@@ -1,6 +1,13 @@
 # Status do Grimório Afty (handoff para chat novo)
 
-<<<<<<< HEAD
+## SESSÃO DE 2026-11-23 · CRIATURA DA GUILDA DESCE ATÉ O ND 1
+
+- **Pedido do autor:** "Na /era de ouro as criaturas estao travadas no level cap 3 deixe abaixar ainda mais o level".
+- **Onde travava:** só no campo Nível (ND) do criador (`AftyCreatureBuilder.jsx`, `min={tetoDeNivel ? 1 : 3}`). O motor já aceita o ND 1 em todo leitor (`Math.max(1, ...)`).
+- **O que mudou:** a ficha da Guilda (`mesaDaFicha(draft) !== null`) passa a ter piso 1 também na criatura (`pisoUmNaMesa`). Fora da Guilda, a criatura do `/Afty` segue com piso 3. A linha `tetoDeNivel` das `DIVERGENCIAS` (`afty-sistema.js`) e o comentário do `afty-schema.js` dizem isso.
+- **Detalhe que ficou como estava:** o `NumberInput` (de `src/components/`, só leitura) não corta o número digitado, só os botões de mais e menos. Isso já era assim nas três rotas.
+- Verificado: `t-era-de-ouro.mjs` (318, dois novos: a criatura da Guilda deriva no ND 1, 2 e 3, e o campo desce a 1 só na Guilda), `t-sistema`, `t-ordem-modulos`, lint, e no `npm run dev` o menos da Guilda indo de 2 para 1 e o do `/Afty` parando em 3.
+
 ## SESSÃO DE 2026-11-23 · DADOS DE BALANCEAMENTO DE JOGADOR
 
 - O salvamento explícito do criador de Jogador envia, após o aviso, um resumo de escolhas de catálogo. A recusa e o identificador aleatório por ficha ficam no navegador.
@@ -55,15 +62,6 @@
 - Integração de `/Eclesiastes` com a versão atual do Grimório. A biblioteca, os rascunhos e os Encontros têm armazenamento próprio. A edição é marcada em `edicaoDeRegras` e o tipo continua em `rulesVersion`. Especializações e Feitiços ainda usam a base compartilhada.
 - Os endereços públicos `/Criatura` e `/Jogador` mantêm compatibilidade com os links anteriores. Os endereços de Encontro usam a pilha de navegação do app. A Era de Ouro conserva a URL de instalação enquanto navega.
 - O SQL registra o grupo de Sala já aplicado em produção em 2026-11-19, junto com a publicação inicial de Eclesiastes na Vercel. Deploy original `dpl_EpYQhaiL6YgqzNxbRyquiJB4WY3N`.
-=======
-## SESSÃO DE 2026-11-23 · CRIATURA DA GUILDA DESCE ATÉ O ND 1
-
-- **Pedido do autor:** "Na /era de ouro as criaturas estao travadas no level cap 3 deixe abaixar ainda mais o level".
-- **Onde travava:** só no campo Nível (ND) do criador (`AftyCreatureBuilder.jsx`, `min={tetoDeNivel ? 1 : 3}`). O motor já aceita o ND 1 em todo leitor (`Math.max(1, ...)`).
-- **O que mudou:** a ficha da Guilda (`mesaDaFicha(draft) !== null`) passa a ter piso 1 também na criatura (`pisoUmNaMesa`). Fora da Guilda, a criatura do `/Afty` segue com piso 3. A linha `tetoDeNivel` das `DIVERGENCIAS` (`afty-sistema.js`) e o comentário do `afty-schema.js` dizem isso.
-- **Detalhe que ficou como estava:** o `NumberInput` (de `src/components/`, só leitura) não corta o número digitado, só os botões de mais e menos. Isso já era assim nas três rotas.
-- Verificado: `t-era-de-ouro.mjs` (318, dois novos: a criatura da Guilda deriva no ND 1, 2 e 3, e o campo desce a 1 só na Guilda), `t-sistema`, `t-ordem-modulos`, lint, e no `npm run dev` o menos da Guilda indo de 2 para 1 e o do `/Afty` parando em 3.
->>>>>>> 31207ed (Era de Ouro: criatura da Guilda desce até o ND 1)
 
 ## SESSÃO DE 2026-11-21 · PRÉVIA DO SUN WUKONG E A SESSÃO QUE NASCIA SEM OS ADDONS
 
