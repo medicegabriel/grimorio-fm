@@ -238,7 +238,7 @@ t("o Grau Especial da Guilda é só o nome", [g17.value, g17.rank, g17.ordem], [
 /* Equivalência: o Nível 12 pelo XP deriva IGUAL ao Nível 12 digitado, fora o extrato.
    E a contraprova, senão dois derives iguais por acaso passariam. */
 // O limite de Acessórios também é regra da mesa, e é conferido à parte.
-const semExtrato = (d) => JSON.stringify({ ...d, carteira: null, equip: { ...d.equip, acessorios: null } });
+const semExtrato = (d) => JSON.stringify({ ...d, carteira: null, focosTotais: null, equip: { ...d.equip, acessorios: null } });
 /* O digitado leva os MESMOS pacotes (os nativos): a única diferença é de onde vem o nível. */
 const digitado = { ...createBlankAfty(), id: "g1", rulesVersion: "player", addons: CP.hidratarFicha(comXp(220)).addons };
 digitado.core = { ...digitado.core, nd: 12 };
@@ -293,7 +293,8 @@ const lancadas = [
 const dl = deriveAfty(fichaDaGuilda(lancadas));
 t("XP somado com o Fim de Semana quebrado", dl.carteira.xpTotal, 41.5);
 t("Ichibuban somados", dl.carteira.ganho, 2400);
-t("Focos de Interlúdio viram o orçamento de Focos", dl.focosTotais, 3);
+t("Focos da Guilda: 2 + Nível + Interlúdios da Carteira", dl.focosTotais, 2 + 3 + 3);
+t("Nível 1 sem linhas começa com 3 Focos", deriveAfty(fichaDaGuilda([])).focosTotais, 3);
 t("41,5 de XP é o Nível 3", dl.nd, 3);
 t("treze Fáceis no Fim de Semana ainda não dão o Nível 2", AD.nivelDaFicha(fichaDaGuilda(
   Array.from({ length: 13 }, (_, i) => ({ id: `f${i}`, ...G.linhaDaGuilda("missao", "facil", true) })))), 1);

@@ -4739,7 +4739,11 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
      Interlúdio duas vezes, uma pelo ND e outra pela anotação. O canal `focos`
      segue por cima nos três casos, que é como uma habilidade ou outro addon
      ainda concede Foco. Ver a nota de `carteiraFocos` em `LIBERACOES`. */
-  const baseFocos = carteiraAlimentaFocos
+  /* A GUILDA (autor, 2026-11-25): 2 Focos iniciais, +1 por Nível (todo mundo de Nível 1 começa
+     com 3) e mais os Interlúdios da Carteira. Fora da Guilda, a Carteira só SUBSTITUI a base. */
+  const baseFocos = carteiraGuilda
+    ? 2 + nd + carteira.interludios
+    : carteiraAlimentaFocos
     ? carteira.interludios
     : (ehJogador("focosLivres")
       ? (regrasAddon.focosPorNivel == null ? focosLivres : Math.floor(nd * regrasAddon.focosPorNivel))
