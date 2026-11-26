@@ -63,7 +63,10 @@ const ENC = lê("../src/systems/afty/encontros/telas/ListaDeEncontros.jsx");
 t("a casca só na Guilda, no celular e fora da Sala", APP.includes("const cascaNoCelular = mesa && celularNaTela && !rotaSala;"), true);
 t("fora da casca, sala e mais viram a lista", [APP.includes("sala: () => (cascaNoCelular && nuvemAtiva ? <AbaSala /> : views.dashboard()),"), /mais: \(\) => \(cascaNoCelular \? <MaisDaGuilda/.test(APP)], [true, true]);
 t("as telas da casca chegam sob demanda", ["ListaDeFichas", "MaisDaGuilda", "AbaSala"].map((n) => new RegExp(`const ${n} = telaSobDemanda\\(`).test(APP)), [true, true, true]);
-t("a lista de Encontros perde o Voltar só na casca", [APP.includes("semVoltar={cascaNoCelular}"), ENC.includes('semVoltar = false }) {')], [true, true]);
+t("na casca a lista de Encontros oculta a volta e a trilha", [
+  APP.includes("semVoltar={cascaNoCelular}"), APP.includes("trilha={cascaNoCelular ? null : [trilhaInicio]}"),
+  ENC.includes("!semVoltar && !trilha"), ENC.includes("semVoltar = false"),
+], [true, true, true, true]);
 t("o Importar do Mais passa pela porta do livro", APP.includes("importar={storage.importMany}"), true);
 t("com a barra, o Livro sai e o convite sobe", [CSS.includes('body:has(.fm-barra-inferior) div:has(> button[aria-label$=" documentos"]) { display: none; }'), CSS.includes("body:has(.fm-barra-inferior) .fm-convite")], [true, true]);
 t("a barra soma a área segura e o conteúdo ganha folga", [/\.fm-barra-inferior \{[\s\S]*?env\(safe-area-inset-bottom/.test(CSS), /\.fm-casca-conteudo \{ padding-bottom: calc\(var\(--fm-barra-h\)/.test(CSS)], [true, true]);

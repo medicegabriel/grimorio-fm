@@ -1,0 +1,61 @@
+.fichafm-tema {
+  --central-menu-largura: 226px;
+  --central-fundo: #0b0c15;
+  --central-lateral: #111320;
+  --central-superficie: #151827;
+  --central-selecao: #201832;
+  --central-borda: #2d3045;
+  --central-borda-controle: #786b8b;
+  --central-texto: #f3eef9;
+  --central-suave: #b9b1c9;
+  --central-roxo: #d2aff7;
+  --central-roxo-hover: #e4cbff;
+  --central-texto-no-roxo: #211330;
+  --central-acao: #5c3b84;
+  --central-acao-hover: #704b99;
+  --central-acao-texto: #fff;
+  --central-acao-secundaria: #1d2032;
+  --central-aviso: #fbbf24;
+  color-scheme: dark;
+}
+
+.fichafm-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: fit-content;
+  color: var(--central-texto);
+  font: 750 20px/1.1 system-ui, "Segoe UI", sans-serif;
+  letter-spacing: -.035em;
+}
+
+.fichafm-marca > .fichafm-marca-icone {
+  flex: none;
+  width: 21px;
+  height: 21px;
+  color: var(--central-roxo);
+  stroke-width: 1.75;
+}
+
+.fichafm-marca:hover > .fichafm-marca-icone { color: var(--central-roxo-hover); }
+
+.fichafm-marca-dominio {
+  color: var(--central-suave);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.fichafm-marca small {
+  display: block;
+  margin-top: 5px;
+  color: var(--central-suave);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+.fichafm-marca:focus-visible {
+  outline: 2px solid var(--central-roxo);
+  outline-offset: 4px;
+  border-radius: 8px;
+}

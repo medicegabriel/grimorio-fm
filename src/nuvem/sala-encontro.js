@@ -83,14 +83,17 @@ export function sessaoDoJogadorQueSobe({ remota, passos, segredo = "", ids = [],
 /** A operação como o banco a recebe (JSON puro). O autor é reescrito lá. */
 const paraASala = (op) => JSON.parse(JSON.stringify(op));
 
-/* Os eventos do Mestre que o Registro público mostra, da diferença entre dois Encontros. */
-function eventosEntre(antes, depois) {
+/* Os eventos do Mestre que o Registro público mostra, da diferença entre dois Encontros. Exportado para o assert. */
+export function eventosEntre(antes, depois) {
   const ev = [];
   if (!antes || !depois) return ev;
   if (antes.status !== depois.status) {
-    if (depois.status === ENCONTRO_STATUS.ATIVO) ev.push({ evento: "comecar", rodada: depois.rodada });
+    // O Reabrir volta à luta desde o rework (etapa 2, 2026-11-23): do Finalizado para Em Combate é "reabrir", nunca um Começar novo.
+    const reabriu = antes.status === ENCONTRO_STATUS.FINALIZADO
+      && (depois.status === ENCONTRO_STATUS.ATIVO || depois.status === ENCONTRO_STATUS.PLANEJANDO);
+    if (reabriu) ev.push({ evento: "reabrir", ...(depois.status === ENCONTRO_STATUS.ATIVO ? { rodada: depois.rodada } : {}) });
+    else if (depois.status === ENCONTRO_STATUS.ATIVO) ev.push({ evento: "comecar", rodada: depois.rodada });
     if (depois.status === ENCONTRO_STATUS.FINALIZADO) ev.push({ evento: "encerrar", rodada: depois.rodada });
-    if (depois.status === ENCONTRO_STATUS.PLANEJANDO && antes.status === ENCONTRO_STATUS.FINALIZADO) ev.push({ evento: "reabrir" });
   }
   if (depois.status === ENCONTRO_STATUS.ATIVO && antes.status === ENCONTRO_STATUS.ATIVO && depois.rodada !== antes.rodada) {
     ev.push({ evento: "rodada", rodada: depois.rodada });

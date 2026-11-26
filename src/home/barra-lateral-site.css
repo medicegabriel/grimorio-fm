@@ -1,0 +1,123 @@
+.barra-lateral-site {
+  position: sticky;
+  top: 0;
+  z-index: 41;
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  gap: var(--barra-lateral-gap, 24px);
+  height: 100dvh;
+  min-width: 0;
+  padding: 28px var(--barra-lateral-padding, 14px) 14px;
+  border-inline-end: 1px solid var(--central-borda);
+  background: var(--central-lateral);
+}
+
+.barra-lateral-site > .fichafm-marca { margin-inline: 8px; }
+
+.barra-lateral-acessos {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+.barra-lateral-navegacao {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 3px;
+  margin-inline: -3px;
+  scrollbar-width: thin;
+}
+
+.barra-lateral-grupo { display: grid; gap: 3px; }
+
+.barra-lateral-grupo + .barra-lateral-grupo {
+  margin-top: 13px;
+  padding-top: 13px;
+  border-top: 1px solid var(--central-borda);
+}
+
+.barra-lateral-grupo :is(a, button),
+.barra-lateral-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  color: var(--central-suave);
+  font: 550 14px/1.45 system-ui, "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+.barra-lateral-grupo :is(a, button) > svg,
+.barra-lateral-menu > svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 1.75;
+}
+
+.barra-lateral-grupo a:is([aria-current], :hover),
+.barra-lateral-menu:hover {
+  color: var(--central-roxo);
+  background: var(--central-selecao);
+}
+
+.barra-lateral-grupo button:disabled {
+  opacity: .68;
+  cursor: default;
+}
+
+.barra-lateral-grupo :is(a, button):focus-visible,
+.barra-lateral-menu:focus-visible {
+  outline: 2px solid var(--central-roxo);
+  outline-offset: -2px;
+}
+
+.barra-lateral-menu { display: none; }
+
+.barra-lateral-conta {
+  align-self: start;
+  margin-block-start: auto;
+}
+
+.barra-lateral-conta > div > button {
+  background: var(--central-acao-secundaria);
+  color: var(--central-texto);
+}
+
+.barra-lateral-conta > div > button:hover { background: var(--central-borda); }
+
+.barra-lateral-conta [role="menu"] {
+  border-color: var(--central-borda);
+  background: var(--central-superficie);
+}
+
+@media (max-width: 760px) {
+  .barra-lateral-site {
+    position: static;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 12px;
+    height: auto;
+    padding: 12px 18px;
+    border-inline-end: 0;
+    border-bottom: 1px solid var(--central-borda);
+  }
+
+  .barra-lateral-site > .fichafm-marca { margin: 0; }
+
+  .barra-lateral-menu {
+    display: flex;
+    border: 1px solid var(--central-borda-controle);
+    color: var(--central-texto);
+  }
+
+  .barra-lateral-acessos { grid-column: 1 / -1; padding-top: 9px; }
+  .barra-lateral-acessos[data-aberto="false"] { display: none; }
+  .barra-lateral-navegacao { max-height: min(410px, 52dvh); }
+}

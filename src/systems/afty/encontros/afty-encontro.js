@@ -328,6 +328,37 @@ export const entradaDeLog = ({ rodada, tipo, mensagem, combatenteId = null }) =>
   combatenteId,
 });
 
+/**
+ * O REGISTRO EM ORDEM DE TEMPO (rework dos Encontros, etapa 2, 2026-11-23).
+ *
+ * O `log` guardado cresce por LOTES: cada passo do redutor (começar, passar o turno, uma operação) põe o lote dele no TOPO, e
+ * dentro do lote as linhas vêm na ordem em que aconteceram. Lido de cima para baixo, o Finalizado mostrava "Combate encerrado."
+ * acima de "Combate iniciado.". Esta função devolve o mesmo log do mais ANTIGO para o mais NOVO, sem reescrever o que está
+ * gravado (a tela que quer o mais novo em cima pede `maisNovoPrimeiro`).
+ *
+ * Ordenar pela hora (`em`) não serve: dois lotes no mesmo milissegundo (um clique que despacha duas ações, um relógio fixo)
+ * trocariam de lugar. Os lotes são achados assim, de cima para baixo: começa um lote novo quando o `lote` da linha muda (o Encontro
+ * grava a marca desde esta etapa) ou quando a hora VOLTA (a linha de baixo é mais velha que a de cima, o que dentro de um lote
+ * nunca acontece). O log de antes, sem `lote`, cai só na segunda regra, e dois lotes antigos no mesmo milissegundo ficam juntos.
+ */
+export function registroEmOrdem(log, { maisNovoPrimeiro = false } = {}) {
+  const linhas = (Array.isArray(log) ? log : []).filter((e) => e && typeof e === "object");
+  const lotes = [];
+  let anterior = null;
+  for (const e of linhas) {
+    const em = Number.isFinite(e.em) ? e.em : null;
+    const emAnterior = anterior && Number.isFinite(anterior.em) ? anterior.em : null;
+    const novo = !anterior
+      || (e.lote ?? null) !== (anterior.lote ?? null)
+      || (em != null && emAnterior != null && em < emAnterior);
+    if (novo) lotes.push([]);
+    lotes[lotes.length - 1].push(e);
+    anterior = e;
+  }
+  const emOrdem = lotes.reverse().flat();
+  return maisNovoPrimeiro ? emOrdem.reverse() : emOrdem;
+}
+
 /* ============================================================ */
 /* SANEAMENTO NA LEITURA                                         */
 /* ============================================================ */

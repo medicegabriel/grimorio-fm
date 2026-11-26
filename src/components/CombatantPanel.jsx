@@ -963,7 +963,7 @@ const AutomationInspector = ({ entities = [], ctx = null }) => {
   );
 };
 
-const ActionCard = ({ action, creatureName, boosted = false }) => {
+const ActionCard = ({ action, creatureName, boosted = false, onRolar, margemAtaque }) => { // onRolar: AGENTS.md seção 6, ver RolarAcerto no fim
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const typeClass = ACTION_TYPE_COLORS[action.type] ?? ACTION_TYPE_COLORS.livre;
@@ -1004,7 +1004,7 @@ const ActionCard = ({ action, creatureName, boosted = false }) => {
 
       {expanded && (
         <div className="px-3 pb-3 pt-2 border-t border-slate-800 space-y-2">
-          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{resolveActionFinalText(action, creatureName)}</p>
+          <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">{resolveActionFinalText(action, creatureName)}</p>{onRolar && <RolarAcerto action={action} onRolar={onRolar} margem={margemAtaque} />}
           {dmgRoll && action.attackType !== "suporte" && (
             <div className={`flex items-center justify-between rounded px-2.5 py-2 ${boosted ? 'bg-sky-950/50 ring-1 ring-sky-600/50' : 'bg-slate-950'}`}>
               <div className="flex items-center gap-1.5 text-xs min-w-0">
@@ -1015,7 +1015,7 @@ const ActionCard = ({ action, creatureName, boosted = false }) => {
                 )}
                 {boosted && <span className="text-[9px] uppercase tracking-wide text-sky-400/80 font-bold">amplificado</span>}
               </div>
-              <button type="button" onClick={copyDamage}
+              {onRolar && <RolarDano action={action} notacao={dmgRoll} onRolar={onRolar} />}<button type="button" onClick={copyDamage}
                 className="flex-shrink-0 inline-flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded px-1.5 py-1"
                 aria-label="Copiar rolagem de dano">
                 <Copy className="w-3 h-3" />
@@ -1340,7 +1340,7 @@ export default function CombatantPanel({
   readOnly = false,
   showHeader = true,
   suppressDeathBanner = false,
-  isTrackerMode = false
+  isTrackerMode = false, onRolar // opcional (2026-11-23, AGENTS.md seção 6): pedidos de rolagem, ver Rolavel no fim
 }) {
   // PC placeholder (sem ficha) ou combatant ausente: todos os Hooks abaixo
   // precisam ser chamados em TODA renderização (Regras dos Hooks), então
@@ -1443,7 +1443,7 @@ export default function CombatantPanel({
   });
   const core = snapshot.core ?? {};
   const defenses = snapshot.defenses ?? {};
-  const skills = liveResolved.skills ?? snapshot.skills ?? [];
+  const skills = liveResolved.skills ?? snapshot.skills ?? []; const pedeTeste = onRolar ? (rotulo, bonus, margem) => () => onRolar({ tipo: 'teste', rotulo, bonus: bonus ?? 0, margem }) : null;
 
   // CD e Acerto: usa valores salvos ou recalcula a partir dos atributos (ao vivo)
   const _attrs = liveResolved.attributes ?? {};
@@ -1988,7 +1988,7 @@ export default function CombatantPanel({
           <StatBlock icon={Eye}        label="Atenção"      value={stats.atencao ?? 0}          accent="text-amber-400" modified={modifiedStats.atencao} />
           <StatBlock icon={Sword}       label="Acerto"      value={`+${acertoValue}`}            accent="text-red-400" modified={modifiedStats.acerto} />
           <StatBlock icon={Crosshair}   label="CD"          value={cdValue}                     accent="text-orange-400" modified={modifiedStats.cdBase} />
-          <StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" modified={modifiedStats.iniciativa} />
+          <Rolavel onClick={pedeTeste?.('Iniciativa', stats.iniciativa)}><StatBlock icon={Target}     label="Iniciativa"   value={`+${stats.iniciativa ?? 0}`} accent="text-emerald-400" modified={modifiedStats.iniciativa} /></Rolavel>
           <StatBlock icon={Activity}   label="Deslocamento" value={`${stats.deslocamento ?? 0}m`} accent="text-slate-300" modified={modifiedStats.deslocamento} />
           <StatBlock icon={Shield}     label="RD Geral"     value={stats.rdGeral ?? 0}
             sublabel={`Irred. ${stats.rdIrredutivel ?? 0}`} accent="text-slate-400" modified={modifiedStats.rdGeral || modifiedStats.rdIrredutivel} />
@@ -2011,12 +2011,12 @@ export default function CombatantPanel({
           Testes de Resistência
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 auto-rows-fr">
-          <StatBlock icon={Activity} label="Astúcia"   value={`+${saves.astucia ?? 0}`}   sublabel={renderCritSublabel(critMargins.astucia)}   modified={modifiedStats.save_astucia} />
-          <StatBlock icon={Activity} label="Fortitude" value={`+${saves.fortitude ?? 0}`} sublabel={renderCritSublabel(critMargins.fortitude)} modified={modifiedStats.save_fortitude} />
-          <StatBlock icon={Activity} label="Reflexos"  value={`+${saves.reflexos ?? 0}`}  sublabel={renderCritSublabel(critMargins.reflexos)}  modified={modifiedStats.save_reflexos} />
-          <StatBlock icon={Activity} label="Vontade"   value={`+${saves.vontade ?? 0}`}   sublabel={renderCritSublabel(critMargins.vontade)}   modified={modifiedStats.save_vontade} />
+          <Rolavel onClick={pedeTeste?.('Astúcia', saves.astucia, critMargins.astucia)}><StatBlock icon={Activity} label="Astúcia"   value={`+${saves.astucia ?? 0}`}   sublabel={renderCritSublabel(critMargins.astucia)}   modified={modifiedStats.save_astucia} /></Rolavel>
+          <Rolavel onClick={pedeTeste?.('Fortitude', saves.fortitude, critMargins.fortitude)}><StatBlock icon={Activity} label="Fortitude" value={`+${saves.fortitude ?? 0}`} sublabel={renderCritSublabel(critMargins.fortitude)} modified={modifiedStats.save_fortitude} /></Rolavel>
+          <Rolavel onClick={pedeTeste?.('Reflexos', saves.reflexos, critMargins.reflexos)}><StatBlock icon={Activity} label="Reflexos"  value={`+${saves.reflexos ?? 0}`}  sublabel={renderCritSublabel(critMargins.reflexos)}  modified={modifiedStats.save_reflexos} /></Rolavel>
+          <Rolavel onClick={pedeTeste?.('Vontade', saves.vontade, critMargins.vontade)}><StatBlock icon={Activity} label="Vontade"   value={`+${saves.vontade ?? 0}`}   sublabel={renderCritSublabel(critMargins.vontade)}   modified={modifiedStats.save_vontade} /></Rolavel>
           {saves.integridade != null && (
-            <StatBlock icon={Sparkles} label="Integridade" value={`+${saves.integridade}`} accent="text-fuchsia-400" sublabel={renderCritSublabel(critMargins.integridade)} modified={modifiedStats.save_integridade} />
+            <Rolavel onClick={pedeTeste?.('Integridade', saves.integridade, critMargins.integridade)}><StatBlock icon={Sparkles} label="Integridade" value={`+${saves.integridade}`} accent="text-fuchsia-400" sublabel={renderCritSublabel(critMargins.integridade)} modified={modifiedStats.save_integridade} /></Rolavel>
           )}
         </div>
       </section>
@@ -2095,20 +2095,23 @@ export default function CombatantPanel({
               .sort((a, b) => (b.mod ?? 0) - (a.mod ?? 0))
               .map((s) => {
                 const isMod = modifiedStats[`skill_${s.id}`];
+                // Com `onRolar` (2026-11-23) o chip vira botão de rolar a Perícia. Sem ele, o <span> de sempre.
+                const Chip = pedeTeste ? 'button' : 'span';
                 return (
-                  <span
+                  <Chip
                     key={s.id}
-                    title={isMod ? 'Modificado por buff de atributo' : undefined}
+                    {...(pedeTeste ? { type: 'button', onClick: pedeTeste(s.name, s.mod) } : {})}
+                    title={isMod ? 'Modificado por buff de atributo' : pedeTeste ? `Rolar ${s.name}` : undefined}
                     className={`px-2 py-1 bg-slate-800/80 border rounded-md text-sm font-medium ${
                       isMod
                         ? 'border-sky-600/70 text-sky-200 ring-1 ring-sky-500/40'
                         : s.mastered
                           ? 'border-purple-700/60 text-purple-200'
                           : 'border-slate-700 text-slate-300'
-                    }`}
+                    }${pedeTeste ? ' cursor-pointer hover:bg-slate-700/80 focus:outline-none focus:ring-2 focus:ring-purple-500/60' : ''}`}
                   >
                     {s.name} {(s.mod ?? 0) >= 0 ? '+' : ''}{s.mod ?? 0}
-                  </span>
+                  </Chip>
                 );
               })}
           </div>
@@ -2194,7 +2197,7 @@ export default function CombatantPanel({
                 ) : (
                   liveActionsList.map((a) => (
                     <div key={a.id} className="space-y-1.5">
-                      <ActionCard action={a} creatureName={combatant.displayName} boosted={a._damageBoosted} />
+                      <ActionCard action={a} creatureName={combatant.displayName} boosted={a._damageBoosted} onRolar={onRolar} margemAtaque={critMargins.ataque} />
                     </div>
                   ))
                 )}
@@ -2423,3 +2426,44 @@ export default function CombatantPanel({
     </div>
   );
 }
+
+// ============================================================
+// ROLAR NA FICHA (2026-11-23, exceção de Forma 1, AGENTS.md seção 6)
+// ============================================================
+// A prop opcional `onRolar` do CombatantPanel (e do CombatTracker, que só a repassa) recebe um PEDIDO:
+// { tipo: 'teste', rotulo, bonus, margem } ou { tipo: 'dano', rotulo, notacao }. Quem rola e mostra o resultado é a tela
+// que passou a prop (no `/`, src/systems/afty/ui/CriaturaComRolagem252.jsx). Sem a prop, nenhum destes aparece.
+//
+// ⚠ ESTES TRÊS MORAM NO FIM DO ARQUIVO DE PROPÓSITO. O adaptador da 2.5.2 no Encontro
+// (src/systems/afty/encontros/motores/m252-vital.js) cita linhas deste arquivo como origem, e o
+// asserts/t-encontro-252-porte.mjs confere que elas ainda dizem o mesmo. Nada antes do fim pode ganhar linha.
+
+// O bloco de stat (TR, Iniciativa) vira botão de rolar. Sem `onClick`, devolve o bloco como era.
+const Rolavel = ({ onClick, children }) => (onClick ? (
+  <button type="button" onClick={onClick} title={`Rolar ${children?.props?.label ?? ""}`.trim()}
+    className="block w-full h-full text-left rounded-md cursor-pointer hover:brightness-125 focus:outline-none focus:ring-2 focus:ring-purple-500/60">
+    {children}
+  </button>
+) : children);
+
+// O Acerto de uma Ação de jogada de ataque.
+const RolarAcerto = ({ action, onRolar, margem }) => (action.attackType === "acerto" && action.toHit != null ? (
+  <button type="button" onClick={() => onRolar({ tipo: 'teste', rotulo: `${action.name} · Acerto`, bonus: action.toHit, margem })}
+    className="w-full flex items-center justify-between rounded px-2.5 py-2 bg-slate-950 hover:bg-slate-900 text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-purple-500/40">
+    <span className="flex items-center gap-1.5">
+      <Dices className="w-3.5 h-3.5 text-emerald-400" />
+      <span className="font-mono font-bold text-white">d20+{action.toHit}</span>
+    </span>
+    <span className="text-[11px] text-purple-300">Rolar Acerto</span>
+  </button>
+) : null);
+
+// O dano de uma Ação, ao lado do Copiar.
+const RolarDano = ({ action, notacao, onRolar }) => (
+  <button type="button" onClick={(e) => { e.stopPropagation(); onRolar({ tipo: 'dano', rotulo: `${action.name} · Dano`, notacao }); }}
+    className="flex-shrink-0 ml-auto inline-flex items-center gap-1 text-[11px] text-purple-300 hover:text-purple-200 focus:outline-none focus:ring-1 focus:ring-purple-500/40 rounded px-1.5 py-1 cursor-pointer"
+    aria-label="Rolar o dano">
+    <Dices className="w-3 h-3" />
+    Rolar
+  </button>
+);

@@ -40,6 +40,45 @@ No ar desde 2026-11-17 em `fichafm.com.br`. Guia em `docs/nuvem-supabase.md`, es
 - O Supabase tem uma conta de teste só com Google (`c98b4943…`) que guarda a ficha Teste Nuvem. O autor decide se apaga em Authentication, Users.
 - No celular o título do cabeçalho do Dashboard já cortava ("Jo...") antes do alternador. Fica para uma revisão do cabeçalho.
 
+## Rework dos Encontros: o que a etapa 1 deixou para as próximas (2026-11-18)
+
+Plano em `docs/afty-encontros.md`, seção "Rework visual e de usabilidade". Estado em `PROGRESSO-REWORK-ENCONTROS.md` (pasta contêiner).
+
+- **O cabeçalho ficou uma linha mais alto com a trilha** (82 px na Luta em 1440, 150 px em 375). A etapa 5 junta trilha e título no
+  cabeçalho enxuto da Luta, e a 3 e a 4 fazem o mesmo na lista e no Planejamento.
+- **`encontro-g2.css` vira `encontro.css` na etapa 3**, junto com a reestruturação do CSS (moldura e G2 embutida em blocos separados).
+  Ficou fora da fundação para não misturar renomeação com a mudança de regra.
+- **Sombras soltas e raio fora da escala** (achados do detector): `sala-ui.css:64`, o `.ec-registro-flutuante` e o `.ec-grupo` do
+  `encontro-g2.css`, e o raio de 5 px da caixa de seleção. Viram token na etapa da tela de cada um.
+- **Voltar do navegador no criador e na Ficha:** essas telas não têm caminho próprio, então o Voltar leva ao último caminho gravado
+  (a lista, se a pessoa veio dela). A entrada própria no histórico para a Ficha Inteira aberta do Encontro é da etapa 5.
+- **Suíte:** `t-reconciliacao-g00.mjs` já falhava antes do rework (1 de 335 arquivos na linha de base de 2026-11-18, e segue o único
+  em 2026-11-23). Não é do Encontro e não foi investigado.
+
+**O que a etapa 2 (modelo, 2026-11-23) deixou para as telas e para a Sala:**
+
+- **Ligar nas telas (etapas 4 a 6):** o `registroEmOrdem` no Registro da Luta e no Finalizado (hoje eles ainda leem o `log` cru, e o
+  Finalizado segue mostrando "Combate encerrado." acima de "Combate iniciado." até a etapa 6), o Voltar Turno no rodapé da Ordem
+  (`podeVoltarTurno` diz quando fica apagado), o Ctrl+Z pelo `ultimaDesfazivel`, o campo Vida no Sem Ficha e as Criaturas Base no
+  Adicionar do `/` (`inventarioComCriaturasBase`, só no `/`). O `App.jsx`, o `usar-encontro.js`, o `EncontroTela.jsx` e o `LutaDoMestre.jsx`
+  ficaram de fora de propósito: o `main` remoto também mudou os quatro.
+- **O marcador com Vida ainda some nas telas:** elas filtram pelo TIPO, e não pelo motor. `LutaDoMestre.jsx:48` (rótulo "Sem Ficha"),
+  `:148` (`temNumero` exige não ser marcador), `:183` e `:542` (a seleção para a barra de grupo pula o marcador), `:318` (o meio mostra
+  só "Combatente sem Ficha"), `EncontroTela.jsx:106` (o Finalizado não mostra a Vida dele) e `Planejamento.jsx:27`. A etapa 4 (campo Vida
+  no Sem Ficha) e a 5 (Ordem e meio) trocam esses testes por "tem `vida`" (`campoDoEstado` ou `motorDe`). O derivado do `usar-encontro.js`
+  já serve (o adaptador deriva sem ficha, `{ hp, pe: 0 }`). Nenhum caminho cria marcador com Vida hoje, então nada quebra antes disso.
+- **Sala, etapa 7 (o SQL o autor cola):** o banco recusa tudo de marcador (`publicar_resumo` e `gravar_ficha` com "Combatente sem
+  Ficha"), então a Vida do marcador não chega aos jogadores. Precisa do corte por Visão (Barra e Aberta, como a criatura) no
+  `sala-projecao.js` e no `salas.sql`. O Voltar Turno na Sala publica os eventos de hoje (`turno`, e `rodada` com a rodada que voltou,
+  que o Registro público lê como rodada nova): um evento próprio precisa entrar na lista de `gravar_operacao` (`'comecar', 'turno', ...`).
+  A pilha é só do Mestre: o jogador desfazer a própria mudança no próprio personagem, na Sala, também é da etapa 7.
+- **Diálogo fechado pelo Esc deixa uma entrada morta no histórico, no `npm run dev`** (visto na reconciliação de 2026-11-23): depois de
+  abrir e fechar pelo Esc a confirmação do Encerrar, o primeiro Voltar do navegador fica no mesmo Encontro. A camada do Voltar do aparelho
+  (`useCamadaDeVoltar`, etapa E2) empilha duas vezes no modo estrito do React, como o próprio `camadas.js` avisa. Não foi conferido no
+  build de produção: conferir no `npm run preview` na etapa 8 (ou antes, se alguém mexer no `Dialogo`).
+- **Reabrir sem o retorno exato** (Encontro Finalizado de antes de 2026-11-23, ou mexido depois do Encerrar): só religa a bancada. A
+  Expansão, o Invencível e as ações de Addon que o Encerrar desmanchou não voltam, e a Exaustão que ele cobrou fica.
+
 ## Encontro Unificado e Sala: o que ficou aberto (atualizado em 2026-11-18, fim da 8a)
 
 O Encontro novo e a Sala estão feitos e documentados (`docs/afty-encontros.md`, `docs/nuvem-supabase.md`). A revisão final (8b) foi feita em 2026-11-18. O cadeado saiu

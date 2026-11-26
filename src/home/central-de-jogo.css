@@ -1,0 +1,253 @@
+.central-de-jogo {
+  display: grid;
+  grid-template-columns: var(--central-menu-largura) minmax(0, 1fr);
+  min-height: 100svh;
+  background: var(--central-fundo);
+  color: var(--central-texto);
+  font: 400 16px/1.45 system-ui, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+}
+
+.central-de-jogo ::selection {
+  background: var(--central-roxo);
+  color: var(--central-texto-no-roxo);
+}
+
+.central-de-jogo :focus-visible {
+  outline: 2px solid var(--central-roxo);
+  outline-offset: 3px;
+}
+
+.central-conteudo svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  stroke-width: 1.75;
+}
+
+.central-pular {
+  position: absolute;
+  z-index: 2;
+  top: 12px;
+  left: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: var(--central-lateral);
+  color: var(--central-texto);
+  transform: translateY(calc(-100% - 20px));
+}
+
+.central-pular:focus { transform: none; }
+
+.central-conteudo {
+  display: grid;
+  align-content: start;
+  gap: 28px;
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: 56px clamp(24px, 5vw, 72px) 52px;
+}
+
+.central-conteudo h1,
+.central-conteudo h2 {
+  margin: 0;
+  color: var(--central-texto);
+  font-family: inherit;
+}
+
+.central-conteudo h1 {
+  font-size: 56px;
+  font-weight: 750;
+  line-height: 1.05;
+  letter-spacing: -.04em;
+}
+
+.central-conteudo h2 {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -.01em;
+}
+
+.central-atalhos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.central-atalho {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: space-between;
+  min-height: 125px;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--central-borda);
+  border-radius: 12px;
+  background: var(--central-superficie);
+  color: var(--central-texto);
+}
+
+.central-atalho:hover {
+  border-color: var(--central-borda-controle);
+  background: var(--central-selecao);
+}
+
+.central-atalho > svg { color: var(--central-roxo); }
+
+.central-atalho > .central-seta-atalho {
+  width: 15px;
+  height: 15px;
+  color: var(--central-suave);
+}
+
+.central-atalho > span {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 2px;
+}
+
+.central-atalho strong {
+  color: var(--central-texto);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.central-atalho small {
+  color: var(--central-suave);
+  font-size: 13px;
+}
+
+.central-sala {
+  display: grid;
+  gap: 12px;
+  padding: 17px 18px 18px;
+  border-radius: 12px;
+  border: 1px solid var(--central-borda);
+  background: var(--central-selecao);
+}
+
+.central-sala h2,
+.central-erro-sala {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.central-sala h2 > svg { color: var(--central-roxo); }
+
+.central-sala form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.central-campo-sala {
+  display: grid;
+  gap: 5px;
+  flex: 0 1 245px;
+  min-width: 0;
+}
+
+.central-campo-sala label {
+  color: var(--central-suave);
+  font-size: 13px;
+}
+
+.central-campo-sala input {
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 11px;
+  border: 1px solid var(--central-borda-controle);
+  border-radius: 8px;
+  background: var(--central-fundo);
+  color: var(--central-texto);
+  caret-color: var(--central-roxo);
+}
+
+.central-campo-sala input::placeholder { color: var(--central-suave); }
+
+.central-campo-sala input[aria-invalid] { border-color: var(--central-aviso); }
+
+.central-sala button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--central-acao);
+  color: var(--central-acao-texto);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.central-sala button:hover { background: var(--central-acao-hover); }
+.central-sala button svg { width: 16px; height: 16px; }
+
+.central-erro-sala {
+  color: var(--central-aviso);
+  font-size: 13px;
+  font-weight: 550;
+}
+
+.central-livros {
+  display: grid;
+  gap: 7px;
+  padding-top: 17px;
+  border-top: 1px solid var(--central-borda);
+}
+
+.central-livros ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  list-style: none;
+  padding: 0;
+}
+
+.central-livros a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  color: var(--central-suave);
+  font-size: 14px;
+}
+
+.central-livros a:hover {
+  color: var(--central-texto);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.central-livros a svg { width: 14px; height: 14px; }
+
+@media (max-width: 760px) {
+  .central-de-jogo { display: block; }
+  .central-conteudo { gap: 22px; padding: 30px 20px 32px; }
+  .central-conteudo h1 { font-size: 40px; }
+}
+
+@media (max-width: 480px) {
+  .central-atalhos { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+
+  .central-atalho {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    min-height: 63px;
+    gap: 11px;
+    padding: 10px 12px;
+  }
+
+  .central-atalho > span { grid-area: 1 / 2; }
+  .central-atalho > .central-seta-atalho { grid-area: 1 / 3; }
+  .central-campo-sala { flex: 1 1 140px; max-width: 245px; }
+}
+
+@media (pointer: coarse) {
+  .central-livros a { min-height: 44px; }
+}

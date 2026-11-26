@@ -225,6 +225,18 @@ export function EditorFeiticoEcl({ feitico: cru, calc, ctx, onPatch, onRemove, o
   const restritas = (calc?.fontes ?? []).filter((x) => x.id !== "geral" && x.id !== "liberacao" && x.gasto > 0);
   const partesGasto = (calc?.gastos ?? []).filter((g) => g.camada === "base").map((g) => ({ label: g.rotulo, valor: g.custo }));
   const partesGastoLib = gastosLib.map((g) => ({ label: g.rotulo, valor: g.custo }));
+  // O que a barra mostra em cada modo. Em Liberação o Custo e a Fadiga já somam a
+  // camada, e as parcelas (base + Liberação) moram no hover.
+  const emLibOk = emLib && !!L && !!fonteLib;
+  const saldoFonte = emLibOk ? fonteLib : (geral ? { ...geral, sobra: calc.sobra, falta: calc.falta } : null);
+  const saldoPe = calc?.pe ? (emLibOk ? L.pe : calc.pe) : null;
+  const saldoFadiga = {
+    total: f.fadiga + (emLibOk ? L.fadiga : 0),
+    partes: [
+      { label: "Desgaste do Conjurador", valor: f.fadiga },
+      ...(emLibOk ? [{ label: "Liberação Máxima (1 a cada ⌊BT/2⌋ PE)", valor: L.fadiga }] : []),
+    ],
+  };
 
   return (
     <div className="ecl-feiticos">
@@ -275,64 +287,47 @@ export function EditorFeiticoEcl({ feitico: cru, calc, ctx, onPatch, onRemove, o
       {/* ===== 2. SALDO GRUDADO ===== */}
       {calc && (
         <div className="ecl-saldo">
-          {!passivo && (
-            <span className="ecl-saldo-item">
-              <span className="ecl-rotulo-mini">ND</span>
-              <Passo rotulo="ND do Feitiço" valor={f.nd} min={1} max={Math.max(1, ctx.nd)} onChange={(v) => onPatch({ nd: v })} />
-            </span>
-          )}
-          {calc.pe && !emLib && (
-            <span className="ecl-saldo-item">
-              <span className="ecl-rotulo-mini">Custo</span>
-              <ComFontes partes={calc.pe.partes} total={`${calc.pe.total} PE`}>
-                <span className="ecl-numero" data-tom="pe">{calc.pe.total} PE</span>
-              </ComFontes>
-            </span>
-          )}
-          {emLib && L && (
-            <>
+          {/* Duas linhas com as MESMAS casas nos dois modos (autor, 2026-11-23): a
+              chave troca só os números, nunca o leiaute. */}
+          <div className="ecl-saldo-topo">
+            {!passivo && (
+              <span className="ecl-saldo-item">
+                <span className="ecl-rotulo-mini">ND</span>
+                <Passo rotulo="ND do Feitiço" valor={f.nd} min={1} max={Math.max(1, ctx.nd)} onChange={(v) => onPatch({ nd: v })} />
+              </span>
+            )}
+            {saldoPe && (
               <span className="ecl-saldo-item">
                 <span className="ecl-rotulo-mini">Custo</span>
-                <ComFontes partes={L.pe.partes} total={`${L.pe.total} PE`}>
-                  <span className="ecl-numero" data-tom="pe">{calc.pe.total} + {L.peExtra} = {L.pe.total} PE</span>
+                <ComFontes partes={saldoPe.partes} total={`${saldoPe.total} PE`}>
+                  <span className="ecl-numero" data-tom="pe">{saldoPe.total} PE</span>
                 </ComFontes>
               </span>
+            )}
+            {!passivo && (
               <span className="ecl-saldo-item">
                 <span className="ecl-rotulo-mini">Fadiga</span>
-                <span className="ecl-numero">{L.fadiga}</span>
+                <ComFontes partes={saldoFadiga.partes} total={String(saldoFadiga.total)}>
+                  <span className="ecl-numero">{saldoFadiga.total}</span>
+                </ComFontes>
               </span>
-            </>
-          )}
-          {emLib && fonteLib
-            ? <Medidor total={fonteLib.total} gasto={fonteLib.gasto} partesTotal={fonteLib.partes} partesGasto={partesGastoLib} />
-            : <Medidor total={geral.total} gasto={geral.gasto} partesTotal={geral.partes} partesGasto={partesGasto} />}
-          {emLib && fonteLib ? (
-            <span className="ecl-saldo-resto" data-falta={fonteLib.falta > 0}>
-              {fonteLib.falta > 0
-                ? <><AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />Faltam {fonteLib.falta}</>
-                : `Sobram ${fonteLib.sobra}`}
+            )}
+            {temLiberacao && (
+              <span className="ecl-saldo-camada">
+                <Opcoes rotulo="Camada" valor={camada} onChange={setCamada}
+                  opcoes={[{ value: "normal", label: "Normal" }, { value: "liberacao", label: "Liberação" }]} />
+              </span>
+            )}
+          </div>
+          <div className="ecl-saldo-barra">
+            <Medidor total={saldoFonte.total} gasto={saldoFonte.gasto} partesTotal={saldoFonte.partes}
+              partesGasto={emLib ? partesGastoLib : partesGasto} rotulo={emLib ? "Pontos da Liberação" : "Pontos"} />
+            <span className="ecl-saldo-resto" data-falta={saldoFonte.falta > 0}>
+              {saldoFonte.falta > 0
+                ? <><AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />Faltam {saldoFonte.falta}</>
+                : `Sobram ${saldoFonte.sobra}`}
             </span>
-          ) : (
-            <span className="ecl-saldo-resto" data-falta={calc.falta > 0}>
-              {calc.falta > 0
-                ? <><AlertTriangle className="w-3.5 h-3.5" aria-hidden="true" />Faltam {calc.falta}</>
-                : `Sobram ${calc.sobra}`}
-            </span>
-          )}
-          {temLiberacao && (
-            <span className="ecl-saldo-camada">
-              <Opcoes rotulo="Camada" valor={camada} onChange={setCamada}
-                opcoes={[{ value: "normal", label: "Normal" }, { value: "liberacao", label: "Liberação" }]} />
-              {!emLib && L?.temCompra && (
-                <span className="ecl-medidor-mini">
-                  <span>Em Liberação</span>
-                  <ComFontes partes={L.pe.partes} total={`${L.pe.total} PE`}>
-                    <b className="ecl-medidor-texto">{L.pe.total} PE, {L.fadiga} de Fadiga</b>
-                  </ComFontes>
-                </span>
-              )}
-            </span>
-          )}
+          </div>
           {(restritas.length > 0 || calc.recarga != null || calc.duracao.sustentado) && (
             <span className="ecl-saldo-linha2">
               {restritas.map((fo) => (

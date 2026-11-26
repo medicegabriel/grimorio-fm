@@ -2,7 +2,8 @@
 import { motorDe } from "./motores/index";
 import { metade } from "./motores/afty";
 import {
-  TIPO, PAPEL, combatenteDe, estadoDoCombatente, comEstado, ehDono, normalizarAutor, idNovo,
+  PAPEL, combatenteDe, estadoDoCombatente, comEstado, ehDono, normalizarAutor, idNovo, campoDoEstado, mesmaPessoa,
+  PILHA_DO_MESTRE_MAX, normalizarPilhaDoMestre,
 } from "./modelo";
 import { LOG_TIPOS, LOG_MAX, ENCONTRO_STATUS } from "./afty-encontro";
 import { LOG_MAX as LOG_MAX_SESSAO } from "../ficha/ficha-sessao";
@@ -48,7 +49,8 @@ import { APLICADOR_PROPRIO } from "../ficha/ficha-uso-estado";
  * estado dele (teto de 500, a mais antiga sai, autor 2026-11-17), separado do
  * `log` da Ficha (teto de 50). Sem Sala, quem decide "outra pessoa" é o papel:
  * o personagem é do jogador e a criatura é do Mestre ("Personagem por Papel").
- * Virada de turno e de rodada nunca entram.
+ * Virada de turno e de rodada nunca entram. O que o Mestre faz no que é dele vai
+ * para a PILHA DO MESTRE, no Encontro (rework, etapa 2, ver `comPilhaDoMestre`).
  *
  * O DESFAZER é uma operação nova (`desfaz: id`), nunca uma remoção: o registro
  * da Sala é só de acréscimo. Ele é RELATIVO NOS NÚMEROS (autor, 2026-11-17):
@@ -290,9 +292,35 @@ export const normalizarHistorico = (lista) => (Array.isArray(lista) ? lista : []
   .filter((e) => ehObjeto(e) && typeof e.id === "string" && e.id && Array.isArray(e.delta))
   .slice(0, HISTORICO_MAX);
 
-/** Entra no histórico do alvo o que OUTRA pessoa fez. O marcador não tem estado. */
+/** Entra no histórico do alvo o que OUTRA pessoa fez. O marcador sem Vida não tem estado. */
 export const entraNoHistorico = (op, combatente) =>
-  !!combatente && combatente.tipo !== TIPO.MARCADOR && !ehDono(op?.autor, combatente);
+  !!combatente && !!campoDoEstado(combatente) && !ehDono(op?.autor, combatente);
+
+/* ---------- a pilha do Mestre (rework, etapa 2, "Desfazer do Mestre") ---------- */
+/*
+ * O histórico guarda o que OUTRA pessoa fez, e por isso o Mestre não desfazia o próprio erro na criatura dele (no Encontro local
+ * ele é o dono de toda criatura). A pilha guarda as operações do Mestre que NÃO entraram num histórico, e só elas: a que ele faz no
+ * personagem de um jogador já entra no histórico do personagem. Uma operação mora num lugar só, então se desfaz uma vez só. O
+ * Desfazer é o mesmo (`prepararDesfazer`), relativo nos números. A pilha mora no Encontro (`modelo.js`, `PILHA_DO_MESTRE_MAX`).
+ */
+
+export const pilhaDoMestreDe = (encontro) => normalizarPilhaDoMestre(encontro?.pilhaDoMestre);
+
+export const entraNaPilhaDoMestre = (op, combatente) =>
+  !!combatente && !!campoDoEstado(combatente) && op?.tipo !== T.DESFAZER
+  && normalizarAutor(op?.autor).papel === PAPEL.MESTRE && !entraNoHistorico(op, combatente);
+
+/* O Encontro depois de uma operação aplicada: ela entra na pilha, ou o Desfazer dela marca a entrada como desfeita. */
+function comPilhaDoMestre(encontro, op, combatente) {
+  const pilha = pilhaDoMestreDe(encontro);
+  if (op.tipo === T.DESFAZER && op.desfaz) {
+    if (!pilha.some((e) => e.id === op.desfaz)) return encontro;
+    const marca = { operacaoId: op.id, por: op.autor, em: op.quando };
+    return { ...encontro, pilhaDoMestre: pilha.map((e) => (e.id === op.desfaz ? { ...e, desfeita: marca } : e)) };
+  }
+  if (!entraNaPilhaDoMestre(op, combatente)) return encontro;
+  return { ...encontro, pilhaDoMestre: [entradaDoHistorico(op), ...pilha.filter((e) => e.id !== op.id)].slice(0, PILHA_DO_MESTRE_MAX) };
+}
 
 const entradaDoHistorico = (op) => {
   const { registros: _registros, ...resto } = op;
@@ -489,10 +517,14 @@ const mensagemDoPedido = (op, combatente, estado) => {
   return `Pedido de ${rotulo}${v} em ${nome}.`;
 };
 
-const comLog = (encontro, entradas) => ({
+/* Cada chamada é um LOTE do Registro, com a marca em toda linha (ver `registroEmOrdem` em afty-encontro.js). Aqui a marca sai
+   da operação, e não de um id novo: a mesma operação aplicada em dois aparelhos dá a mesma linha. */
+const comLog = (encontro, entradas, lote) => ({
   ...encontro,
-  log: [...entradas, ...(encontro.log ?? [])].slice(0, LOG_MAX),
+  log: [...entradas.map((e) => (e.lote ? e : { ...e, lote })), ...(encontro.log ?? [])].slice(0, LOG_MAX),
 });
+
+const loteDe = (op, momento) => `lote_${op.id}_${momento}`;
 
 /* O id e a hora da entrada saem da própria operação: a mesma operação aplicada em dois aparelhos dá a mesma entrada. */
 const entradaDaOperacao = (op, combatente, encontro, mensagem = mensagemDaOperacao(op, combatente)) => ({
@@ -524,7 +556,8 @@ export function aplicarOperacao(mundo, op) {
   const r = aplicarNoEstado(estado, op, c, motor);
   if (r.conflitos.length) return { mundo, ok: false, conflitos: r.conflitos };
   const com = comEstado(mundo, c.id, r.estado);
-  return { mundo: { ...com, encontro: comLog(com.encontro, [entradaDaOperacao(op, c, com.encontro)]) }, ok: true, conflitos: [] };
+  const comLinha = comLog(com.encontro, [entradaDaOperacao(op, c, com.encontro)], loteDe(op, op.pedido?.estado ?? "op"));
+  return { mundo: { ...com, encontro: comPilhaDoMestre(comLinha, op, c) }, ok: true, conflitos: [] };
 }
 
 /**
@@ -568,7 +601,7 @@ export function registrarPedido(mundo, pedido) {
   const encontro = { ...mundo.encontro, pedidos: [...pedidosDe(mundo.encontro), pedido] };
   return {
     ...mundo,
-    encontro: comLog(encontro, [entradaDaOperacao(pedido, c, encontro, mensagemDoPedido(pedido, c))]),
+    encontro: comLog(encontro, [entradaDaOperacao(pedido, c, encontro, mensagemDoPedido(pedido, c))], loteDe(pedido, "pedido")),
   };
 }
 
@@ -664,7 +697,7 @@ export function recusarPedido(mundo, pedidoId, quem, ctx = {}) {
   const op = { ...p, pedido: { estado: ESTADO_PEDIDO.RECUSADO, por: normalizarAutor(quem), em: agora(), pedidoEm: p.pedido?.em ?? p.quando } };
   const sem = semPedido(mundo, p.id);
   const entrada = { ...entradaDaOperacao(op, c, sem.encontro, mensagemDoPedido(op, c, ESTADO_PEDIDO.RECUSADO)), id: `log_${op.id}_recusa`, em: op.pedido.em };
-  return { mundo: { ...sem, encontro: comLog(sem.encontro, [entrada]) }, ok: true, operacao: op };
+  return { mundo: { ...sem, encontro: comLog(sem.encontro, [entrada], loteDe(op, "recusa")) }, ok: true, operacao: op };
 }
 
 /* ============================================================ */
@@ -751,7 +784,9 @@ export function prepararDesfazer(mundo, { alvo, operacaoId } = {}, autor, ctx = 
   const estado = estadoDoCombatente(c, mundo.sessoes);
   if (!motor || !estado) return { erro: "Ficha Ausente" };
   if (!podeResponder(autor, c)) return { erro: "Sem Permissão" };
-  const original = historicoDe(estado).find((e) => e.id === operacaoId);
+  // O histórico do alvo primeiro, depois a pilha do Mestre (só a de quem desfaz, e só a entrada deste alvo).
+  const original = historicoDe(estado).find((e) => e.id === operacaoId)
+    ?? pilhaDoMestreDe(mundo.encontro).find((e) => e.id === operacaoId && e.alvo === c.id && mesmaPessoa(normalizarAutor(autor), e.autor));
   if (!original) return { erro: "Operação Ausente" };
   if (original.desfeita) return { erro: "Já Desfeita" };
   if (original.tipo === T.DESFAZER) return { erro: "Não Desfazível" };
@@ -772,6 +807,28 @@ export function prepararDesfazer(mundo, { alvo, operacaoId } = {}, autor, ctx = 
       desfaz: original.id,
     }),
   };
+}
+
+/**
+ * A última operação de `quem` que ainda se desfaz, ou null: `{ alvo, operacaoId, quando }`. Procura na pilha do Mestre e no
+ * histórico de cada combatente (a que o Mestre fez no personagem de um jogador mora lá), sem as desfeitas nem os Desfazer. É o
+ * que o Ctrl+Z da Luta vai pedir (etapa 5). Não confere se o delta ainda fecha: isso é o `prepararDesfazer`.
+ */
+export function ultimaDesfazivel(mundo, quem) {
+  const eu = normalizarAutor(quem);
+  const encontro = mundo?.encontro;
+  const presentes = new Set((encontro?.combatentes ?? []).map((c) => c.id));
+  let melhor = null;
+  const considerar = (e, alvo) => {
+    if (!e || e.desfeita || e.tipo === T.DESFAZER || !presentes.has(alvo) || !mesmaPessoa(eu, e.autor)) return;
+    const quando = Number.isFinite(e.quando) ? e.quando : 0;
+    if (!melhor || quando > melhor.quando) melhor = { alvo, operacaoId: e.id, quando };
+  };
+  for (const e of pilhaDoMestreDe(encontro)) considerar(e, e.alvo);
+  for (const c of encontro?.combatentes ?? []) {
+    for (const e of historicoDe(estadoDoCombatente(c, mundo.sessoes))) considerar(e, c.id);
+  }
+  return melhor;
 }
 
 /** Mede e aplica o Desfazer. Devolve `{ mundo, ok, operacao?, erro?, conflitos? }`. */

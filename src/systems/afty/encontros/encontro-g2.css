@@ -91,6 +91,14 @@
 .ec-subtitulo { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12.5px; color: var(--ec-t2); }
 .ec-subtitulo > span + span::before { content: "·"; margin-right: 10px; color: var(--ec-t3); }
 .ec-vez-de b { color: var(--afty-destaque-texto); }
+/* A trilha (rework, etapa 1): rota e lista acima do título, no lugar da seta de voltar. */
+.ec-trilha { min-width: 0; }
+.ec-trilha ol { display: flex; align-items: center; gap: 4px; min-width: 0; margin: 0; padding: 0; list-style: none; font-size: 12.5px; line-height: 1.4; }
+.ec-trilha li { display: inline-flex; align-items: center; gap: 4px; min-width: 0; }
+.ec-trilha li > svg { width: 12px; height: 12px; color: var(--ec-t3); }
+.ec-trilha a { color: var(--ec-t2); text-decoration: none; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 4px; }
+.ec-trilha a:hover { color: var(--ec-t1); text-decoration: underline; text-underline-offset: 3px; }
+@media (pointer: coarse) { .ec-trilha a { padding-block: 6px; } }
 .ec-topo-acoes { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .ec-topo-sep { width: 1px; height: 24px; margin-inline: 4px; background: var(--ec-linha); }
 .ec-avisos:empty { display: none; }
@@ -282,6 +290,17 @@
 }
 
 /* ---------- a Ficha G2 embutida (só com `data-afty-embutida`, a ficha sozinha não muda) ---------- */
+/* A FRONTEIRA (rework, etapa 1, 2026-11-18): a G2 embutida herdava da raiz do Encontro o tamanho e a entrelinha do texto.
+   Ficam presos aqui nos valores de hoje (13,5 px e 1,45), para a moldura poder mudar de tamanho sem mexer na Ficha. As
+   regras novas da moldura excluem a G2 com `:not(:where(.e-ficha-g2 *))`. */
+.ec-raiz .e-ficha-g2[data-afty-embutida] { font-size: 13.5px; line-height: 1.45; }
+/* As regras de hoje que já alcançam a G2 (`.ec-raiz .afty-botao` e companhia) leem `--ec-*`. Os que a moldura nova muda
+   voltam aos valores de hoje dentro da G2, com a chave ligada ou não. */
+:root .ec-raiz .e-ficha-g2[data-afty-embutida] {
+  --ec-r: calc(var(--afty-raio, 12px) * 8 / 12);
+  --ec-display: var(--afty-fonte-display, "Bahnschrift", "Segoe UI", system-ui, sans-serif);
+  --ec-painel: color-mix(in oklab, var(--afty-card) 82%, var(--afty-fundo));
+}
 .e-ficha-g2[data-afty-embutida] { min-height: 0; border: 1px solid var(--afty-borda); border-radius: calc(var(--afty-raio, 12px) * 14 / 12); --e-borda-pagina: 0px; }
 .e-ficha-g2[data-afty-embutida]::before { display: none; }
 .e-ficha-g2[data-afty-embutida] .afty-ficha-corpo { min-height: 0; }
@@ -481,3 +500,85 @@
 @supports (-webkit-touch-callout: none) {
   .ec-raiz :is(input:not([type="checkbox"], [type="radio"], [type="range"]), select, textarea) { font-size: 16px; }
 }
+
+/* ============================================================
+   A MOLDURA DO SITE (rework dos Encontros, etapa 1, 2026-11-18)
+   ============================================================
+   O visual do Dashboard na moldura dos Encontros e da Sala: botão neutro cheio,
+   principal roxo cheio, cartão translúcido de borda fina, fundo em diagonal,
+   fonte do sistema. A FORMA vem do Dashboard (`Dashboard.jsx:1144-1522`), a cor
+   sai dos `--afty-*` (D-30, sem hex novo), e ficam as regras da casa que o
+   Dashboard quebra: piso de 11 px, borda de 1 px, sem `backdrop-filter`.
+
+   Tudo daqui para baixo só vale com a chave de aparelho
+   (`localStorage.dev_moldura_encontros = "site"`, ver `rota-encontros.js`), até a
+   etapa 8. A G2 embutida fica de fora de toda regra (`:not(:where(.e-ficha-g2 *))`).
+   ============================================================ */
+:root[data-moldura-encontros="site"] .ec-raiz {
+  --ec-display: var(--afty-fonte);
+  --ec-r: calc(var(--afty-raio-peq, 8px) * 9 / 16);
+  --ec-r-cartao: calc(var(--afty-raio, 12px) * 3 / 4);
+  --ec-botao: var(--afty-borda);
+  --ec-botao-hover: var(--afty-borda-forte);
+  --ec-botao-texto: color-mix(in oklab, var(--afty-texto) 85%, var(--afty-texto-suave));
+  --ec-principal: color-mix(in oklab, var(--afty-destaque) 55%, black);
+  --ec-principal-hover: color-mix(in oklab, var(--afty-destaque) 70%, black);
+  --ec-cartao: color-mix(in oklab, var(--afty-card) 60%, transparent);
+  --ec-painel: color-mix(in oklab, var(--afty-card) 60%, transparent);
+  --ec-pagina: linear-gradient(to bottom right, var(--afty-poco), var(--afty-card) 55%, color-mix(in oklab, var(--afty-destaque) 10%, var(--afty-card)));
+  background-color: transparent;
+}
+:root[data-moldura-encontros="site"] .ec-raiz::before { display: none; }
+:root[data-moldura-encontros="site"] .ec-raiz:is([data-status], [data-tela], .sl-pagina, .sl-lobby) { background: var(--ec-pagina); }
+
+/* O cabeçalho do Dashboard: opaco, borda roxa fina, conteúdo até 1600 px, sem brilho. */
+:root[data-moldura-encontros="site"] .ec-topo {
+  padding-inline: max(16px, calc((100% - 1600px) / 2 + 24px));
+  border-bottom-color: color-mix(in oklab, var(--afty-destaque) 30%, var(--afty-borda));
+  background: color-mix(in oklab, var(--afty-poco) 96%, transparent);
+}
+:root[data-moldura-encontros="site"] .ec-topo::after { display: none; }
+:root[data-moldura-encontros="site"] .ec-titulo { font-stretch: normal; }
+
+/* Botões: `.ec-botao` é a classe da moldura para marcação nova, e o `.afty-botao` de fora da G2 ganha o mesmo desenho. */
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao, .afty-botao:not(:where(.e-ficha-g2 *))) {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 32px; padding: 0 12px;
+  border: 1px solid transparent; border-radius: var(--ec-r); background: var(--ec-botao); color: var(--ec-botao-texto);
+  font: 600 13.5px var(--afty-fonte); white-space: nowrap; cursor: pointer; box-shadow: none;
+  transition: background-color 140ms, color 140ms, border-color 140ms;
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao, .afty-botao:not(:where(.e-ficha-g2 *))):hover:not(:disabled) {
+  background: var(--ec-botao-hover); color: var(--afty-texto); border-color: transparent;
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao[data-tom="principal"], .afty-botao[data-afty-tom="destaque"]:not(:where(.e-ficha-g2 *))) {
+  background: var(--ec-principal); color: var(--afty-texto); font-weight: 700;
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao[data-tom="principal"], .afty-botao[data-afty-tom="destaque"]:not(:where(.e-ficha-g2 *))):hover:not(:disabled) {
+  background: var(--ec-principal-hover);
+}
+/* Perigo sem âmbar (D-33): botão comum, e a confirmação diz o que some. */
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao[data-tom="perigo"], .afty-botao[data-afty-tom="perigo"]:not(:where(.e-ficha-g2 *))) {
+  color: var(--ec-botao-texto); border-color: transparent;
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao, .afty-botao:not(:where(.e-ficha-g2 *)))[aria-pressed="true"] {
+  background: var(--ec-sel); border-color: var(--ec-sel-borda); color: var(--afty-destaque-texto);
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-botao, .afty-botao:not(:where(.e-ficha-g2 *))):disabled { opacity: 0.4; cursor: not-allowed; }
+:root[data-moldura-encontros="site"] .ec-raiz .ec-menu-item[data-separado] { color: var(--ec-t1); }
+
+/* Alternadores e segmentos: cheios como o botão, o escolhido em véu roxo com borda (o "ativo" do Dashboard). */
+:root[data-moldura-encontros="site"] :is(.ec-alternar, .ec-segmento, .ec-visao-opcao, .ec-aba-mini) {
+  border-color: transparent; background: var(--ec-botao); color: var(--ec-botao-texto);
+}
+:root[data-moldura-encontros="site"] :is(.ec-alternar, .ec-segmento, .ec-visao-opcao, .ec-aba-mini):hover { background: var(--ec-botao-hover); color: var(--afty-texto); border-color: transparent; }
+:root[data-moldura-encontros="site"] :is(.ec-alternar[aria-pressed="true"], .ec-segmento[aria-pressed="true"], .ec-visao-opcao[aria-pressed="true"], .ec-aba-mini[aria-selected="true"]) {
+  background: var(--ec-sel); border-color: var(--ec-sel-borda); color: var(--afty-destaque-texto);
+}
+
+/* Cartões e painéis: o cartão translúcido do Dashboard, borda de 1 px, sem sombra pesada. */
+:root[data-moldura-encontros="site"] .ec-raiz .afty-card:not(:where(.e-ficha-g2 *)) {
+  border-color: var(--afty-borda); border-radius: var(--ec-r-cartao); background: var(--ec-cartao); box-shadow: none;
+}
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-fila, .ec-cartao, .ec-escolhido, .ec-grupo, .ec-pedido, .ec-hist-item) { border-radius: var(--ec-r-cartao); }
+:root[data-moldura-encontros="site"] .ec-raiz :is(.ec-cartao, .ec-escolhido) { background: var(--ec-cartao); box-shadow: none; }
+:root[data-moldura-encontros="site"] .ec-meio { background: transparent; }

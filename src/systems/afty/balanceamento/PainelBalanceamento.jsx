@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BarChart3, ChevronDown, ChevronLeft, ChevronRight, SlidersHorizontal } from "lucide-react";
 import ContaNuvem from "../../../nuvem/ContaNuvem.jsx";
 import { cliente, lerEstadoNuvem, ouvirNuvem } from "../../../nuvem/nuvem-sync.js";
 import { coletaLigada } from "./coleta.js";
@@ -13,20 +13,24 @@ const categorias = {
 };
 const distribuicoes = { base: "Atributos Base", nivel: "Pontos de Nível", origem: "Bônus de Origem" };
 const extras = {
-  especializacoes: "Níveis Investidos (Média)", trilhas: "Níveis Investidos (Média)",
-  treinamentos: "Etapas (Média)", feiticos: "Feitiços",
+  especializacoes: "Média de Níveis", trilhas: "Média de Níveis",
+  treinamentos: "Média de Etapas", feiticos: "Feitiços",
 };
 const filtrosIniciais = { dias: "30", nivel: "", origem: "", especializacao: "", addons: "" };
+const opcoesPorPagina = 12;
 const numero = new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 1 });
 const percentual = new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 });
 const br = (n) => numero.format(n);
-const taxa = (n, total) => total ? percentual.format(n / total) : null;
+const mesmosFiltros = (a, b) => Object.keys(filtrosIniciais).every((campo) => a[campo] === b[campo]);
 
 function Campo({ titulo, value, onChange, children }) {
   return (
     <label className="bal-campo">
       <span>{titulo}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
+      <span className="bal-seletor">
+        <select value={value} onChange={(e) => onChange(e.target.value)}>{children}</select>
+        <ChevronDown className="bal-seta" aria-hidden="true" size={16} />
+      </span>
     </label>
   );
 }
@@ -39,90 +43,112 @@ function Opcoes({ itens, vazio }) {
   </>;
 }
 
-function Filtros({ ativos, onAplicar }) {
-  const [campos, setCampos] = useState(ativos);
+function Filtros({ ativos, campos, setCampos, onAplicar, carregando }) {
   const campo = (id) => ({ value: campos[id], onChange: (valor) => setCampos((antes) => ({ ...antes, [id]: valor })) });
   return (
     <form className="bal-filtros" aria-label="Filtros da Amostra" onSubmit={(e) => { e.preventDefault(); onAplicar(campos); }}>
-      <Campo titulo="Período" {...campo("dias")}>
-        {PERIODOS.map((dias) => <option key={dias} value={dias}>{dias} dias</option>)}
-      </Campo>
-      <label className="bal-campo">
-        <span>Nível</span>
-        <input type="number" value={campos.nivel} min={1} max={MAX_NIVEL} placeholder="Todos"
-          onChange={(e) => campo("nivel").onChange(e.target.value)} />
-      </label>
-      <Campo titulo="Origem" {...campo("origem")}><Opcoes itens={CATEGORIAS.origens} vazio="Todas" /></Campo>
-      <Campo titulo="Especialização" {...campo("especializacao")}>
-        <Opcoes itens={CATEGORIAS.especializacoes} vazio="Todas" />
-      </Campo>
-      <Campo titulo="Addons" {...campo("addons")}>
-        <option value="">Todos</option>
-        <option value="sem">Sem Addons</option>
-        <option value="com">Com Addons</option>
-      </Campo>
-      <button className="bal-acao" type="submit">Aplicar Filtros</button>
+      <div className="bal-filtros-topo">
+        <h2><SlidersHorizontal size={16} aria-hidden="true" /> Filtros</h2>
+        {(!mesmosFiltros(campos, filtrosIniciais) || !mesmosFiltros(ativos, filtrosIniciais)) && (
+          <button className="bal-link" type="button" onClick={() => onAplicar(filtrosIniciais)}>Limpar Filtros</button>
+        )}
+      </div>
+      <div className="bal-filtros-campos">
+        <Campo titulo="Período" {...campo("dias")}>
+          {PERIODOS.map((dias) => <option key={dias} value={dias}>{dias} dias</option>)}
+        </Campo>
+        <label className="bal-campo">
+          <span>Nível</span>
+          <input type="number" value={campos.nivel} min={1} max={MAX_NIVEL} placeholder="Todos"
+            onChange={(e) => campo("nivel").onChange(e.target.value)} />
+        </label>
+        <Campo titulo="Origem" {...campo("origem")}><Opcoes itens={CATEGORIAS.origens} vazio="Todas" /></Campo>
+        <Campo titulo="Especialização" {...campo("especializacao")}>
+          <Opcoes itens={CATEGORIAS.especializacoes} vazio="Todas" />
+        </Campo>
+        <Campo titulo="Addons" {...campo("addons")}>
+          <option value="">Todos</option>
+          <option value="sem">Sem Addons</option>
+          <option value="com">Com Addons</option>
+        </Campo>
+        <button className="bal-acao" type="submit" disabled={carregando || mesmosFiltros(campos, ativos)}>Aplicar Filtros</button>
+      </div>
     </form>
   );
 }
 
-function Tabela({ nome, linhas, total, cabecalho = "Opção", extra }) {
-  if (!linhas.length) return <p className="bal-estado">Nenhuma ocorrência neste recorte.</p>;
+function Tabela({ nome, linhas, total, cabecalho = "Opção", extra, paginar = false }) {
+  const [pagina, setPagina] = useState(0);
+  if (!linhas.length) return <p className="bal-sem-linhas">Nenhuma ocorrência neste recorte.</p>;
+  const ultima = paginar ? Math.ceil(linhas.length / opcoesPorPagina) - 1 : 0;
+  const atual = Math.min(pagina, ultima);
+  const de = atual * opcoesPorPagina;
+  const ate = paginar ? Math.min(de + opcoesPorPagina, linhas.length) : linhas.length;
   return (
-    <div className="bal-tabela">
+    <>
       <table aria-label={nome}>
+        <colgroup><col /><col className="bal-col-contagem" /><col className="bal-col-taxa" />{extra && <col className="bal-col-extra" />}</colgroup>
         <thead><tr><th scope="col">{cabecalho}</th><th scope="col">Fichas</th><th scope="col">% da Amostra</th>
           {extra && <th scope="col">{extra}</th>}</tr></thead>
         <tbody>
-          {linhas.map(({ id, nome, fichas, valorExtra }) => (
+          {linhas.slice(de, ate).map(({ id, nome, fichas, valorExtra }) => (
             <tr key={id}>
               <th scope="row">{nome}</th>
-              <td>{br(fichas)}</td>
+              <td className={fichas ? undefined : "bal-zero"}>{br(fichas)}</td>
               <td><div className="bal-taxa">
-                <span>{taxa(fichas, total) ?? "·"}</span>
-                {total > 0 && <span className="bal-regua" aria-hidden="true">
+                <span className="bal-regua" aria-hidden="true">
                   <span style={{ inlineSize: `${(fichas / total) * 100}%` }} />
-                </span>}
+                </span>
+                <span className={fichas ? undefined : "bal-zero"}>{percentual.format(fichas / total)}</span>
               </div></td>
-              {extra && <td>{valorExtra === null ? "·" : br(valorExtra)}</td>}
+              {extra && <td>{valorExtra === null ? <span className="bal-zero" aria-label="Sem dados">·</span> : br(valorExtra)}</td>}
             </tr>
           ))}
         </tbody>
       </table>
-    </div>
+      {ultima > 0 && <div className="bal-paginacao">
+        <span aria-live="polite">{br(de + 1)} a {br(ate)} de {br(linhas.length)} opções</span>
+        <div className="bal-paginacao-botoes">
+          <button type="button" aria-label="Página Anterior" disabled={atual === 0} onClick={() => setPagina(atual - 1)}>
+            <ChevronLeft size={17} aria-hidden="true" />
+          </button>
+          <button type="button" aria-label="Próxima Página" disabled={atual === ultima} onClick={() => setPagina(atual + 1)}>
+            <ChevronRight size={17} aria-hidden="true" />
+          </button>
+        </div>
+      </div>}
+    </>
   );
 }
 
-function Distribuicoes({ relatorio }) {
-  const [distribuicao, setDistribuicao] = useState("base");
-  const [atributo, setAtributo] = useState("forca");
+function Distribuicoes({ relatorio, visual, onVisual }) {
+  const { distribuicao, atributo } = visual;
   const atributos = relatorio.atributos.filter((linha) => linha.distribuicao === distribuicao && linha.id === atributo);
   const baseAtributo = atributos.reduce((soma, linha) => soma + linha.fichas, 0);
   const valores = (linhas) => linhas.map(({ valor, fichas }) => ({ id: valor, nome: br(valor), fichas }));
   return (
     <div className="bal-distribuicoes">
-      <section aria-labelledby="bal-niveis">
-        <h2 id="bal-niveis">Distribuição de Níveis</h2>
+      <section className="bal-painel" aria-labelledby="bal-niveis">
+        <div className="bal-secao-topo"><h2 id="bal-niveis">Distribuição de Níveis</h2></div>
         <Tabela nome="Distribuição de Níveis" cabecalho="Nível" linhas={valores(relatorio.niveis)} total={relatorio.total} />
       </section>
-      <section aria-labelledby="bal-atributos">
-        <h2 id="bal-atributos">Distribuição de Atributos</h2>
+      <section className="bal-painel" aria-labelledby="bal-atributos">
+        <div className="bal-secao-topo"><h2 id="bal-atributos">Distribuição de Atributos</h2></div>
         <div className="bal-controles">
-          <Campo titulo="Distribuição" value={distribuicao} onChange={setDistribuicao}>
+          <Campo titulo="Distribuição" value={distribuicao} onChange={(valor) => onVisual("distribuicao", valor)}>
             <Opcoes itens={distribuicoes} />
           </Campo>
-          <Campo titulo="Atributo" value={atributo} onChange={setAtributo}><Opcoes itens={ATRIBUTOS} /></Campo>
+          <Campo titulo="Atributo" value={atributo} onChange={(valor) => onVisual("atributo", valor)}><Opcoes itens={ATRIBUTOS} /></Campo>
         </div>
-        <p className="bal-amostra-local">Base do Atributo: {br(baseAtributo)} {baseAtributo === 1 ? "ficha" : "fichas"}</p>
+        <p className="bal-amostra-local">{br(baseAtributo)} {baseAtributo === 1 ? "ficha com este atributo" : "fichas com este atributo"}</p>
         <Tabela nome="Distribuição de Atributos" cabecalho="Pontos" linhas={valores(atributos)} total={baseAtributo} />
       </section>
     </div>
   );
 }
 
-function Rankings({ relatorio }) {
-  const [categoria, setCategoria] = useState("origens");
-  const [ordem, setOrdem] = useState("mais");
+function Rankings({ relatorio, visual, onVisual }) {
+  const { categoria, ordem } = visual;
   const dados = new Map(relatorio.escolhas.filter((row) => row.categoria === categoria).map((row) => [row.id, row]));
   const linhas = Object.entries(CATEGORIAS[categoria]).map(([id, nome]) => {
     const { fichas = 0, soma = 0 } = dados.get(id) ?? {};
@@ -131,15 +157,18 @@ function Rankings({ relatorio }) {
   }).sort((a, b) => (ordem === "mais" ? b.fichas - a.fichas : a.fichas - b.fichas)
     || a.nome.localeCompare(b.nome, "pt-BR"));
   return (
-    <section aria-labelledby="bal-rankings">
-      <h2 id="bal-rankings">Rankings de Escolhas</h2>
-      <div className="bal-controles">
-        <Campo titulo="Categoria" value={categoria} onChange={setCategoria}><Opcoes itens={categorias} /></Campo>
-        <Campo titulo="Ordem" value={ordem} onChange={setOrdem}>
-          <option value="mais">Mais Escolhidas</option><option value="menos">Menos Escolhidas</option>
-        </Campo>
+    <section className="bal-painel" aria-labelledby="bal-rankings">
+      <div className="bal-secao-topo bal-ranking-topo">
+        <h2 id="bal-rankings">{categorias[categoria]}</h2>
+        <div className="bal-controles">
+          <Campo titulo="Categoria" value={categoria} onChange={(valor) => onVisual("categoria", valor)}><Opcoes itens={categorias} /></Campo>
+          <Campo titulo="Ordem" value={ordem} onChange={(valor) => onVisual("ordem", valor)}>
+            <option value="mais">Mais Escolhidas</option><option value="menos">Menos Escolhidas</option>
+          </Campo>
+        </div>
       </div>
-      <Tabela nome={categorias[categoria]} linhas={linhas} total={relatorio.total} extra={extras[categoria]} />
+      <Tabela key={`${categoria}/${ordem}`} nome={categorias[categoria]} linhas={linhas} total={relatorio.total}
+        extra={extras[categoria]} paginar />
     </section>
   );
 }
@@ -154,10 +183,12 @@ function Combinacoes({ relatorio }) {
   }));
   return (
     <div className="bal-distribuicoes">
-      <section><h2>Origem e Especialização</h2>
+      <section className="bal-painel" aria-labelledby="bal-origens-especializacoes">
+        <div className="bal-secao-topo"><h2 id="bal-origens-especializacoes">Origem e Especialização</h2></div>
         <Tabela nome="Origem e Especialização" cabecalho="Combinação" linhas={pares} total={relatorio.total} />
       </section>
-      <section><h2>Multiclasse</h2>
+      <section className="bal-painel" aria-labelledby="bal-multiclasse">
+        <div className="bal-secao-topo"><h2 id="bal-multiclasse">Multiclasse</h2></div>
         <Tabela nome="Multiclasse" cabecalho="Combinação" linhas={multiclasses} total={relatorio.total} />
       </section>
     </div>
@@ -179,7 +210,9 @@ async function carregarRelatorio(filtros, signal) {
 
 function RelatorioPrivado() {
   const [filtros, setFiltros] = useState(filtrosIniciais);
+  const [campos, setCampos] = useState(filtrosIniciais);
   const [secao, setSecao] = useState("rankings");
+  const [visual, setVisual] = useState({ categoria: "origens", ordem: "mais", distribuicao: "base", atributo: "forca" });
   const [revisao, recarregar] = useState(0);
   const [resultado, setResultado] = useState(null);
   useEffect(() => {
@@ -198,10 +231,17 @@ function RelatorioPrivado() {
   const relatorio = carregando ? null : resultado.relatorio;
   const autorizado = resultado?.status === 200 || carregando;
   const [, Conteudo] = secoes[secao];
+  const aplicar = (novos) => {
+    setCampos(novos);
+    if (!mesmosFiltros(filtros, novos)) setFiltros(novos);
+  };
+  const outrosFiltros = Boolean(filtros.nivel || filtros.origem || filtros.especializacao || filtros.addons);
   return (
     <>
-      {autorizado && <Filtros ativos={filtros} onAplicar={(campos) => setFiltros({ ...campos })} />}
-      {carregando && <p role="status" className="bal-estado">Carregando Amostra…</p>}
+      {autorizado && <Filtros ativos={filtros} campos={campos} setCampos={setCampos} onAplicar={aplicar} carregando={carregando} />}
+      {carregando && <div className="bal-painel bal-carregando" role="status">
+        <span>Carregando amostra…</span><div aria-hidden="true" /><div aria-hidden="true" /><div aria-hidden="true" />
+      </div>}
       {!carregando && !relatorio && (
         <div className="bal-estado" role="status">
           {resultado.status === 403 ? "Esta conta não tem acesso ao painel."
@@ -214,15 +254,29 @@ function RelatorioPrivado() {
       {relatorio && (
         <>
           <div className="bal-faixa">
-            <p aria-live="polite"><strong>{br(relatorio.total)}</strong> {relatorio.total === 1 ? "ficha na amostra" : "fichas na amostra"}</p>
-            <nav aria-label="Visualizações da Amostra">
+            {relatorio.total > 0 && <nav aria-label="Visualizações da Amostra">
               {Object.entries(secoes).map(([id, [nome]]) => (
                 <button key={id} type="button" aria-pressed={id === secao} onClick={() => setSecao(id)}>{nome}</button>
               ))}
-            </nav>
+            </nav>}
+            <p className="bal-amostra" aria-live="polite">
+              <span><strong>{br(relatorio.total)}</strong> {relatorio.total === 1 ? "ficha na amostra" : "fichas na amostra"}</span>
+              <span>Últimos {filtros.dias} dias</span>
+            </p>
           </div>
-          {relatorio.total === 0 && <p className="bal-estado">Nenhuma ficha contribuiu neste recorte.</p>}
-          <Conteudo relatorio={relatorio} />
+          {relatorio.total > 0 ? (
+            <Conteudo relatorio={relatorio} visual={visual}
+              onVisual={(campo, valor) => setVisual((antes) => ({ ...antes, [campo]: valor }))} />
+          ) : (
+            <section className="bal-painel bal-vazio" aria-labelledby="bal-vazio-titulo">
+              <BarChart3 size={23} aria-hidden="true" />
+              <h2 id="bal-vazio-titulo">Nenhuma ficha neste recorte</h2>
+              <p>{outrosFiltros ? "Limpe os filtros para ampliar a amostra."
+                : "Os resultados aparecem conforme as fichas são salvas em Jogador."}</p>
+              {!outrosFiltros && filtros.dias !== "90" && <button className="bal-acao bal-acao-secundaria" type="button"
+                  onClick={() => aplicar({ ...filtros, dias: "90" })}>Ver Últimos 90 Dias</button>}
+            </section>
+          )}
         </>
       )}
     </>

@@ -1,7 +1,7 @@
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import {
   ArrowLeft, Plus, Search, X, Folder, FolderPlus, FolderOpen, Inbox, Swords, Flag, Trophy, Copy, Trash2, GripVertical,
-  Pencil, Check, Clock, Layers,
+  Pencil, Check, Clock, Layers, ArrowRight, ChevronDown,
 } from "lucide-react";
 import {
   DndContext, PointerSensor, TouchSensor, KeyboardSensor, useSensor, useSensors, closestCenter,
@@ -14,7 +14,7 @@ import { CSS } from "@dnd-kit/utilities";
 import "../../ficha/ficha.css";
 import "../encontro-g2.css";
 import { ENCONTRO_STATUS } from "../afty-encontro";
-import { Aviso, Confirmar, Vazio } from "./pecas-encontro";
+import { Aviso, Confirmar, Trilha, Vazio } from "./pecas-encontro";
 import { LADO_PECA, contagem } from "./pecas-dados";
 
 /**
@@ -79,14 +79,19 @@ function LinhaDePasta({ pasta, n, ativa, onEscolher, onRenomear, onApagar, desab
   );
 }
 
-function Pastas({ lista, filtro, onFiltro, contas, desabilitado }) {
+function Pastas({ lista, filtro, onFiltro, contas, desabilitado, publica }) {
   const [aApagar, setAApagar] = useState(null);
+  const [abertas, setAbertas] = useState(false);
+  const id = useId();
   const fixos = [
     { id: "__todas__", rotulo: "Todos os Encontros", icone: Layers, n: lista.encontros.length },
     { id: "__sem__", rotulo: "Sem Pasta", icone: Inbox, n: contas.__sem__ ?? 0 },
   ];
-  return (
-    <nav className="ec-pastas" aria-label="Pastas">
+  const pastaAtual = fixos.find((p) => p.id === filtro)?.rotulo
+    ?? lista.pastas.find((p) => p.id === filtro)?.name
+    ?? fixos[0].rotulo;
+  const conteudo = (
+    <>
       <ul className="ec-pastas-lista">
         {fixos.map((f) => {
           const Icone = f.icone;
@@ -109,6 +114,22 @@ function Pastas({ lista, filtro, onFiltro, contas, desabilitado }) {
       <button type="button" className="afty-botao ec-nova-pasta" disabled={desabilitado} onClick={() => onFiltro(lista.criarPasta("Nova Pasta").id)}>
         <FolderPlus aria-hidden="true" />Nova Pasta
       </button>
+    </>
+  );
+  return (
+    <nav className="ec-pastas" aria-label="Pastas" data-abertas={publica ? abertas : undefined}>
+      {publica ? (
+        <>
+          <h2 className="ec-pastas-titulo">Pastas</h2>
+          <button type="button" className="ec-pastas-abrir" aria-expanded={abertas} aria-controls={id}
+            onClick={() => setAbertas((valor) => !valor)}>
+            <Folder aria-hidden="true" /> Pastas
+            <span className="ec-pastas-atual">{pastaAtual}</span>
+            <ChevronDown aria-hidden="true" />
+          </button>
+          <div id={id} className="ec-pastas-corpo">{conteudo}</div>
+        </>
+      ) : conteudo}
       {aApagar && (
         <Confirmar titulo={`Apagar a Pasta ${aApagar.name}?`} rotulo="Apagar Pasta" onCancelar={() => setAApagar(null)}
           onConfirmar={() => { lista.removerPasta(aApagar.id); if (filtro === aApagar.id) onFiltro("__todas__"); setAApagar(null); }}>
@@ -121,12 +142,25 @@ function Pastas({ lista, filtro, onFiltro, contas, desabilitado }) {
 
 /* ---------- o cartão ---------- */
 
-function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDuplicar, onMover, onApagar, desabilitado }) {
+function SeletorDePasta({ publica, classe = "", children, ...props }) {
+  const seletor = <select className={`ec-campo ${classe}`} {...props}>{children}</select>;
+  if (!publica) return seletor;
+  return <span className="ec-seletor-pasta">{seletor}<ChevronDown aria-hidden="true" /></span>;
+}
+
+function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDuplicar, onMover, onApagar, desabilitado, publica }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: e.id, disabled: desabilitado });
   const s = STATUS[e.status] ?? STATUS.planejando;
   const Icone = s.icone;
   const porLado = {};
   for (const c of e.combatentes) porLado[c.flags.lado] = (porLado[c.flags.lado] ?? 0) + 1;
+  const nome = <button type="button" className="ec-cartao-nome" onClick={() => onAbrir(e.id)} title={e.nome}>{e.nome}</button>;
+  const estado = (
+    <>
+      <span className="ec-status" data-status={e.status}><Icone aria-hidden="true" />{s.rotulo}</span>
+      {e.status === ENCONTRO_STATUS.ATIVO && <span className="ec-cartao-rodada afty-base"><Clock aria-hidden="true" />Rodada <b className="afty-valor">{e.rodada}</b></span>}
+    </>
+  );
   return (
     <li
       ref={setNodeRef} className="ec-cartao" data-status={e.status} data-selecionado={selecionado ? "sim" : undefined} data-arrastando={isDragging ? "sim" : undefined}
@@ -136,13 +170,12 @@ function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDup
         <button type="button" className="ec-alca" {...attributes} {...listeners} disabled={desabilitado} aria-label={`Arrastar ${e.nome}`} title="Arrastar para Ordenar">
           <GripVertical aria-hidden="true" />
         </button>
-        <span className="ec-status" data-status={e.status}><Icone aria-hidden="true" />{s.rotulo}</span>
-        {e.status === ENCONTRO_STATUS.ATIVO && <span className="ec-cartao-rodada afty-base"><Clock aria-hidden="true" />Rodada <b className="afty-valor">{e.rodada}</b></span>}
+        {publica ? nome : estado}
         <label className="ec-caixa" title={selecionado ? "Tirar da Seleção" : "Selecionar"}>
           <input type="checkbox" checked={selecionado} onChange={(ev) => onSelecionar(e.id, ev.nativeEvent.shiftKey)} aria-label={`Selecionar ${e.nome}`} />
         </label>
       </div>
-      <button type="button" className="ec-cartao-nome" onClick={() => onAbrir(e.id)} title={e.nome}>{e.nome}</button>
+      {publica ? <div className="ec-cartao-estado">{estado}</div> : nome}
       <p className="ec-cartao-lados">
         {e.combatentes.length === 0 ? <span>Sem Combatentes</span> : ["jogador", "aliado", "inimigo"].filter((l) => porLado[l]).map((l) => {
           const P = LADO_PECA[l];
@@ -150,17 +183,24 @@ function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDup
           return <span key={l} className="ec-lado"><I aria-hidden="true" />{contagem(porLado[l], P.rotulo, P.plural)}</span>;
         })}
       </p>
-      <div className="ec-cartao-pasta-linha">
-        <Folder aria-hidden="true" />
-        <select className="ec-campo ec-cartao-pasta" value={e.pastaId ?? ""} disabled={desabilitado || !pastas.length} onChange={(ev) => onMover(e.id, ev.target.value || null)} aria-label={`Pasta de ${e.nome}`} title="Pasta">
-          <option value="">Sem Pasta</option>
-          {pastas.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-        </select>
-        <span className="ec-cartao-quando">{quando(e.atualizadoEm)}</span>
-      </div>
+      {(!publica || pastas.length > 0) && (
+        <div className="ec-cartao-pasta-linha">
+          <Folder aria-hidden="true" />
+          <SeletorDePasta publica={publica} classe="ec-cartao-pasta" value={e.pastaId ?? ""} disabled={desabilitado || !pastas.length}
+            onChange={(ev) => onMover(e.id, ev.target.value || null)} aria-label={`Pasta de ${e.nome}`} title="Pasta">
+            <option value="">Sem Pasta</option>
+            {pastas.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </SeletorDePasta>
+          {!publica && <span className="ec-cartao-quando">{quando(e.atualizadoEm)}</span>}
+        </div>
+      )}
       <div className="ec-cartao-rodape">
-        <button type="button" className="afty-botao" data-afty-tom={e.status === ENCONTRO_STATUS.ATIVO ? "destaque" : undefined} onClick={() => onAbrir(e.id)}>{s.acao}</button>
-        <button type="button" className="afty-botao" onClick={() => onDuplicar(e.id)} disabled={desabilitado} aria-label={`Duplicar ${e.nome}`}><Copy aria-hidden="true" />Duplicar</button>
+        <button type="button" className="afty-botao" data-afty-tom={e.status === ENCONTRO_STATUS.ATIVO ? "destaque" : undefined} onClick={() => onAbrir(e.id)}>
+          {s.acao}{publica && <ArrowRight aria-hidden="true" />}
+        </button>
+        <button type="button" className={`afty-botao${publica ? " ec-icone" : ""}`} onClick={() => onDuplicar(e.id)}
+          disabled={desabilitado} aria-label={`Duplicar ${e.nome}`} title="Duplicar"><Copy aria-hidden="true" />{!publica && "Duplicar"}</button>
+        {publica && <span className="ec-cartao-quando">{quando(e.atualizadoEm)}</span>}
         <button type="button" className="afty-botao ec-icone ec-remover" onClick={() => onApagar(e)} disabled={desabilitado} aria-label={`Apagar ${e.nome}`} title="Apagar"><Trash2 aria-hidden="true" /></button>
       </div>
     </li>
@@ -170,8 +210,8 @@ function Cartao({ encontro: e, pastas, selecionado, onSelecionar, onAbrir, onDup
 /* ---------- a tela ---------- */
 
 /* `semVoltar` (opcional, etapa E8 do app, 2026-11-20): na casca da Guilda no celular a lista é uma aba da barra de baixo, e o
-   Voltar ao Grimório some. Sem a prop, tudo como antes. */
-export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir, onVoltar, semVoltar = false }) {
+   Voltar ao Grimório some. `trilha` (rework, etapa 1): a trilha do cabeçalho no lugar da seta. Sem as duas, tudo como antes. */
+export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir, onVoltar, trilha = null, semVoltar = false, publica = false }) {
   const [busca, setBusca] = useState("");
   const [status, setStatus] = useState("__todos__");
   const [pasta, setPasta] = useState("__todas__");
@@ -227,10 +267,11 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
   const recusados = lista.migracao?.recusados?.length ?? 0;
 
   return (
-    <div className="afty-ficha ec-raiz">
+    <div className={`afty-ficha ec-raiz${publica ? " ec-lista-publica" : ""}`} data-tela="lista">
       <header className="ec-topo">
-        {!semVoltar && <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar ao Grimório" title="Voltar ao Grimório"><ArrowLeft aria-hidden="true" /></button>}
+        {!semVoltar && !trilha && <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar ao Grimório" title="Voltar ao Grimório"><ArrowLeft aria-hidden="true" /></button>}
         <div className="ec-topo-titulo">
+          {!publica && <Trilha itens={trilha} />}
           <h1 className="ec-titulo">{titulo}</h1>
           <p className="ec-subtitulo"><span>{contagem(lista.encontros.length, "Encontro", "Encontros")}</span>{porStatus.ativo ? <span>{porStatus.ativo} Em Combate</span> : null}</p>
         </div>
@@ -246,7 +287,7 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
       </div>
 
       <div className="ec-lista-caixa"><div className="ec-lista">
-        <Pastas lista={lista} filtro={pasta} onFiltro={setPasta} contas={contas} desabilitado={desabilitado} />
+        <Pastas lista={lista} filtro={pasta} onFiltro={setPasta} contas={contas} desabilitado={desabilitado} publica={publica} />
 
         <main className="ec-lista-corpo">
           <div className="ec-filtros">
@@ -272,7 +313,7 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
           {visiveis.length === 0 ? (
             lista.encontros.length === 0 ? (
               <Vazio icone={Swords} titulo="Nenhum Encontro Ainda">
-                <button type="button" className="afty-botao" data-afty-tom="destaque" onClick={criar} disabled={desabilitado}><Plus aria-hidden="true" />Novo Encontro</button>
+                {!publica && <button type="button" className="afty-botao" data-afty-tom="destaque" onClick={criar} disabled={desabilitado}><Plus aria-hidden="true" />Novo Encontro</button>}
               </Vazio>
             ) : (
               <Vazio icone={Search} titulo="Nenhum Encontro com Esses Filtros">
@@ -285,7 +326,7 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
                 <ul className="ec-cartoes">
                   {visiveis.map((e) => (
                     <Cartao
-                      key={e.id} encontro={e} pastas={lista.pastas} selecionado={selecionados.has(e.id)} desabilitado={desabilitado}
+                      key={e.id} encontro={e} pastas={lista.pastas} selecionado={selecionados.has(e.id)} desabilitado={desabilitado} publica={publica}
                       onSelecionar={selecionar} onAbrir={onAbrir} onDuplicar={lista.duplicar} onMover={lista.moverParaPasta} onApagar={setAApagar}
                     />
                   ))}
@@ -299,11 +340,11 @@ export default function ListaDeEncontros({ lista, titulo = "Encontros", onAbrir,
       {selVivos.length > 0 && (
         <div className="ec-grupo" role="region" aria-label="Encontros Selecionados">
           <span className="ec-grupo-conta"><b>{selVivos.length}</b> {selVivos.length === 1 ? "Selecionado" : "Selecionados"}</span>
-          <select className="ec-campo" value={moverPara} onChange={(e) => setMoverPara(e.target.value)} aria-label="Mover para a Pasta" disabled={desabilitado}>
+          <SeletorDePasta publica={publica} value={moverPara} onChange={(e) => setMoverPara(e.target.value)} aria-label="Mover para a Pasta" disabled={desabilitado}>
             <option value="">Escolher Pasta</option>
             <option value="__sem__">Sem Pasta</option>
             {lista.pastas.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
+          </SeletorDePasta>
           <button type="button" className="afty-botao" disabled={!moverPara || desabilitado} onClick={() => { lista.moverVarios(selVivos, moverPara === "__sem__" ? null : moverPara); setMoverPara(""); }}>
             <FolderOpen aria-hidden="true" />Mover
           </button>

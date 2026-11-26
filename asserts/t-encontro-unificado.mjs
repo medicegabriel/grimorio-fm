@@ -217,7 +217,7 @@ t("o delta só toca o que mudou, com antes e depois", opDano.delta, [{ caminho: 
 t("a rolagem viaja como resultado", opDano.entrada.rolagem, { total: 20, dados: [12, 8] });
 t("o que o Mestre fez entra no histórico da Lia", hist(r.mundo, "c_lia").map((e) => [e.id, e.tipo, e.autor.papel]), [[opDano.id, "dano", "mestre"]]);
 t("o histórico não é o registro da ficha", r.mundo.sessoes.lia.log, []);
-t("o Registro do Encontro ganha a linha, com o id da operação", r.mundo.encontro.log[0], { id: `log_${opDano.id}`, rodada: 1, em: opDano.quando, tipo: "dano", mensagem: "Dano: 20 em Lia.", combatenteId: "c_lia", operacaoId: opDano.id });
+t("o Registro do Encontro ganha a linha, com o id da operação", r.mundo.encontro.log[0], { id: `log_${opDano.id}`, rodada: 1, em: opDano.quando, tipo: "dano", mensagem: "Dano: 20 em Lia.", combatenteId: "c_lia", operacaoId: opDano.id, lote: `lote_${opDano.id}_op` });
 t("a mesma operação depois do JSON dá o mesmo mundo", O.aplicarOperacao(mundo, JSON.parse(JSON.stringify(opDano))).mundo, O.aplicarOperacao(mundo, opDano).mundo);
 t("aplicar duas vezes: a pré-condição recusa a segunda", (() => { const x = O.aplicarOperacao(r.mundo, opDano); return [x.ok, x.conflitos, x.mundo === r.mundo]; })(), [false, [{ caminho: ["hpAtual"], motivo: "mudou" }], true]);
 t("o redutor também recusa calado", R(r.mundo, { tipo: "OPERACAO", operacao: opDano }) === r.mundo, true);

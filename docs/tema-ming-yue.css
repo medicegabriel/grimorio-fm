@@ -1,0 +1,1246 @@
+/* ============================================================
+   MING YUE, A LUA CLARA  ·  v1  ·  2026-11-25
+   ------------------------------------------------------------
+   COMO SABER SE ESTE É O CSS QUE ESTÁ VALENDO: procure "v1" na
+   primeira linha do campo de CSS da aba Aparência.
+   ------------------------------------------------------------
+   Ficha de PERSONAGEM na Era de Ouro, estrutura G2. Tema de DUAS
+   FACES: o botão de sol e lua do cabeçalho troca entre elas.
+   明 é 日 (o sol) ao lado de 月 (a lua). O nome dela tem as duas.
+
+   FACE 1, DIA: papel de arroz. Atrás dos cartões, uma paisagem de
+   montanhas em tinta, das azuis-jade de perto às cinzentas que
+   somem na névoa, com o sol vermelho no céu. A névoa corre devagar
+   e poucas aves planam. Assinatura e selo no canto, como na pintura.
+
+   FACE 2, NOITE: tinta azul-preta, texto cor de papel. As montanhas
+   viram silhueta e a Lua Clara toma o lugar do sol.
+
+   A VIRADA dura 3,6 segundos: a paisagem toma a tela, o céu escurece
+   e o sol se põe atrás das montanhas. As cores trocam, e a lua nasce
+   detrás delas até o lugar dela. Na volta, a lua se põe e o sol
+   nasce numa alvorada.
+
+   A VIDA: quanto menos Vida, maior e mais vermelho fica o astro, e a
+   névoa fecha. De noite a lua vira lua de sangue. Nada acelera.
+
+   DO SITE (Arcane Lore): títulos condensados em caixa alta, rótulos
+   de dossiê em fonte mono, numeração dos blocos (01, 02...), as
+   cantoneiras de cinábrio na placa e a sombra dura deslocada no
+   retrato. Cinábrio só nos acentos, o jade carrega o destaque.
+
+   BOTÕES PARA REGULAR, no terceiro bloco:
+     --my-papel          quanto o cartão é opaco (mais alto, menos paisagem)
+     --my-serras-op      quanto as montanhas aparecem (0 desliga)
+     --my-astro-op       quanto o sol e a lua aparecem (0 desliga)
+     --my-nevoa          quanto a névoa que corre aparece (0 desliga)
+     --my-aves           quanto as aves aparecem (0 desliga)
+   Quem pede "menos movimento" ao sistema recebe a ficha parada e a
+   troca de face imediata.
+   ============================================================ */
+
+/* ---------- FACE 1, DIA ---------- */
+:scope#afty-ficha,
+#afty-ficha#afty-ficha {
+  --afty-fundo: #e3e5dd;
+  --afty-fundo-brilho: none;
+  --afty-card: #f3f3ec;
+  --afty-poco: #e8eae3;
+  --afty-borda: #cbd1c9;
+  --afty-borda-forte: #9daaa5;
+  --afty-texto: #1b272c;
+  --afty-texto-suave: #43525a;
+  --afty-texto-fraco: #5a686d;
+  --afty-destaque: #1f706c;
+  --afty-destaque-texto: #155c58;
+  --afty-destaque-fundo: #1f706c1f;
+  --afty-pv: #b3302a;
+  --afty-pe: #285f9e;
+  --afty-pvtemp: #a8690a;
+  --afty-alma: #6648ad;
+  --afty-proprio: #9d5714;
+  --afty-cura: #23704f;
+  --afty-aviso: #8a5600;
+  --afty-veu: rgb(27 39 44 / 0.4);
+  --afty-raio: 3px;
+  --afty-raio-peq: 2px;
+  --afty-sombra: 0 1px 0 rgb(255 255 255 / 0.7) inset, 0 12px 26px -20px rgb(27 50 56 / 0.45);
+  --afty-fonte: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* A reserva é a Bahnschrift, estreita como a Oswald: enquanto a Oswald baixa, uma reserva
+     larga empurrava as abas para 720px e a barra de rolagem caía para a linha de baixo. */
+  --afty-fonte-titulo: "Oswald", "Bahnschrift", "Arial Narrow", sans-serif;
+  --afty-fonte-display: "Oswald", "Bahnschrift", "Arial Narrow", sans-serif;
+  --afty-fonte-num: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  /* As barras que grudam ao rolar: véu por cima da lista, peças opacas. */
+  --afty-fundo-grudado: color-mix(in srgb, var(--afty-fundo) 86%, transparent);
+  --afty-peca-grudada: var(--afty-card);
+  /* A duração da troca de face. O app lê este valor. */
+  --afty-face-virada: 3600ms;
+}
+
+/* ---------- FACE 2, NOITE ---------- */
+:scope#afty-ficha[data-afty-face="2"],
+#afty-ficha#afty-ficha[data-afty-face="2"] {
+  --afty-fundo: #0b1316;
+  --afty-card: #111c21;
+  --afty-poco: #091013;
+  --afty-borda: #213239;
+  --afty-borda-forte: #36525b;
+  --afty-texto: #e6ebe3;
+  --afty-texto-suave: #b3c1be;
+  --afty-texto-fraco: #8e9e9c;
+  --afty-destaque: #5fbfbb;
+  --afty-destaque-texto: #97dbd6;
+  --afty-destaque-fundo: #5fbfbb24;
+  --afty-pv: #ef7268;
+  --afty-pe: #78abea;
+  --afty-pvtemp: #e6c06c;
+  --afty-alma: #b49cf0;
+  --afty-proprio: #f0a060;
+  --afty-cura: #7fd3ad;
+  --afty-aviso: #eec064;
+  --afty-veu: rgb(3 8 10 / 0.64);
+  --afty-sombra: 0 1px 0 rgb(200 230 225 / 0.04) inset, 0 14px 30px -18px rgb(0 0 0 / 0.85);
+}
+
+/* As cores e os botões próprios do tema. Ficam fora dos blocos de cima de
+   propósito: eles são fortes e só aceitam as variáveis que a Ficha declara. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) {
+  color-scheme: light;
+  --my-cinabrio: #b3302a;
+  --my-cinabrio-claro: #cf5a4c;
+  --my-jade: #2b8780;
+  --my-anil: #2c5f9a;
+  --my-tinta: #1b272c;
+  --my-fio: rgb(27 39 44 / 0.16);
+  --my-selo-texto: #f6f1e6;
+
+  /* Os botões de regular. */
+  --my-papel: 92%;
+  --my-serras-op: 1;
+  --my-astro-op: 0.92;
+  --my-nevoa: 0.62;
+  --my-aves: 0.7;
+  --my-aura: 0;
+
+  /* O QUADRO da paisagem: no mínimo a largura da tela, e nunca mais estreito que 1,6 vezes a
+     altura. No celular em pé ele passa da tela e é cortado nos lados, para as montanhas não
+     virarem agulhas. */
+  --my-quadro: max(100vw, 160vh);
+  /* ONDE MORA O ASTRO: na margem à direita da coluna de cartões (1244px), e nunca atrás dela.
+     Atrás da coluna, cada vão entre dois cartões mostrava uma lasca dele, uma barra vermelha
+     que corria a cada rolagem. Em tela larga ele vai para o meio da margem. */
+  --my-cx: calc(var(--my-quadro) / 2 + 622px + max(48px, (var(--my-quadro) - 1244px) / 4));
+  --my-ay: 0.4;
+  --my-at: 40vmin;
+  --my-astro-escala: 1;
+
+  /* O ASTRO. De dia, o sol chapado de cinábrio da pintura, com a mancha que escorre embaixo. */
+  --my-astro-a: #c43b29;
+  --my-astro-b: #b3302a;
+  --my-astro-gota: rgb(196 59 41 / 0.09);
+  --my-astro-halo: rgb(196 59 41 / 0.1);
+  --my-disco:
+    radial-gradient(circle closest-side, var(--my-astro-a) 0 19%, var(--my-astro-b) 23.5%, transparent 28%),
+    radial-gradient(ellipse 7% 22% at 50% 70%, var(--my-astro-gota) 0, transparent 100%),
+    radial-gradient(circle closest-side, var(--my-astro-halo) 0 27%, color-mix(in srgb, var(--my-astro-halo) 40%, transparent) 52%, transparent 100%);
+  /* O fundo desenha `--my-corpo`, a cortina da virada desenha sempre o disco inteiro. No
+     celular só o do fundo vira clarão: a cortina não tem cartões na frente. */
+  --my-corpo: var(--my-disco);
+
+  /* AS MONTANHAS. Longe: cinza esverdeado que some na névoa. Meio: cinza-jade. Perto: os
+     morros de azurita e malaquita da pintura, mais mansos. "r" é a borda, onde a tinta junta. */
+  --my-sl: #d3dbd6;
+  --my-sl-r: #b9c7c2;
+  --my-sl2: #c6d2cd;
+  --my-sm: #b3c4bf;
+  --my-sm2: #a4b8b3;
+  --my-sm-r: #8aa49f;
+  --my-sa: #93b0c6;
+  --my-sa-r: #557fa6;
+  --my-sj: #94c0b2;
+  --my-sj-r: #4f9583;
+  --my-nv-b: var(--afty-fundo);
+  /* A névoa que corre e as aves. */
+  --my-nv: rgb(250 250 246 / 0.92);
+  --my-ave: rgb(32 48 54 / 0.66);
+  /* A assinatura e o selo do canto. */
+  --my-assinatura: rgb(27 39 44 / 0.62);
+  --my-selo: #b3302a;
+  /* O pior fundo por baixo de um cartão, para a bancada medir contraste. */
+  --my-pior: #557fa6;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] {
+  color-scheme: dark;
+  --my-cinabrio: #e0645a;
+  --my-cinabrio-claro: #f08a7e;
+  --my-jade: #5fbfbb;
+  --my-anil: #7aa6e0;
+  --my-tinta: #e6ebe3;
+  --my-fio: rgb(220 235 230 / 0.14);
+  --my-selo-texto: #fbf3ea;
+  --my-papel: 90%;
+  --my-astro-op: 1;
+  --my-nevoa: 0.75;
+  --my-aves: 0.6;
+
+  /* A LUA CLARA. Disco de papel com dois mares apagados, e um halo frio e largo. */
+  --my-astro-a: #f5f2e4;
+  --my-astro-b: #e2dfcd;
+  --my-astro-halo: rgb(150 205 210 / 0.16);
+  --my-disco:
+    radial-gradient(circle at 46% 47%, rgb(170 180 172 / 0.28) 0 2.4%, transparent 3.6%),
+    radial-gradient(circle at 53.5% 52.5%, rgb(170 180 172 / 0.22) 0 1.8%, transparent 2.9%),
+    radial-gradient(circle closest-side, var(--my-astro-a) 0 20.5%, var(--my-astro-b) 24.4%, transparent 27.6%),
+    radial-gradient(circle closest-side, color-mix(in srgb, var(--my-astro-a) 30%, transparent) 0 26%, var(--my-astro-halo) 33%, color-mix(in srgb, var(--my-astro-halo) 35%, transparent) 58%, transparent 100%);
+
+  --my-sl: #18272d;
+  --my-sl-r: #22363d;
+  --my-sl2: #1c2d34;
+  --my-sm: #121f25;
+  --my-sm2: #16252c;
+  --my-sm-r: #1d3038;
+  --my-sa: #0f1c25;
+  --my-sa-r: #1d3a52;
+  --my-sj: #0f1d1d;
+  --my-sj-r: #1b4440;
+  --my-nv: rgb(150 180 190 / 0.13);
+  --my-ave: rgb(214 226 224 / 0.58);
+  --my-assinatura: rgb(230 235 227 / 0.5);
+  --my-selo: #c9473c;
+  --my-pior: #22363d;
+}
+
+/* ---------- A VIDA ----------
+   O sol cresce e escurece para o sangue, a névoa fecha. De noite a lua
+   avermelha até virar lua de sangue. Só tamanho, cor e brilho: nada corre
+   mais depressa. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha):has(.afty-vital[data-afty-vital="pv"][data-afty-nivel="baixo"]) {
+  --my-astro-escala: 1.16;
+  --my-astro-a: #b72a1f;
+  --my-astro-b: #a3231a;
+  --my-astro-gota: rgb(183 42 31 / 0.2);
+  --my-astro-halo: rgb(183 42 31 / 0.16);
+  --my-nevoa: 0.78;
+  --my-aura: 0.18;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha):has(.afty-vital[data-afty-vital="pv"][data-afty-nivel="critico"]) {
+  --my-astro-escala: 1.34;
+  --my-astro-op: 1;
+  --my-astro-a: #a51d16;
+  --my-astro-b: #8e1712;
+  --my-astro-gota: rgb(165 29 22 / 0.26);
+  --my-astro-halo: rgb(165 29 22 / 0.24);
+  --my-nevoa: 0.94;
+  --my-aura: 0.34;
+  --my-assinatura: rgb(150 32 26 / 0.7);
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"]:has(.afty-vital[data-afty-vital="pv"][data-afty-nivel="baixo"]) {
+  --my-astro-escala: 1.12;
+  --my-astro-a: #f4d9cc;
+  --my-astro-b: #e6b9a8;
+  --my-astro-halo: rgb(230 140 120 / 0.18);
+  --my-nevoa: 0.88;
+  --my-aura: 0.16;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"]:has(.afty-vital[data-afty-vital="pv"][data-afty-nivel="critico"]) {
+  --my-astro-escala: 1.3;
+  --my-astro-a: #e36d5c;
+  --my-astro-b: #c4473a;
+  --my-astro-halo: rgb(225 85 70 / 0.26);
+  --my-nevoa: 1;
+  --my-aura: 0.3;
+  --my-assinatura: rgb(240 140 126 / 0.7);
+}
+
+/* ============================================================
+   A PAISAGEM
+   Quatro camadas fixas ATRÁS dos cartões, e todas só mexem
+   `transform` e `opacity`:
+     1. o astro (o ::before da raiz), que respira e cresce com a Vida
+     2. as montanhas, a assinatura e o selo (o ::after da raiz), parados
+     3. a névoa que corre (o ::before do corpo)
+     4. as aves que planam (o ::after do corpo)
+   As duas do corpo moram na camada da imagem de fundo do app, que
+   este tema não usa. A ficha dentro do Encontro não leva nenhuma.
+   ============================================================ */
+
+@media screen {
+  /* 1. O ASTRO, no mesmo quadro das montanhas, para cair sempre no vão entre os picos. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::before {
+    inset: 0 auto auto 50%;
+    width: var(--my-quadro);
+    height: 100vh;
+    translate: -50% 0;
+    opacity: var(--my-astro-op);
+    scale: var(--my-astro-escala);
+    transform-origin: var(--my-cx) calc(100vh * var(--my-ay));
+    background-image: var(--my-corpo);
+    background-size: var(--my-at) var(--my-at);
+    background-position: calc(var(--my-cx) - var(--my-at) / 2) calc(100vh * var(--my-ay) - var(--my-at) / 2);
+    background-repeat: no-repeat;
+    animation: my-respira 20s ease-in-out infinite;
+    transition: opacity 1.8s ease, scale 2.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* 2. AS MONTANHAS. O desenho está no bloco de baixo, junto da cortina da virada. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::after {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    width: var(--my-quadro);
+    height: 100vh;
+    translate: -50% 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: var(--my-serras-op);
+    transition: opacity 1.6s ease;
+  }
+
+  /* 3. A NÉVOA. A camada tem 1600px a mais que a tela e anda exatamente 1600px para a
+     esquerda: os ladrilhos têm 1600 ou 800 de largura, então o laço fecha sem emenda. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida]) .afty-ficha-corpo::before {
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: calc(100vw + 1600px);
+    height: 100vh;
+    min-height: 0;
+    z-index: -1;
+    opacity: var(--my-nevoa);
+    background-image:
+      radial-gradient(ellipse 300px 26px at 260px 63%, var(--my-nv) 0, color-mix(in srgb, var(--my-nv) 45%, transparent) 48%, transparent 72%),
+      radial-gradient(ellipse 420px 34px at 980px 71%, var(--my-nv) 0, color-mix(in srgb, var(--my-nv) 40%, transparent) 50%, transparent 74%),
+      radial-gradient(ellipse 240px 20px at 1380px 57%, var(--my-nv) 0, color-mix(in srgb, var(--my-nv) 40%, transparent) 46%, transparent 70%),
+      radial-gradient(ellipse 360px 30px at 520px 82%, var(--my-nv) 0, color-mix(in srgb, var(--my-nv) 45%, transparent) 50%, transparent 74%),
+      radial-gradient(ellipse 200px 16px at 300px 79%, var(--my-nv) 0, transparent 70%),
+      radial-gradient(ellipse 150px 12px at 610px 43%, color-mix(in srgb, var(--my-nv) 80%, transparent) 0, transparent 70%),
+      radial-gradient(ellipse 110px 10px at 140px 37%, color-mix(in srgb, var(--my-nv) 70%, transparent) 0, transparent 70%);
+    background-size: 1600px 100%, 1600px 100%, 1600px 100%, 1600px 100%, 800px 100%, 1600px 100%, 800px 100%;
+    background-position: 0 0;
+    background-repeat: repeat-x;
+    animation: my-nevoa 240s linear infinite;
+    transition: opacity 2.4s ease;
+  }
+
+  /* 4. AS AVES. Cada ave é um par de arcos, as asas abertas vistas de longe. O bando está
+     desenhado duas vezes, a segunda cópia uma tela à direita, e a camada anda uma tela
+     inteira para a esquerda: quando a primeira sai, a segunda já está no lugar dela. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida]) .afty-ficha-corpo::after {
+    content: "";
+    position: fixed;
+    inset: 0 auto auto 0;
+    width: 200vw;
+    height: 100vh;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--my-aves);
+    --my-asa: radial-gradient(ellipse 50% 100% at 50% 100%, transparent 56%, var(--my-ave) 64% 84%, transparent 93%);
+    background-image:
+      var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa),
+      var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa),
+      var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa),
+      var(--my-asa), var(--my-asa), var(--my-asa), var(--my-asa);
+    background-size:
+      14px 7px, 14px 7px, 10px 5px, 10px 5px, 8px 4px, 8px 4px, 12px 6px, 12px 6px,
+      7px 4px, 7px 4px, 11px 5px, 11px 5px, 9px 4px, 9px 4px,
+      14px 7px, 14px 7px, 10px 5px, 10px 5px, 8px 4px, 8px 4px, 12px 6px, 12px 6px,
+      7px 4px, 7px 4px, 11px 5px, 11px 5px, 9px 4px, 9px 4px;
+    background-position:
+      62vw 27vh, calc(62vw + 13px) 27vh,
+      66vw 30vh, calc(66vw + 9px) 30vh,
+      69vw 26vh, calc(69vw + 7px) 26vh,
+      18vw 41vh, calc(18vw + 11px) 41vh,
+      22vw 38vh, calc(22vw + 6px) 38vh,
+      84vw 46vh, calc(84vw + 10px) 46vh,
+      40vw 23vh, calc(40vw + 8px) 23vh,
+      162vw 27vh, calc(162vw + 13px) 27vh,
+      166vw 30vh, calc(166vw + 9px) 30vh,
+      169vw 26vh, calc(169vw + 7px) 26vh,
+      118vw 41vh, calc(118vw + 11px) 41vh,
+      122vw 38vh, calc(122vw + 6px) 38vh,
+      184vw 46vh, calc(184vw + 10px) 46vh,
+      140vw 23vh, calc(140vw + 8px) 23vh;
+    background-repeat: no-repeat;
+    animation: my-aves 260s linear infinite;
+    transition: opacity 2s ease;
+  }
+}
+
+/* NO CELULAR não há margem: o cartão vai de borda a borda e o astro fica sempre atrás dele.
+   Então ele perde o disco e vira só um clarão macio, para um vão entre cartões mostrar luz
+   e não uma barra. A cor e o tamanho seguem reagindo à Vida. */
+@media screen and (max-width: 640px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha),
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] {
+    --my-cx: calc(var(--my-quadro) * 0.555);
+    --my-ay: 0.5;
+    --my-at: 80vmin;
+    --my-corpo:
+      radial-gradient(circle closest-side, color-mix(in srgb, var(--my-astro-a) 46%, transparent) 0, color-mix(in srgb, var(--my-astro-a) 20%, transparent) 36%, transparent 78%);
+  }
+}
+
+/* ============================================================
+   AS MONTANHAS, A ASSINATURA E O SELO
+   O mesmo desenho serve ao fundo da ficha e à cortina da virada.
+   Cada pico é uma elipse com o centro no pé do quadro: o miolo é
+   claro e a tinta junta na borda, como na aguada. A névoa é uma
+   faixa da cor do papel que sobe por cima de cada cordilheira.
+   A ordem é de cima para baixo: perto, meio, longe.
+   ============================================================ */
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::after,
+.afty-virada::after {
+  content: "明月";
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  box-sizing: border-box;
+  writing-mode: vertical-rl;
+  /* O canto do selo, de onde a assinatura também se alinha. No celular o quadro passa da tela,
+     e a conta traz o canto de volta para dentro dela. */
+  --my-sx: calc((var(--my-quadro) - 100vw) / 2 + 26px);
+  --my-sy: 7vh;
+  --my-tinta-selo: linear-gradient(var(--my-selo-texto), var(--my-selo-texto));
+  /* A assinatura: a coluna encosta à esquerda (fim do bloco, na escrita vertical) e para acima do selo. */
+  padding-block-end: var(--my-sx);
+  padding-inline-end: calc(var(--my-sy) + 42px);
+  font-family: "Shippori Mincho", "Yu Mincho", serif;
+  font-weight: 700;
+  font-size: clamp(22px, 3.2vmin, 34px);
+  line-height: 1;
+  letter-spacing: 0.22em;
+  color: var(--my-assinatura);
+  background-image:
+    /* O SELO, 28px: o quadrado de cinábrio, um fio de papel rente à borda e o 月 em
+       traços de papel (a perna esquerda que varre, a direita com o gancho, a tampa e
+       os dois traços de dentro), como um selo de letra branca. */
+    var(--my-tinta-selo), var(--my-tinta-selo), var(--my-tinta-selo), var(--my-tinta-selo),
+    var(--my-tinta-selo), var(--my-tinta-selo), var(--my-tinta-selo), var(--my-tinta-selo),
+    var(--my-tinta-selo), var(--my-tinta-selo), var(--my-tinta-selo),
+    linear-gradient(var(--my-selo), var(--my-selo)),
+    /* PERTO: os morros redondos de azurita e malaquita, chapados, com a tinta só na borda. */
+    linear-gradient(to top, var(--my-nv-b) 0, color-mix(in srgb, var(--my-nv-b) 70%, transparent) 2.5%, transparent 9%),
+    radial-gradient(ellipse 13% 13% at 8% 100%, var(--my-sa) 0 80%, var(--my-sa-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 12% 9.5% at 22% 100%, var(--my-sj) 0 80%, var(--my-sj-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 11% 12% at 37% 100%, var(--my-sa) 0 80%, var(--my-sa-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 15% 8% at 51% 100%, var(--my-sj) 0 80%, var(--my-sj-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 12% 14% at 66% 100%, var(--my-sj) 0 80%, var(--my-sj-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 13% 10% at 80% 100%, var(--my-sa) 0 80%, var(--my-sa-r) 95%, transparent 98.5%),
+    radial-gradient(ellipse 11% 12.5% at 95% 100%, var(--my-sj) 0 80%, var(--my-sj-r) 95%, transparent 98.5%),
+    /* MEIO e LONGE: os pilares de pedra de Guilin, o tema clássico da pintura de
+       montanha. Cada pilar é meia elipse alta saindo do pé do quadro, chapada, com a
+       tinta juntando no cume e nas encostas. Os mais baixos vêm na frente. */
+    linear-gradient(to top, var(--my-nv-b) 0 6%, transparent 24%),
+    radial-gradient(ellipse 5.6% 22% at 26% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 6.2% 24% at 41% 100%, var(--my-sm2) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.9% 24% at 86% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.9% 25% at 10% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.9% 26% at 56% 100%, var(--my-sm2) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 6.2% 26% at 99.5% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 6.4% 27% at 71% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7.3% 29% at 33% 100%, var(--my-sm2) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7% 30% at 2% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7.3% 30% at 93% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 8.1% 31% at 48% 100%, var(--my-sm2) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7.6% 33% at 63% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7.7% 34% at 18% 100%, var(--my-sm) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    radial-gradient(ellipse 7.8% 35% at 79% 100%, var(--my-sm2) 0 84%, var(--my-sm-r) 96%, transparent 99%),
+    /* O vão entre o pilar de 36% e o de 52% é onde mora o sol. */
+    linear-gradient(to top, var(--my-nv-b) 0 22%, transparent 50%),
+    radial-gradient(ellipse 4.2% 38% at 9.5% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 3.9% 41% at 31.5% 100%, var(--my-sl2) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 3.9% 42% at 56.5% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.2% 43% at 98% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.5% 44% at 21% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.2% 44% at 76.5% 100%, var(--my-sl2) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.4% 46% at 4% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.5% 46% at 87.5% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.1% 47% at 36% 100%, var(--my-sl2) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.5% 49% at 66.5% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 4.8% 50% at 52% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.1% 51% at 93% 100%, var(--my-sl2) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 6.3% 52% at 15% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.4% 54% at 71% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.7% 57% at 82% 100%, var(--my-sl2) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 5.7% 58% at 27% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%),
+    radial-gradient(ellipse 6% 62% at 61.5% 100%, var(--my-sl) 0 84%, var(--my-sl-r) 96%, transparent 99%);
+  /* ⚠ Um tamanho e uma posição para CADA camada, na mesma ordem: lista mais curta se
+     repete e jogaria as montanhas no lugar do selo. 12 do selo, depois 41 da paisagem
+     (8 de perto, 15 do meio e 18 de longe, contando a faixa de névoa de cada uma). */
+  background-size:
+    25px 1px, 25px 1px, 1px 25px, 1px 25px,
+    2.4px 16px, 2.6px 3px, 2.4px 15px, 5px 2px, 11.3px 2.2px, 7px 1.8px, 7px 1.8px,
+    28px 28px,
+    auto, auto, auto, auto, auto, auto, auto, auto,
+    auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto,
+    auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto, auto;
+  background-position:
+    left calc(var(--my-sx) + 1.5px) bottom calc(var(--my-sy) + 25.5px),
+    left calc(var(--my-sx) + 1.5px) bottom calc(var(--my-sy) + 1.5px),
+    left calc(var(--my-sx) + 1.5px) bottom calc(var(--my-sy) + 1.5px),
+    left calc(var(--my-sx) + 25.5px) bottom calc(var(--my-sy) + 1.5px),
+    left calc(var(--my-sx) + 8.5px) bottom calc(var(--my-sy) + 6px),
+    left calc(var(--my-sx) + 6.6px) bottom calc(var(--my-sy) + 5.5px),
+    left calc(var(--my-sx) + 17.4px) bottom calc(var(--my-sy) + 7px),
+    left calc(var(--my-sx) + 14.8px) bottom calc(var(--my-sy) + 6px),
+    left calc(var(--my-sx) + 8.5px) bottom calc(var(--my-sy) + 19.8px),
+    left calc(var(--my-sx) + 10.5px) bottom calc(var(--my-sy) + 15.2px),
+    left calc(var(--my-sx) + 10.5px) bottom calc(var(--my-sy) + 10.8px),
+    left var(--my-sx) bottom var(--my-sy),
+    0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
+    0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0,
+    0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0;
+  background-repeat: no-repeat;
+}
+
+/* No celular não há margem ao lado dos cartões, e a assinatura e o selo ficariam atrás do
+   texto. Somem. Mora DEPOIS do bloco de cima, que tem a mesma força. */
+@media screen and (max-width: 640px) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::after,
+  .afty-virada::after {
+    color: transparent;
+    --my-selo: transparent;
+    --my-tinta-selo: linear-gradient(transparent, transparent);
+  }
+}
+
+@keyframes my-respira {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.03); }
+}
+
+@keyframes my-nevoa {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-1600px); }
+}
+
+@keyframes my-aves {
+  0%   { transform: translate(0, 0); }
+  25%  { transform: translate(-25vw, -14px); }
+  50%  { transform: translate(-50vw, 4px); }
+  75%  { transform: translate(-75vw, -8px); }
+  100% { transform: translate(-100vw, 0); }
+}
+
+/* ============================================================
+   A VIRADA
+   `.afty-virada` só existe enquanto a face troca, por cima de tudo.
+   Ela é a paisagem sem a ficha: o céu, o astro no ::before e as
+   montanhas no ::after, que ficam na frente dele. O céu é um degradê
+   três vezes mais alto que a tela e desliza: na primeira metade do
+   papel ao crepúsculo, na segunda do crepúsculo à noite. As montanhas
+   da cortina são silhuetas de crepúsculo, iguais nas duas metades,
+   para nada saltar quando as cores trocam no meio.
+   ============================================================ */
+
+.afty-virada {
+  opacity: 0;
+  overflow: hidden;
+  --my-sl: #8c8aa6;
+  --my-sl2: #807e9e;
+  --my-sl-r: #7a7898;
+  --my-sm: #5f6386;
+  --my-sm2: #575b7e;
+  --my-sm-r: #52567a;
+  --my-sa: #2d3a5c;
+  --my-sa-r: #263252;
+  --my-sj: #2b4152;
+  --my-sj-r: #23384a;
+  --my-nv-b: rgb(200 170 175 / 0.32);
+  --my-assinatura: rgb(240 230 220 / 0.55);
+  --my-selo: #b3302a;
+  background-image: linear-gradient(180deg, #e3e5dd 0%, #e6dccb 14%, #e9b48e 28%, #c9656a 40%, #6a4a78 52%, #2a2f55 66%, #111a2a 82%, #0b1316 100%);
+  background-size: 100% 300%;
+  background-position: 0 0;
+}
+
+/* Da noite para o dia, o mesmo céu ao contrário: noite, alvorada, papel. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"][data-afty-virando="saindo"] > .afty-virada,
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="1"][data-afty-virando="chegando"] > .afty-virada {
+  background-image: linear-gradient(180deg, #0b1316 0%, #121c30 16%, #3a3f6e 30%, #a0607a 42%, #eba27e 54%, #f2d3a6 68%, #e8e2d2 84%, #e3e5dd 100%);
+}
+
+/* O astro da cortina é o MESMO desenho do fundo, no mesmo lugar e do mesmo tamanho:
+   no começo ele coincide com o de trás, e no fim pousa em cima dele. */
+.afty-virada::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto auto 50%;
+  width: var(--my-quadro);
+  height: 100vh;
+  translate: -50% 0;
+  scale: var(--my-astro-escala);
+  transform-origin: var(--my-cx) calc(100vh * var(--my-ay));
+  background-image: var(--my-disco);
+  background-size: var(--my-at) var(--my-at);
+  background-position: calc(var(--my-cx) - var(--my-at) / 2) calc(100vh * var(--my-ay) - var(--my-at) / 2);
+  background-repeat: no-repeat;
+}
+
+/* As montanhas da cortina ganham camada própria: o céu atrás delas desliza (`background-position`)
+   e, sem isto, as cinquenta camadas de degradê seriam repintadas a cada quadro da virada. */
+.afty-virada::after {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--my-quadro);
+  height: 100vh;
+  translate: -50% 0;
+  will-change: transform;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando="saindo"] > .afty-virada {
+  animation:
+    my-cobre calc(var(--afty-face-virada) / 2) ease-out forwards,
+    my-ceu-1 calc(var(--afty-face-virada) / 2) ease-in-out forwards;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando="saindo"] > .afty-virada::before {
+  animation: my-poe calc(var(--afty-face-virada) / 2) cubic-bezier(0.5, 0, 0.85, 0.55) forwards;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando="chegando"] > .afty-virada {
+  animation:
+    my-descobre calc(var(--afty-face-virada) / 2) ease-in both,
+    my-ceu-2 calc(var(--afty-face-virada) / 2) ease-in-out both;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando="chegando"] > .afty-virada::before {
+  animation: my-nasce calc(var(--afty-face-virada) / 2) cubic-bezier(0.15, 0.55, 0.3, 1) both;
+}
+
+@keyframes my-cobre {
+  0%   { opacity: 0; }
+  36%  { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+@keyframes my-descobre {
+  0%   { opacity: 1; }
+  52%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes my-ceu-1 {
+  from { background-position: 0 0; }
+  to   { background-position: 0 50%; }
+}
+
+@keyframes my-ceu-2 {
+  from { background-position: 0 50%; }
+  to   { background-position: 0 100%; }
+}
+
+/* O astro desce devagar e acelera, como quem cai atrás das montanhas. */
+@keyframes my-poe {
+  0%   { transform: translateY(0); }
+  18%  { transform: translateY(0); }
+  100% { transform: translateY(78vh); }
+}
+
+/* E o outro sobe detrás delas e desacelera até pousar. */
+@keyframes my-nasce {
+  0%   { transform: translateY(78vh); }
+  62%  { transform: translateY(0); }
+  100% { transform: translateY(0); }
+}
+
+/* ============================================================
+   CABEÇALHO
+   A faixa que gruda é chapada, da cor do papel, para o texto que
+   rola por baixo não aparecer. O fio da base é uma pincelada de
+   jade com o cinábrio no meio.
+   ============================================================ */
+
+.afty-cabecalho:not(.afty-placa, .afty-faixa-fina)::after {
+  height: 2px;
+  bottom: -1px;
+  opacity: 0.9;
+  background: linear-gradient(90deg, transparent 2%, color-mix(in srgb, var(--my-jade) 70%, transparent) 16%, var(--my-jade) 34%, var(--my-cinabrio) 50%, var(--my-jade) 66%, color-mix(in srgb, var(--my-jade) 70%, transparent) 84%, transparent 98%);
+}
+
+/* A PLACA. Papel, cantos secos, um clarão de jade atrás do retrato e uma
+   cordilheira apagada no canto direito, por trás dos comandos. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-placa {
+  border-radius: 4px;
+}
+
+.afty-placa {
+  border-color: color-mix(in srgb, var(--afty-texto) 16%, transparent);
+  background-color: var(--afty-card);
+  background-image:
+    radial-gradient(ellipse 9% 70% at 92% 100%, color-mix(in srgb, var(--my-sl-r) 55%, transparent) 0, color-mix(in srgb, var(--my-sl-r) 30%, transparent) 96%, transparent 99%),
+    radial-gradient(ellipse 7% 95% at 97% 100%, color-mix(in srgb, var(--my-sl-r) 45%, transparent) 0, color-mix(in srgb, var(--my-sl-r) 22%, transparent) 96%, transparent 99%),
+    radial-gradient(ellipse 6% 55% at 87% 100%, color-mix(in srgb, var(--my-sl-r) 38%, transparent) 0, color-mix(in srgb, var(--my-sl-r) 18%, transparent) 96%, transparent 99%),
+    radial-gradient(120% 160% at 0% 0%, color-mix(in srgb, var(--my-jade) 14%, transparent), transparent 52%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.5) inset, 0 14px 30px -22px rgb(27 50 56 / 0.5), 0 0 34px 0 color-mix(in srgb, var(--my-cinabrio) calc(var(--my-aura) * 100%), transparent);
+  transition: box-shadow 1.8s ease;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] .afty-placa {
+  box-shadow: 0 14px 30px -18px rgb(0 0 0 / 0.85), 0 0 34px 0 color-mix(in srgb, var(--my-cinabrio) calc(var(--my-aura) * 100%), transparent);
+}
+
+/* AS CANTONEIRAS do site: um L de cinábrio no canto de cima à esquerda e outro
+   no canto de baixo à direita, um pouco para fora da placa. */
+/* ⚠ A placa também leva a classe do cabeçalho, e o ::after dela herda do app o fio da faixa
+   (`left: 0`, 1px de altura, meia opacidade). Sem zerar `left`, `opacity` e o fundo, a
+   cantoneira da direita ia parar embaixo do retrato, apagada. */
+.afty-placa::before,
+.afty-placa::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: auto;
+  width: 20px;
+  height: 20px;
+  opacity: 1;
+  background: none;
+  pointer-events: none;
+  border: 2px solid var(--my-cinabrio);
+}
+
+.afty-placa::before {
+  top: -5px;
+  left: -5px;
+  border-right: 0;
+  border-bottom: 0;
+}
+
+.afty-placa::after {
+  right: -5px;
+  bottom: -5px;
+  border-left: 0;
+  border-top: 0;
+}
+
+/* O RETRATO ganha a sombra dura deslocada das molduras do site. É a única no tema. */
+.afty-placa .afty-retrato {
+  box-shadow: 6px 6px 0 0 var(--my-cinabrio);
+}
+
+/* O NOME é título de dossiê, em caixa alta condensada. Ao lado, o selo de
+   cinábrio com 明月, carimbado meio torto. */
+.afty-nome {
+  font-family: var(--afty-fonte-titulo);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+  color: var(--afty-texto);
+}
+
+.afty-nome::after {
+  content: "明月";
+  display: inline-block;
+  vertical-align: 0.2em;
+  margin-left: 0.45em;
+  padding: 3px 2px 2px;
+  writing-mode: vertical-rl;
+  font-family: "Shippori Mincho", "Yu Mincho", serif;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: none;
+  /* A Mincho tem o traço horizontal fino, que some num selo deste tamanho: o contorno o engrossa. */
+  -webkit-text-stroke: 0.4px currentColor;
+  color: var(--my-selo-texto);
+  background: var(--my-selo);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--my-selo-texto) 45%, transparent);
+  rotate: -4deg;
+}
+
+/* O BOTÃO DE FACE é um selo com a metade do nome que está valendo: 日 (o sol) de dia, em
+   cinábrio, e 月 (a lua) de noite, em luar. Juntos, 明. O ícone do app some, e o desenho é
+   do tema. O prefixo da raiz é para vencer a regra do app para os botões do cabeçalho. */
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-face-botao {
+  position: relative;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-face-botao svg {
+  opacity: 0;
+}
+
+.afty-face-botao::before {
+  content: "日";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  font-family: "Shippori Mincho", "Yu Mincho", serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1;
+  -webkit-text-stroke: 0.5px currentColor;
+  color: var(--my-selo-texto);
+  background: var(--my-selo);
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--my-selo-texto) 40%, transparent);
+  rotate: -4deg;
+  transition: rotate 0.5s ease, box-shadow 0.4s ease;
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] .afty-face-botao::before {
+  content: "月";
+  color: #f5f2e4;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px rgb(245 242 228 / 0.55), 0 0 12px 0 rgb(150 205 210 / 0.28);
+}
+
+.afty-face-botao:hover::before {
+  rotate: 0deg;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--my-selo-texto) 70%, transparent), 0 0 0 3px color-mix(in srgb, var(--my-cinabrio) 18%, transparent);
+}
+
+.afty-guarda {
+  border-color: color-mix(in srgb, var(--my-cinabrio) 40%, var(--afty-borda));
+}
+
+.afty-guarda-valor {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-destaque-texto);
+}
+
+/* ============================================================
+   CHIPS
+   ============================================================ */
+
+.afty-chip {
+  border-color: color-mix(in srgb, var(--afty-texto) 22%, transparent);
+}
+
+.afty-chip[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   RECURSOS
+   Célula de dossiê: contorno fino tingido pelo recurso, o rótulo em
+   mono espaçado, o número condensado e a barra em gomos. A cor do
+   recurso já está na barra: sem faixa grossa de um lado só, que
+   punha quatro listras coloridas no cabeçalho.
+   ============================================================ */
+
+.afty-vital {
+  border: 1px solid color-mix(in srgb, var(--afty-vital-cor) 24%, transparent);
+  background: color-mix(in srgb, var(--afty-vital-cor) 6%, color-mix(in srgb, var(--afty-poco) 70%, transparent));
+}
+
+.afty-vital:hover {
+  border-color: color-mix(in srgb, var(--afty-vital-cor) 60%, transparent);
+}
+
+.afty-vital-rotulo {
+  font-family: var(--afty-fonte-num);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--afty-texto-suave);
+}
+
+.afty-vital-numero {
+  font-weight: 600;
+}
+
+.afty-vital-trilho {
+  background: color-mix(in srgb, var(--afty-vital-cor) 12%, var(--afty-poco));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--afty-vital-cor) 18%, transparent);
+}
+
+.afty-vital-barra {
+  background-image: repeating-linear-gradient(90deg, transparent 0 11px, color-mix(in srgb, var(--afty-card) 55%, transparent) 11px 12px);
+}
+
+/* Com a Vida baixa o contorno ganha a cor dela. A crítica não pisca: a célula esquenta e
+   esfria devagar, como um coração. */
+.afty-vital[data-afty-vital="pv"][data-afty-nivel="baixo"],
+.afty-vital[data-afty-vital="pv"][data-afty-nivel="critico"] {
+  border-color: color-mix(in srgb, var(--afty-pv) 70%, transparent);
+}
+
+.afty-vital[data-afty-vital="pv"][data-afty-nivel="critico"] {
+  animation: my-pulsa 3.6s ease-in-out infinite;
+}
+
+@keyframes my-pulsa {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--afty-pv) 30%, transparent); }
+  50%      { box-shadow: 0 0 0 1px color-mix(in srgb, var(--afty-pv) 70%, transparent), 0 0 18px 0 color-mix(in srgb, var(--afty-pv) 28%, transparent); }
+}
+
+/* ============================================================
+   DEFESAS
+   No G2 a defesa é texto solto na faixa do cabeçalho, sem caixa.
+   ============================================================ */
+
+.afty-stat-rotulo {
+  font-family: var(--afty-fonte-num);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--afty-texto-suave);
+}
+
+.afty-stat-valor {
+  font-weight: 600;
+  color: var(--afty-texto);
+}
+
+.afty-stat[data-afty-stat="defesa"] .afty-stat-valor,
+.afty-stat[data-afty-stat="cd"] .afty-stat-valor {
+  color: var(--afty-destaque-texto);
+}
+
+/* ============================================================
+   ABAS
+   Condensadas e em caixa alta, como o menu do site. A ativa leva o
+   traço de cinábrio e um losango em cima dele.
+   ⚠ A largura das seis abas é orçamento: com a barra de rolagem na
+   mesma linha elas têm cerca de 580px em 1200 de tela. Com 14px e
+   0,06em elas mediam 603px e a barra caía para a linha de baixo.
+   ============================================================ */
+
+.afty-aba {
+  font-family: var(--afty-fonte-titulo);
+  font-size: 13.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.afty-aba:hover {
+  color: var(--afty-destaque-texto);
+}
+
+.afty-aba[aria-selected="true"] {
+  color: var(--afty-texto);
+}
+
+:is(:scope#afty-ficha, #afty-ficha#afty-ficha) .afty-aba[aria-selected="true"]::after {
+  height: 2px;
+  left: 14px;
+  right: 14px;
+  border-radius: 0;
+  background: var(--my-cinabrio);
+}
+
+.afty-aba[aria-selected="true"]::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 6px;
+  height: 6px;
+  translate: -50% 0;
+  rotate: 45deg;
+  background: var(--my-cinabrio);
+}
+
+/* ============================================================
+   CARTÕES
+   Papel translúcido, para a paisagem atravessar a ficha. SEM
+   `backdrop-filter`, que prenderia o painel de fontes. A marca de
+   cinábrio no canto de cima é o índice do dossiê, e cada título
+   leva o losango vazado da cronologia do site.
+   ============================================================ */
+
+.afty-card {
+  background-color: color-mix(in srgb, var(--afty-card) var(--my-papel), transparent);
+  background-image: linear-gradient(var(--my-cinabrio), var(--my-cinabrio));
+  background-size: 44px 2px;
+  background-position: 0 0;
+  background-repeat: no-repeat;
+  border: 1px solid var(--afty-borda);
+  box-shadow: var(--afty-sombra);
+}
+
+.afty-card-titulo {
+  font-family: var(--afty-fonte-titulo);
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--afty-texto);
+}
+
+/* O losango vazado de cinábrio. ⚠ Não numerar os blocos com contador: no celular cada
+   cartão isola a própria contagem (contenção de estilo do G2) e todos saíam 01. */
+.afty-card-titulo::before {
+  content: "";
+  align-self: center;
+  flex: none;
+  width: 6px;
+  height: 6px;
+  margin: 0 3px 0 1px;
+  border: 1.5px solid var(--my-cinabrio);
+  rotate: 45deg;
+}
+
+/* A régua depois do título, de largura FIXA: o título nem sempre é o único filho da linha. */
+.afty-card-titulo::after {
+  content: "";
+  align-self: center;
+  width: 2.2rem;
+  height: 1px;
+  flex: none;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--afty-texto) 40%, transparent), transparent);
+}
+
+/* ============================================================
+   LINHAS E VALORES
+   No G2 a linha é uma faixa de borda a borda do cartão: só cor.
+   ============================================================ */
+
+.afty-linha:hover {
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--my-jade) 12%, transparent), transparent 70%);
+}
+
+/* A linha em destaque leva o filete do site na margem: cinábrio. */
+.afty-linha[data-afty-destacada="sim"] {
+  background-color: var(--afty-destaque-fundo);
+  box-shadow: inset 2px 0 0 0 var(--my-cinabrio);
+}
+
+.afty-linha[data-afty-alvo="sim"] {
+  background-color: color-mix(in srgb, var(--my-jade) 20%, var(--afty-poco));
+}
+
+.afty-rotulo {
+  color: var(--afty-texto-suave);
+}
+
+.afty-valor {
+  color: var(--afty-destaque-texto);
+  font-weight: 600;
+}
+
+.afty-rolavel:hover {
+  color: var(--my-cinabrio);
+}
+
+.afty-texto {
+  color: var(--afty-texto-suave);
+}
+
+.afty-vazio {
+  color: var(--afty-texto-fraco);
+  font-style: italic;
+}
+
+.afty-opcao {
+  color: var(--afty-destaque-texto);
+}
+
+.afty-estrela:hover {
+  color: var(--my-cinabrio);
+}
+
+/* ============================================================
+   ATRIBUTOS
+   ============================================================ */
+
+.afty-atributo {
+  background: color-mix(in srgb, var(--afty-poco) 88%, transparent);
+  border: 1px solid var(--afty-borda);
+}
+
+.afty-atributo-rotulo {
+  font-family: var(--afty-fonte-num);
+  letter-spacing: 0.14em;
+  color: var(--afty-texto-suave);
+}
+
+.afty-atributo-valor {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+/* ============================================================
+   CONTROLES
+   ============================================================ */
+
+.afty-botao:hover,
+.afty-passo:hover {
+  border-color: var(--my-cinabrio);
+  color: var(--afty-texto);
+}
+
+.afty-botao[data-afty-tom="destaque"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  color: var(--afty-destaque-texto);
+  background: var(--afty-destaque-fundo);
+}
+
+/* ============================================================
+   EFEITOS  ·  a aba do G2
+   ============================================================ */
+
+.afty-efeito[aria-current="true"],
+.afty-catalogo-linha[aria-current="true"] {
+  border-color: color-mix(in srgb, var(--afty-destaque) 55%, transparent);
+  background-image: linear-gradient(90deg, color-mix(in srgb, var(--my-jade) 14%, transparent), transparent 70%);
+  box-shadow: inset 2px 0 0 0 var(--my-cinabrio);
+}
+
+/* ============================================================
+   TEXTO RICO
+   Cor, borda e fundo destes blocos são escritos no elemento. Daqui
+   só se mexe em fonte e entrelinha.
+   ============================================================ */
+
+.afty-tr-h1,
+.afty-tr-h2 {
+  font-family: var(--afty-fonte-titulo);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.afty-tr-p {
+  line-height: 1.62;
+}
+
+/* ============================================================
+   CAMADAS FLUTUANTES
+   Opacas, porque são lidas por cima da ficha. Levam a sombra dura
+   do player do site: aparecem pouco e por pouco tempo.
+   ============================================================ */
+
+.afty-fontes,
+.afty-canal-painel,
+.afty-busca {
+  background: var(--afty-card);
+  border: 1px solid color-mix(in srgb, var(--afty-texto) 30%, transparent);
+  box-shadow: 5px 5px 0 0 color-mix(in srgb, var(--my-cinabrio) 85%, transparent), 0 18px 36px -16px rgb(0 0 0 / 0.4);
+}
+
+.afty-fonte-total {
+  border-top: 1px solid var(--my-fio);
+  color: var(--afty-destaque-texto);
+}
+
+.afty-busca-item:hover,
+.afty-canal-item:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--my-jade) 14%, transparent), transparent);
+}
+
+.afty-canal-grupo {
+  font-family: var(--afty-fonte-num);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--afty-destaque-texto);
+}
+
+.afty-rolagem-total {
+  font-family: var(--afty-fonte-titulo);
+  color: var(--afty-texto);
+}
+
+/* O crítico sai em cinábrio, como o carimbo. A pífia é cinza. */
+.afty-rolagem[data-afty-marca="critico"] .afty-rolagem-total {
+  color: var(--my-cinabrio);
+}
+
+.afty-rolagem[data-afty-marca="pifia"] .afty-rolagem-total {
+  color: var(--afty-texto-fraco);
+}
+
+.afty-dado {
+  background: var(--afty-poco);
+  border: 1px solid var(--afty-borda);
+}
+
+/* A seleção de texto é cinábrio sobre papel, como no site. */
+::selection {
+  background: var(--my-cinabrio);
+  color: #fbf6ee;
+}
+
+/* ============================================================
+   MENOS MOVIMENTO
+   ============================================================ */
+
+/* ⚠ Os seletores repetem a força dos que animam (a raiz com o :not, o corpo com a raiz na
+   frente, a cortina com o atributo da virada). Com seletor mais fraco a névoa e as aves
+   seguiam correndo para quem pediu menos movimento. */
+@media (prefers-reduced-motion: reduce) {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::before,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::after,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida]) .afty-ficha-corpo::before,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida]) .afty-ficha-corpo::after,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando] > .afty-virada,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-virando] > .afty-virada::before,
+  .afty-virada::after,
+  .afty-placa,
+  .afty-face-botao::before,
+  .afty-vital[data-afty-vital="pv"][data-afty-nivel="critico"] {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ============================================================
+   IMPRESSÃO
+   O app já devolve fundo, cartão, borda e texto ao preto no
+   branco. Faltam o destaque, os recursos e a paisagem.
+   ============================================================ */
+
+@media print {
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha),
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha)[data-afty-face="2"] {
+    --afty-destaque: #334155;
+    --afty-destaque-texto: #0f172a;
+    --afty-destaque-fundo: transparent;
+    --afty-pv: #0f172a;
+    --afty-pe: #0f172a;
+    --afty-pvtemp: #334155;
+    --afty-alma: #0f172a;
+    --afty-proprio: #0f172a;
+    --afty-cura: #0f172a;
+    --afty-aviso: #0f172a;
+    --my-cinabrio: #334155;
+    --my-jade: #334155;
+    --my-fio: #cbd5e1;
+  }
+
+  /* A raiz com o :not, na mesma força da regra que desenha a paisagem: com seletor mais
+     fraco ela saía impressa no pé da página. */
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::before,
+  :is(:scope#afty-ficha, #afty-ficha#afty-ficha):not([data-afty-embutida])::after,
+  .afty-ficha-corpo::before,
+  .afty-ficha-corpo::after,
+  .afty-placa::before,
+  .afty-placa::after,
+  .afty-nome::after,
+  .afty-card-titulo::before,
+  .afty-card-titulo::after {
+    display: none;
+  }
+
+  .afty-card,
+  .afty-vital,
+  .afty-atributo,
+  .afty-placa {
+    background-color: #ffffff;
+    background-image: none;
+    box-shadow: none;
+    animation: none;
+  }
+
+  .afty-placa .afty-retrato,
+  .afty-linha[data-afty-destacada="sim"] {
+    box-shadow: none;
+  }
+
+  .afty-vital-barra {
+    background-image: none;
+  }
+}

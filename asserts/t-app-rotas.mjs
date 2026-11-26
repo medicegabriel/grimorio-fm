@@ -39,6 +39,7 @@ t("Jogador", ["/Player", "/player/", "/Jogador/Encontros"].map(tituloEm), Array(
 t("Afty", ["/Afty", "/afty/"].map(tituloEm), ["Grimório Afty", "Grimório Afty"]);
 t("Eclesiastes", ["/Eclesiastes", "/eclesiastes/Encontros/uma-luta"].map(tituloEm), ["Eclesiastes", "Eclesiastes"]);
 t("Sala", ["/Sala/ABC123", "/sala/nova"].map(tituloEm), ["Sala", "Sala"]);
+t("Comunidade", ["/Comunidade", "/comunidade/"].map(tituloEm), Array(2).fill("Comunidade | fichafm"));
 t("rota desconhecida fica no padrão", ["/foo", "/EraDeOuro/x"].map(tituloEm), ["Grimório F&M", "Grimório F&M"]);
 
 const APP = lê("../src/App.jsx");
@@ -63,7 +64,8 @@ const PAGINA = lê("../src/nuvem/SalaPagina.jsx");
 t("o Editar abre a rota do grupo", JOGADOR.includes("window.open(rotaDoGrupo(grupo)"), true);
 t("o Editar não abre mais /Player fixo", JOGADOR.includes('window.open("/Player"'), false);
 t("a Sala passa o grupo ao Voltar", PAGINA.includes("onVoltar?.(grupoDaSala)"), true);
-t("o App volta pela rota do grupo", APP.includes("location.assign(rotaDoGrupo(grupo))"), true);
+// Desde o rework dos Encontros (etapa 1) a Sala volta primeiro para onde foi aberta, e a rota do grupo é o padrão sem origem.
+t("o App volta pela rota do grupo", APP.includes("location.assign(lerOrigemDaSala(codigoDaSala) ?? rotaDoGrupo(grupo))"), true);
 t("o App não volta mais a /Player fixo", APP.includes('location.assign("/Player")'), false);
 
 console.log(bad.length ? `FALHAS (${bad.length}):\n` + bad.join("\n") : `TODOS OS ${ok} ASSERTS PASSARAM`);

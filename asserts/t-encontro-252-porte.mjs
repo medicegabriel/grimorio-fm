@@ -685,9 +685,10 @@ t("Dano na Alma e Condição pela operação", (() => {
   t("m252-vital.js diz de onde veio cada trecho (arquivo e linhas) e que é cópia fiel", ["CombatantPanel.jsx:1571-1649", "CombatantPanel.jsx:1650-1671", "CombatantPanel.jsx:1684-1784", "EncounterTracker.jsx:642-648", "useEncounter.js:116-140", "COPIA FIEL"].map((s) => vital.includes(s)), Array(6).fill(true));
   const imports = (arq) => readFileSync(pasta + arq, "utf8").split("\n").filter((l) => /from "/.test(l)).map((l) => l.match(/from "([^"]+)"/)[1]);
   /* Regra de 2026-11-17 (etapa 5): entrou o `ficha-uso-estado`, FOLHA do Afty com quem aplicou cada duração (`aplicadorDe`).
-     Da 2.5.2 continuam só os puros e exportados. */
+     Da 2.5.2 continuam só os puros e exportados. Em 2026-11-23 entrou o `fm-action-calc` (puro), pelo `textoDaAcao`: o texto
+     gerado da Ação, que o painel do Encontro não mostrava (feedback do lançamento, a Expansão do Jogo). */
   t("os imports da 2.5.2 são só os puros e exportados (nenhum componente de tela)", imports("m252-vital.js").sort(), [
-    "../../../../components/fm-automation", "../../../../components/fm-automation-entities", "../../../../components/fm-conditions",
+    "../../../../components/fm-action-calc", "../../../../components/fm-automation", "../../../../components/fm-automation-entities", "../../../../components/fm-conditions",
     "../../../../components/fm-dsl", "../../../../components/fm-modifiers", "../../../../components/fm-tables", "../../../../fm-encounter",
     "../../ficha/ficha-uso-estado",
   ]);

@@ -1020,6 +1020,10 @@ export const notacaoDano = (qtd, tipo) => `${qtd}d${tipo}`;
  * Nível 0 não aparece na tabela da habilidade, então não recebe bônus.
  */
 export function bonusConjuracaoAprimorada(nivel, ctx = {}) {
+  /* ⚠ SÓ O `false` EXPLÍCITO DESLIGA (2026-11-23). Quem decide é o `ctxFeiticos` do derive, pela divergência
+     `conjuracaoAprimoradaNoDano`: no jogador sem a habilidade ele manda `false`. Quem chama sem o campo (a
+     criatura, os asserts antigos) segue com o bônus grátis de sempre. */
+  if (ctx.conjuracaoAprimorada === false) return 0;
   const modTecnica = Math.trunc(Number(ctx.modTecnica) || 0);
   const nd = Math.max(0, Math.trunc(Number(ctx.nd) || 0));
   if (nivel === "max") return 3 * modTecnica + 3 * nd;

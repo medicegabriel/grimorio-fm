@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "shippori mincho",
+        "createdAt": "2026-11-25T21:53:38.121Z",
+        "reason": "Claude: CSS Personalizado de ficha do usuário (docs/tema-ming-yue.css), não o sistema visual do app. Shippori Mincho está na lista fechada FONTES_WEB de ficha-tema.js"
+      }
+    ]
+  }
+}

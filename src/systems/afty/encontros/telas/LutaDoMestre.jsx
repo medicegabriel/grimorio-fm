@@ -9,7 +9,7 @@ import { TIPO, MOTOR, ehLigado, estadoDoCombatente, fichaDoCombatente } from "..
 import { mensagemDaOperacao, ROTULO_OPERACAO } from "../operacoes";
 import { LOG_TIPOS } from "../afty-encontro";
 import {
-  Retrato, RotuloLado, BarraCurta, Aviso, CampoNumero, SeletorDeVisao, MarcaDeVisao, Dialogo, Confirmar, Vazio,
+  Retrato, RotuloLado, BarraCurta, Aviso, CampoNumero, SeletorDeVisao, MarcaDeVisao, Dialogo, Confirmar, Trilha, Vazio,
 } from "./pecas-encontro";
 import { useFaixaDeLargura, contagem } from "./pecas-dados";
 import PainelCriatura252 from "./PainelCriatura252";
@@ -94,14 +94,17 @@ function MenuMais({ itens }) {
   );
 }
 
-function TopoDaLuta({ encontro, ativo, faixa, onVoltar, acoes, onReforcos, onConfig, onEncerrar, registroAberto, onRegistro, acoesSala = null }) {
+function TopoDaLuta({ encontro, ativo, faixa, onVoltar, acoes, onReforcos, onConfig, onEncerrar, registroAberto, onRegistro, acoesSala = null, trilha = null }) {
   const estreita = faixa === "estreita";
   return (
     <header className="ec-topo">
-      <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros">
-        <ArrowLeft aria-hidden="true" />
-      </button>
+      {!trilha && (
+        <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros">
+          <ArrowLeft aria-hidden="true" />
+        </button>
+      )}
       <div className="ec-topo-titulo">
+        <Trilha itens={trilha} />
         <h1 className="ec-titulo" title={encontro.nome}>{encontro.nome}</h1>
         <p className="ec-subtitulo">
           <span>Rodada <b className="afty-valor">{encontro.rodada}</b></span>
@@ -499,7 +502,7 @@ function RegistroRecolhido({ encontro, derivado, onAbrir }) {
 /* A TELA                                                        */
 /* ============================================================ */
 
-export default function LutaDoMestre({ estado, onVoltar, onConfig, onEncerrar, acoesSala = null, painelSala = null }) {
+export default function LutaDoMestre({ estado, onVoltar, onConfig, onEncerrar, acoesSala = null, painelSala = null, trilha = null }) {
   const { encontro, derivado, acoes, mundo, inventario } = estado;
   const raiz = useRef(null);
   const faixa = useFaixaDeLargura(raiz, FAIXAS);
@@ -567,7 +570,7 @@ export default function LutaDoMestre({ estado, onVoltar, onConfig, onEncerrar, a
       <TopoDaLuta
         encontro={encontro} ativo={derivado.ativo} faixa={faixa} onVoltar={onVoltar} acoes={acoes}
         onReforcos={() => setReforcos(true)} onConfig={onConfig} onEncerrar={onEncerrar}
-        registroAberto={registroMedio} onRegistro={() => setRegistroMedio((v) => !v)} acoesSala={acoesSala}
+        registroAberto={registroMedio} onRegistro={() => setRegistroMedio((v) => !v)} acoesSala={acoesSala} trilha={trilha}
       />
       {faixa === "estreita" && (
         <div className="ec-paineis" role="tablist" aria-label="Painéis da Luta">

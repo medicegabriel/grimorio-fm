@@ -19,7 +19,7 @@ const resolucao = registerHooks({
     }
   },
 });
-const { CATEGORIAS, MAX_NIVEL, PERIODOS, VERSAO_RESUMO, resumoValido } = await (async () => {
+const { CATEGORIAS, MAX_NIVEL, PERIODOS, VERSAO_RESUMO, VERSAO_ACEITE_LOTE, resumoValido } = await (async () => {
   try {
     return await import("../src/systems/afty/balanceamento/resumo.js");
   } finally {
@@ -63,9 +63,12 @@ async function lerJson(request) {
 }
 
 function contribuicaoValida(dados, agora) {
-  if (!dados || typeof dados !== "object" || Array.isArray(dados) || Object.keys(dados).length !== 4
+  if (!dados || typeof dados !== "object" || Array.isArray(dados)
       || dados.versao !== VERSAO_RESUMO || typeof dados.chave !== "string" || !UUID_ALEATORIO.test(dados.chave)
       || typeof dados.salvoEm !== "string" || dados.salvoEm.length !== 24) return false;
+  const emLote = Object.hasOwn(dados, "aceiteLote");
+  if (Object.keys(dados).length !== (emLote ? 5 : 4)
+      || (emLote && (dados.aceiteLote !== VERSAO_ACEITE_LOTE || dados.resumo === null))) return false;
   const salvo = Date.parse(dados.salvoEm);
   return salvo >= agora - 24 * 60 * MINUTO && salvo <= agora + 5 * MINUTO
     && (dados.resumo === null || resumoValido(dados.resumo));
@@ -80,10 +83,13 @@ export async function receberContribuicao(request, supabase, agora = Date.now())
 
   const dados = await lerJson(request);
   if (!contribuicaoValida(dados, agora)) return erro(400);
+  const resumo = dados.aceiteLote
+    ? { ...dados.resumo, aceiteLote: { versao: dados.aceiteLote, aceitoEm: dados.salvoEm } }
+    : dados.resumo;
   const { error } = await supabase.rpc("balanceamento_gravar", {
     p_chave: createHash("sha256").update(dados.chave).digest("hex"),
     p_salvo_em: dados.salvoEm,
-    p_resumo: dados.resumo,
+    p_resumo: resumo,
   });
   if (error) {
     console.error("balanceamento_gravar", error.code);

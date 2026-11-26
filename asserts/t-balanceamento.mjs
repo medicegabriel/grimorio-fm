@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 // A entrada do servidor prepara a resolução dos módulos do catálogo no Node.
 import { obterRelatorio, receberContribuicao, servicoSupabase } from "../server/balanceamento.js";
-import { CHAVE_PREFERENCIA, enviarResumoDaFicha } from "../src/systems/afty/balanceamento/coleta.js";
+import {
+  CHAVE_PREFERENCIA, enviarResumoDaFicha, fichasParaIncluir, incluirFichasJaSalvas,
+} from "../src/systems/afty/balanceamento/coleta.js";
 
 const { CATEGORIAS, resumirFicha, resumoValido } = await import("../src/systems/afty/balanceamento/resumo.js");
 let ok = 0;
@@ -66,6 +68,48 @@ armazenamento.set(CHAVE_PREFERENCIA, "desativada");
 await enviarResumoDaFicha(ficha, salvoEm, opcoes);
 t(envios.length, 4);
 
+const navegador = new Map();
+const local = { getItem: (key) => navegador.get(key) ?? null, setItem: (key, valor) => navegador.set(key, valor) };
+const fichasJaSalvas = [ficha, { ...ficha, id: "segunda-ficha" }, { ...ficha, id: "outra-edicao", edicaoDeRegras: "eclesiastes" }];
+const enviosLote = [];
+const opcoesLote = {
+  ativo: true, obterArmazenamento: () => local,
+  enviar: async (_url, req) => {
+    enviosLote.push(JSON.parse(req.body));
+    return enviosLote.length === 2 ? { ok: false, status: 429 } : { ok: true, status: 204 };
+  },
+};
+t(fichasParaIncluir(fichasJaSalvas, local).length, 2);
+t(enviosLote.length, 0);
+t(await incluirFichasJaSalvas(fichasJaSalvas, opcoesLote), { estado: "limite", enviadas: 1 });
+t(fichasParaIncluir(fichasJaSalvas, local).map((c) => c.id), ["segunda-ficha"]);
+t(await incluirFichasJaSalvas(fichasJaSalvas, opcoesLote), { estado: "concluida", enviadas: 1 });
+t(enviosLote.length, 3);
+t(enviosLote[1].chave, enviosLote[2].chave);
+t(enviosLote[0].salvoEm, enviosLote[1].salvoEm);
+t(enviosLote[0].aceiteLote, 1);
+t(Object.keys(enviosLote[0]).sort(), ["aceiteLote", "chave", "resumo", "salvoEm", "versao"]);
+t(enviosLote[0].resumo, resumo);
+t(navegador.has(CHAVE_PREFERENCIA), false);
+t(fichasParaIncluir(fichasJaSalvas, local), []);
+await enviarResumoDaFicha(ficha, salvoEm, opcoesLote);
+t(enviosLote.length, 3);
+navegador.set(CHAVE_PREFERENCIA, "desativada");
+t(await incluirFichasJaSalvas([{ ...ficha, id: "pendente" }], opcoesLote), { estado: "interrompida", enviadas: 0 });
+t(enviosLote.length, 3);
+
+const optOutNoEnvio = {
+  ...opcoesLote,
+  enviar: async () => {
+    navegador.set(CHAVE_PREFERENCIA, "desativada");
+    return { ok: true, status: 204 };
+  },
+};
+navegador.set(CHAVE_PREFERENCIA, "ativa");
+t(await incluirFichasJaSalvas([{ ...ficha, id: "pendente" }, { ...ficha, id: "terceira" }], optOutNoEnvio),
+  { estado: "interrompida", enviadas: 1 });
+t(fichasParaIncluir([{ ...ficha, id: "pendente" }, { ...ficha, id: "terceira" }], local).map((c) => c.id), ["terceira"]);
+
 const origem = "https://fichas.invalid";
 const contribuicao = (dados, origin = origem) => new Request(`${origem}/api/balanceamento/contribuicao`, {
   method: "POST", body: JSON.stringify(dados), headers: { Origin: origin, "Content-Type": "application/json" },
@@ -79,6 +123,10 @@ t((await receberContribuicao(contribuicao(primeiro), banco, agora)).status, 204)
 t(ultimaRpc.nome, "balanceamento_gravar");
 t(ultimaRpc.params.p_chave.length, 64);
 t(ultimaRpc.params.p_resumo, resumo);
+t((await receberContribuicao(contribuicao({ ...primeiro, aceiteLote: 1 }), banco, agora)).status, 204);
+t(ultimaRpc.params.p_resumo, { ...resumo, aceiteLote: { versao: 1, aceitoEm: salvoEm } });
+t((await receberContribuicao(contribuicao({ ...primeiro, aceiteLote: 8 }), banco, agora)).status, 400);
+t((await receberContribuicao(contribuicao({ ...primeiro, resumo: null, aceiteLote: 1 }), banco, agora)).status, 400);
 t((await receberContribuicao(contribuicao(primeiro, "https://outro.invalid"), banco, agora)).status, 403);
 t((await receberContribuicao(contribuicao({ ...primeiro, chave: randomUUID(), resumo: { ...resumo, id: ficha.id } }), banco, agora)).status, 400);
 t((await receberContribuicao(contribuicao({ ...primeiro, salvoEm: "2000-01-01T00:00:00.000Z" }), banco, agora)).status, 400);

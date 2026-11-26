@@ -2,12 +2,12 @@
 import { motorDe } from "./motores/index";
 import {
   MOTOR, TIPO, VISAO_ORDEM, CONFIG_PADRAO, combatenteDe, ehLigado, jogaTurno, proximoTurno, renumerarCopias,
-  normalizarDono,
+  normalizarDono, semIniciativa, estadoDoCombatente, comEstado, idNovo, TIPO_DE_VIRADA, normalizarVirada,
 } from "./modelo";
 import {
   ENCONTRO_STATUS, LADO, podeTransicionar, entradaDeLog, LOG_TIPOS, LOG_MAX, ordenarPorIniciativa, definirIniciativa,
 } from "./afty-encontro";
-import { aplicarOperacao, aplicarOperacoes, recusarPedido } from "./operacoes";
+import { aplicarOperacao, aplicarOperacoes, recusarPedido, diferencaEstrutural, aplicarDelta } from "./operacoes";
 import { encerraMobilidadeNoTurnoEmCurso, encerraCortesNoInicioDoTurno } from "../ficha/ficha-conteudo-manobras";
 import { encerraProvocacoesDaFonte } from "../ficha/ficha-conteudo-provocar";
 import { encerraCurasMedicinaDoTurno } from "../ficha/ficha-conteudo-medicina";
@@ -121,7 +121,18 @@ const encerraEfeitosDoTurno = (vista, turno) =>
 const encerraEfeitosDaFonte = (vista, id, motivo) =>
   encerraProvocacoesDaFonte(encerraCortesNoInicioDoTurno(vista, id, motivo), id, motivo);
 
-const comLog = (encontro, entradas) => ({ ...encontro, log: [...entradas, ...(encontro.log ?? [])].slice(0, LOG_MAX) });
+/* Cada chamada é um LOTE do Registro, com a marca em toda linha (rework, etapa 2, ver `registroEmOrdem` em afty-encontro.js). O
+   lote de uma virada é o id dela, para a linha do turno saber que o Voltar Turno a desfaz. */
+const comLog = (encontro, entradas, lote = idNovo("lote")) => ({
+  ...encontro,
+  log: [...entradas.map((e) => (e.lote ? e : { ...e, lote })), ...(encontro.log ?? [])].slice(0, LOG_MAX),
+});
+
+const semVirada = (encontro) => {
+  if (!Object.hasOwn(encontro, "ultimaVirada")) return encontro;
+  const { ultimaVirada: _fora, ...resto } = encontro;
+  return resto;
+};
 
 const noEncontro = (mundo, fn) => ({ ...mundo, encontro: fn(mundo.encontro) });
 
@@ -210,6 +221,94 @@ function puladosNaOrdem(encontro, proximoId, novaRodada) {
   const alvo = proximoId ? ordem.findIndex((c) => c.id === proximoId) : -1;
   if (!novaRodada) return { antes: ordem.slice(atual + 1, alvo === -1 ? ordem.length : alvo), depois: [] };
   return { antes: ordem.slice(atual + 1), depois: alvo === -1 ? [] : ordem.slice(0, alvo) };
+}
+
+/* ============================================================ */
+/* A ÚLTIMA VIRADA: VOLTAR TURNO E O REABRIR EXATO (rework, etapa 2, 2026-11-23) */
+/* ============================================================ */
+/*
+ * O Próximo Turno, a Nova Rodada e o Encerrar guardam em `encontro.ultimaVirada` o que mudaram: a Vez e a rodada de antes e de
+ * depois e, por combatente, o DELTA do estado (a mesma `diferencaEstrutural` das operações: durações que desceram no fim do turno
+ * de quem aplicou, recursos e Guarda de começo de rodada, recargas, a bancada que o Encerrar desliga). Voltar desfaz esses deltas
+ * pela conferência ESTRITA (`aplicarDelta` com `conferir`): se qualquer caminho mudou depois da virada (alguém tomou dano, a Ficha
+ * gastou um uso), nada volta e o Voltar fica indisponível. NUNCA por retrato: um retrato sobrescreveria a sessão viva da Ficha
+ * (`sessao-loja`) e o que o jogador mudou na Sala.
+ *
+ * Um nível só: a virada nova substitui a anterior, e voltar, começar ou reabrir a apagam. Mora no Encontro, que a Sala não publica.
+ */
+
+const momento = (e) => ({ status: e.status, ativoId: e.ativoId ?? null, rodada: e.rodada });
+
+/** A virada entre dois mundos: o delta do estado de cada combatente que mudou. */
+function medirVirada(antes, depois, tipo, id) {
+  const deltas = [];
+  for (const c of antes.encontro.combatentes) {
+    const cd = combatenteDe(depois.encontro, c.id);
+    const m = motorDe(c);
+    const ea = estadoDoCombatente(c, antes.sessoes);
+    const ed = cd ? estadoDoCombatente(cd, depois.sessoes) : null;
+    if (!m || !ea || !ed || ea === ed) continue;
+    const delta = diferencaEstrutural(ea, ed, m);
+    if (delta.length) deltas.push({ alvo: c.id, delta });
+  }
+  return { id, tipo, de: momento(antes.encontro), para: momento(depois.encontro), deltas, quando: Date.now() };
+}
+
+/** O mundo com os deltas da virada desfeitos, TUDO OU NADA. Devolve `{ mundo, ok, conflitos }`. */
+function desfazerDeltasDaVirada(mundo, virada) {
+  let m = mundo;
+  const conflitos = [];
+  for (const { alvo, delta } of virada.deltas) {
+    const c = combatenteDe(m.encontro, alvo);
+    const estado = c ? estadoDoCombatente(c, m.sessoes) : null;
+    if (!estado) { conflitos.push({ alvo, caminho: [], motivo: c ? "fichaAusente" : "combatenteAusente" }); continue; }
+    const inverso = delta.map((x) => ({ caminho: x.caminho, antes: x.depois, depois: x.antes }));
+    const r = aplicarDelta(estado, inverso, { conferir: true });
+    if (r.conflitos.length) { conflitos.push(...r.conflitos.map((k) => ({ alvo, ...k }))); continue; }
+    m = comEstado(m, alvo, r.estado);
+  }
+  return conflitos.length ? { mundo, ok: false, conflitos } : { mundo: m, ok: true, conflitos: [] };
+}
+
+/** O handler com a virada medida: o lote do Registro dele leva o id dela. */
+const comVirada = (m, tipo, fazer) => {
+  const id = idNovo("vir");
+  const depois = fazer(id);
+  if (depois === m) return m;
+  const virada = medirVirada(m, depois, tipo, id);
+  return noEncontro(depois, (e) => ({ ...e, ultimaVirada: virada }));
+};
+
+/**
+ * VOLTAR TURNO: desfaz o último Próximo Turno ou a última Nova Rodada. Puro. Devolve `{ mundo, ok, erro?, conflitos? }`, e com
+ * erro o mundo volta intacto. `erro` é "Nada a Voltar", "Turno Mudou" (a Vez ou a rodada já não são as da virada),
+ * "Combatente Ausente" (quem tinha a Vez saiu da luta) ou "Não Fecha" (com os caminhos que mudaram depois).
+ */
+export function voltarTurno(mundo) {
+  const e = mundo?.encontro;
+  const v = normalizarVirada(e?.ultimaVirada);
+  if (!v || (v.tipo !== TIPO_DE_VIRADA.TURNO && v.tipo !== TIPO_DE_VIRADA.RODADA)) return { mundo, ok: false, erro: "Nada a Voltar" };
+  if (e.status !== ENCONTRO_STATUS.ATIVO || (e.ativoId ?? null) !== v.para.ativoId || e.rodada !== v.para.rodada) {
+    return { mundo, ok: false, erro: "Turno Mudou" };
+  }
+  const quem = v.de.ativoId ? combatenteDe(e, v.de.ativoId) : null;
+  if (v.de.ativoId && !quem) return { mundo, ok: false, erro: "Combatente Ausente" };
+  const r = desfazerDeltasDaVirada(mundo, v);
+  if (!r.ok) return { mundo, ok: false, erro: "Não Fecha", conflitos: r.conflitos };
+  const outraRodada = v.de.rodada !== v.para.rodada;
+  const mensagem = quem
+    ? (outraRodada ? `Turno voltado para ${quem.nome}, Rodada ${v.de.rodada}.` : `Turno voltado para ${quem.nome}.`)
+    : `Turno voltado, Rodada ${v.de.rodada}.`;
+  const out = noEncontro(r.mundo, (x) => comLog({ ...semVirada(x), ativoId: v.de.ativoId, rodada: v.de.rodada }, [
+    entradaDeLog({ rodada: v.de.rodada, tipo: LOG_TIPOS.TURNO, combatenteId: v.de.ativoId, mensagem }),
+  ]));
+  return { mundo: out, ok: true, conflitos: [] };
+}
+
+/** O Voltar Turno está disponível agora? `{ pode, erro? }`, com o mesmo `erro` de `voltarTurno`. */
+export function podeVoltarTurno(mundo) {
+  const r = voltarTurno(mundo);
+  return r.ok ? { pode: true } : { pode: false, erro: r.erro };
 }
 
 /* ============================================================ */
@@ -382,9 +481,22 @@ const HANDLERS = {
     JSON.stringify(e.fundamentosSemGravar ?? []) === JSON.stringify(falhas) ? e : { ...e, fundamentosSemGravar: falhas }
   )),
 
-  COMECAR: (m, { derivados = {} } = {}) => {
+  /* COMEÇAR ROLA AS VAZIAS (rework, etapa 2, autor 2026-11-18): quem está sem iniciativa (`semIniciativa`, a mesma conta do
+     `validarInicio`) é sorteado aqui, antes da ordem. A rolagem chega FEITA em `rolagens` (por id), como no ROLAR_TODAS, e sem
+     ela o d20 rola aqui. O Registro diz quem foi rolado e com quanto. */
+  COMECAR: (m0, { derivados = {}, rolagens = {} } = {}) => {
+    if (!podeTransicionar(m0.encontro.status, ENCONTRO_STATUS.ATIVO)) return m0;
+    const vazias = new Set(m0.encontro.combatentes.filter(semIniciativa).map((c) => c.id));
+    const m = vazias.size ? noEncontro(m0, (x) => ({
+      ...x,
+      combatentes: x.combatentes.map((c) => {
+        if (!vazias.has(c.id)) return c;
+        const r = Math.max(1, rolagens?.[c.id] != null ? inteiro(rolagens[c.id], 0) : d20());
+        return { ...c, iniciativa: { ...c.iniciativa, rolagem: r, total: r + c.iniciativa.mod, manual: false } };
+      }),
+    })) : m0;
     const e = m.encontro;
-    if (!podeTransicionar(e.status, ENCONTRO_STATUS.ATIVO)) return m;
+    const roladas = e.combatentes.filter((c) => vazias.has(c.id)).map((c) => `${c.nome} (${c.iniciativa.total})`);
     const primeiro = ordenarPorIniciativa(e.combatentes).find(jogaTurno) ?? null;
     const avisos = [];
     // A rodada da sessão de cada um zera junto, e a cena começa aqui (as cascas de PE de `combate` e de `rodada`).
@@ -394,73 +506,39 @@ const HANDLERS = {
       return v.id === primeiro?.id ? verboDoTurno(comecou, "iniciaTurno", d, opcoesDe(v, 1, avisos, { comecoDoCombate: true })) : comecou;
     });
     const com = devolverVista(m, vista);
-    return noEncontro(com, (x) => comLog({ ...x, status: ENCONTRO_STATUS.ATIVO, rodada: 1, ativoId: primeiro?.id ?? null }, [
+    return noEncontro(com, (x) => comLog({ ...semVirada(x), status: ENCONTRO_STATUS.ATIVO, rodada: 1, ativoId: primeiro?.id ?? null }, [
+      ...(roladas.length ? [entradaDeLog({
+        rodada: 1, tipo: LOG_TIPOS.LIVRE,
+        mensagem: roladas.length === 1 ? `Iniciativa rolada no começo: ${roladas[0]}.` : `Iniciativas roladas no começo: ${roladas.join(", ")}.`,
+      })] : []),
       entradaDeLog({ rodada: 1, tipo: LOG_TIPOS.RODADA, mensagem: "Combate iniciado. Rodada 1." }),
       ...avisos,
       ...(primeiro ? [entradaDeLog({ rodada: 1, tipo: LOG_TIPOS.TURNO, mensagem: `Turno de ${primeiro.nome}.`, combatenteId: primeiro.id })] : []),
     ]));
   },
 
-  PROXIMO_TURNO: (m, { derivados = {} } = {}) => {
-    const e = m.encontro;
-    if (e.status !== ENCONTRO_STATUS.ATIVO) return m;
-    const { proximoId, rodada, novaRodada } = proximoTurno(e);
-    const entradas = [];
-    let vista = vistaDo(m);
-    const turno = turnoDe(vista, e.ativoId, e.rodada);
-    vista = vista.map((v) => (v.id === e.ativoId ? verboDoTurno(v, "encerraTurno", derivados[v.id] ?? null, opcoesDe(v, e.rodada, entradas)) : v));
-    vista = encerraEfeitosDoTurno(vista, turno);
-    /* Etapa 5: o fim do turno de quem jogou desce as durações que ele aplicou, e cada posição pulada dispara a dela no
-       lugar certo da ordem. A virada não desce duração nenhuma. */
-    const pulados = puladosNaOrdem(e, proximoId, novaRodada);
-    vista = desceDoAplicador(vista, e.ativoId, derivados, e.rodada, entradas);
-    for (const p of pulados.antes) vista = desceDoAplicador(vista, p.id, derivados, e.rodada, entradas);
-    if (novaRodada) {
-      vista = viraRodadaNaVista(vista, derivados, rodada, entradas);
-      entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.RODADA, mensagem: `Rodada ${rodada} iniciada.` }));
-    }
-    for (const p of pulados.depois) vista = desceDoAplicador(vista, p.id, derivados, rodada, entradas);
-    if (proximoId) {
-      vista = encerraEfeitosDaFonte(vista, proximoId);
-      vista = vista.map((v) => (v.id === proximoId ? verboDoTurno(v, "iniciaTurno", derivados[v.id] ?? null, opcoesDe(v, rodada, entradas)) : v));
-      const alvo = vista.find((v) => v.id === proximoId);
-      entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.TURNO, combatenteId: proximoId, mensagem: `Turno de ${alvo?.nome ?? "Combatente"}.` }));
-    }
-    const com = devolverVista(m, vista);
-    return noEncontro(com, (x) => comLog({ ...x, rodada, ativoId: proximoId }, entradas));
+  PROXIMO_TURNO: (m, acao) => comVirada(m, TIPO_DE_VIRADA.TURNO, (lote) => passarTurno(m, acao, lote)),
+
+  NOVA_RODADA: (m, acao) => comVirada(m, TIPO_DE_VIRADA.RODADA, (lote) => forcarRodada(m, acao, lote)),
+
+  VOLTAR_TURNO: (m) => {
+    const r = voltarTurno(m);
+    return r.ok ? r.mundo : m;
   },
 
-  NOVA_RODADA: (m, { derivados = {} } = {}) => {
-    const e = m.encontro;
-    if (e.status !== ENCONTRO_STATUS.ATIVO) return m;
-    const rodada = e.rodada + 1;
-    const entradas = [];
-    let vista = vistaDo(m);
-    const turno = turnoDe(vista, e.ativoId, e.rodada);
-    vista = encerraCurasMedicinaDoTurno(encerraCobrirSe(vista, turno.id), turno);
-    /* Etapa 5 (autor, 2026-11-17, "Encerra os Turnos que Faltam"): o forçado conta como o fim do turno de quem está na vez
-       e de todos que ainda iam jogar nesta rodada, na ordem. Quem já jogou não desce de novo. */
-    const ordem = ordenarPorIniciativa(e.combatentes);
-    const atual = ordem.findIndex((c) => c.id === e.ativoId);
-    if (atual !== -1) for (const c of ordem.slice(atual)) vista = desceDoAplicador(vista, c.id, derivados, e.rodada, entradas);
-    vista = viraRodadaNaVista(vista, derivados, rodada, entradas, { forcada: true });
-    entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.RODADA, mensagem: `Rodada ${rodada} forçada.` }));
-    const com = devolverVista(m, vista);
-    return noEncontro(com, (x) => comLog({ ...x, rodada }, entradas));
-  },
+  ENCERRAR: (m) => comVirada(m, TIPO_DE_VIRADA.ENCERRAR, (lote) => encerrar(m, lote)),
 
-  ENCERRAR: (m) => {
+  /* REABRIR VOLTA À LUTA (rework, etapa 2, autor 2026-11-18). Do Finalizado, volta a Em Combate na MESMA rodada e na MESMA Vez.
+     Primeiro tenta desfazer o Encerrar pelos deltas da última virada (a bancada volta inteira, com a Expansão e o Invencível que
+     o fim desmanchou). Se alguém mexeu depois, ou o Encontro é de antes desta etapa, cada motor só religa o combate
+     (`retomaCombate`), e a Vez é a de quando encerrou ou, sem ela, a do primeiro da ordem que joga. Em Combate, o Reabrir de
+     sempre volta ao Planejamento. */
+  REABRIR: (m) => {
     const e = m.encontro;
-    if (!podeTransicionar(e.status, ENCONTRO_STATUS.FINALIZADO)) return m;
-    const vista = encerraCobrirSe(vistaDo(m)).map((v) => verbo(v, "encerraCombate", null));
-    const com = devolverVista(m, vista);
-    return noEncontro(com, (x) => comLog({ ...x, status: ENCONTRO_STATUS.FINALIZADO, ativoId: null }, [
-      entradaDeLog({ rodada: e.rodada, tipo: LOG_TIPOS.RODADA, mensagem: "Combate encerrado." }),
-    ]));
+    if (e.status === ENCONTRO_STATUS.FINALIZADO) return reabrirALuta(m);
+    return podeTransicionar(e.status, ENCONTRO_STATUS.PLANEJANDO)
+      ? noEncontro(m, (x) => ({ ...semVirada(x), status: ENCONTRO_STATUS.PLANEJANDO, ativoId: null })) : m;
   },
-
-  REABRIR: (m) => (podeTransicionar(m.encontro.status, ENCONTRO_STATUS.PLANEJANDO)
-    ? noEncontro(m, (e) => ({ ...e, status: ENCONTRO_STATUS.PLANEJANDO, ativoId: null })) : m),
 
   LEVANTAR_TODOS: (m) => noEncontro(m, (e) => ({
     ...e, combatentes: e.combatentes.map((c) => ({ ...c, flags: { ...c.flags, abatido: false } })),
@@ -470,6 +548,80 @@ const HANDLERS = {
     entradaDeLog({ rodada: e.rodada, tipo: tipoLog, mensagem, combatenteId }),
   ])),
 };
+
+/* ---------- os passos de turno, com o lote da virada ---------- */
+
+function passarTurno(m, { derivados = {} } = {}, lote) {
+  const e = m.encontro;
+  if (e.status !== ENCONTRO_STATUS.ATIVO) return m;
+  const { proximoId, rodada, novaRodada } = proximoTurno(e);
+  const entradas = [];
+  let vista = vistaDo(m);
+  const turno = turnoDe(vista, e.ativoId, e.rodada);
+  vista = vista.map((v) => (v.id === e.ativoId ? verboDoTurno(v, "encerraTurno", derivados[v.id] ?? null, opcoesDe(v, e.rodada, entradas)) : v));
+  vista = encerraEfeitosDoTurno(vista, turno);
+  /* Etapa 5: o fim do turno de quem jogou desce as durações que ele aplicou, e cada posição pulada dispara a dela no
+     lugar certo da ordem. A virada não desce duração nenhuma. */
+  const pulados = puladosNaOrdem(e, proximoId, novaRodada);
+  vista = desceDoAplicador(vista, e.ativoId, derivados, e.rodada, entradas);
+  for (const p of pulados.antes) vista = desceDoAplicador(vista, p.id, derivados, e.rodada, entradas);
+  if (novaRodada) {
+    vista = viraRodadaNaVista(vista, derivados, rodada, entradas);
+    entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.RODADA, mensagem: `Rodada ${rodada} iniciada.` }));
+  }
+  for (const p of pulados.depois) vista = desceDoAplicador(vista, p.id, derivados, rodada, entradas);
+  if (proximoId) {
+    vista = encerraEfeitosDaFonte(vista, proximoId);
+    vista = vista.map((v) => (v.id === proximoId ? verboDoTurno(v, "iniciaTurno", derivados[v.id] ?? null, opcoesDe(v, rodada, entradas)) : v));
+    const alvo = vista.find((v) => v.id === proximoId);
+    entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.TURNO, combatenteId: proximoId, mensagem: `Turno de ${alvo?.nome ?? "Combatente"}.` }));
+  }
+  const com = devolverVista(m, vista);
+  return noEncontro(com, (x) => comLog({ ...x, rodada, ativoId: proximoId }, entradas, lote));
+}
+
+function forcarRodada(m, { derivados = {} } = {}, lote) {
+  const e = m.encontro;
+  if (e.status !== ENCONTRO_STATUS.ATIVO) return m;
+  const rodada = e.rodada + 1;
+  const entradas = [];
+  let vista = vistaDo(m);
+  const turno = turnoDe(vista, e.ativoId, e.rodada);
+  vista = encerraCurasMedicinaDoTurno(encerraCobrirSe(vista, turno.id), turno);
+  /* Etapa 5 (autor, 2026-11-17, "Encerra os Turnos que Faltam"): o forçado conta como o fim do turno de quem está na vez
+     e de todos que ainda iam jogar nesta rodada, na ordem. Quem já jogou não desce de novo. */
+  const ordem = ordenarPorIniciativa(e.combatentes);
+  const atual = ordem.findIndex((c) => c.id === e.ativoId);
+  if (atual !== -1) for (const c of ordem.slice(atual)) vista = desceDoAplicador(vista, c.id, derivados, e.rodada, entradas);
+  vista = viraRodadaNaVista(vista, derivados, rodada, entradas, { forcada: true });
+  entradas.push(entradaDeLog({ rodada, tipo: LOG_TIPOS.RODADA, mensagem: `Rodada ${rodada} forçada.` }));
+  const com = devolverVista(m, vista);
+  return noEncontro(com, (x) => comLog({ ...x, rodada }, entradas, lote));
+}
+
+function encerrar(m, lote) {
+  const e = m.encontro;
+  if (!podeTransicionar(e.status, ENCONTRO_STATUS.FINALIZADO)) return m;
+  const vista = encerraCobrirSe(vistaDo(m)).map((v) => verbo(v, "encerraCombate", null));
+  const com = devolverVista(m, vista);
+  return noEncontro(com, (x) => comLog({ ...x, status: ENCONTRO_STATUS.FINALIZADO, ativoId: null }, [
+    entradaDeLog({ rodada: e.rodada, tipo: LOG_TIPOS.RODADA, mensagem: "Combate encerrado." }),
+  ], lote));
+}
+
+function reabrirALuta(m) {
+  const e = m.encontro;
+  const v = normalizarVirada(e.ultimaVirada);
+  const doEncerrar = v?.tipo === TIPO_DE_VIRADA.ENCERRAR ? v : null;
+  const exato = doEncerrar ? desfazerDeltasDaVirada(m, doEncerrar) : null;
+  const base = exato?.ok ? exato.mundo : devolverVista(m, vistaDo(m).map((x) => verbo(x, "retomaCombate", null)));
+  const daVez = doEncerrar?.de.ativoId ? combatenteDe(e, doEncerrar.de.ativoId) : null;
+  const vez = daVez ?? ordenarPorIniciativa(e.combatentes).find(jogaTurno) ?? null;
+  return noEncontro(base, (x) => comLog({ ...semVirada(x), status: ENCONTRO_STATUS.ATIVO, ativoId: vez?.id ?? null }, [
+    entradaDeLog({ rodada: e.rodada, tipo: LOG_TIPOS.RODADA, mensagem: `Combate reaberto. Rodada ${e.rodada}.` }),
+    ...(vez ? [entradaDeLog({ rodada: e.rodada, tipo: LOG_TIPOS.TURNO, combatenteId: vez.id, mensagem: `Turno de ${vez.nome}.` })] : []),
+  ]));
+}
 
 /** As ações que o redutor conhece. */
 export const ACOES_DO_REDUTOR = Object.keys(HANDLERS);

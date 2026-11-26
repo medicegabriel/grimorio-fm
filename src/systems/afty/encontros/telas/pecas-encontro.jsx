@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { AlertTriangle, EyeOff, X } from "lucide-react";
+import { AlertTriangle, ChevronRight, EyeOff, X } from "lucide-react";
 
 import { VISAO_ORDEM, VISAO_ROTULO } from "../modelo";
 import { LADO_PECA, VISAO_ICONE } from "./pecas-dados";
@@ -180,22 +180,53 @@ export function MarcaDeVisao({ visao }) {
 
 /* ---------- diálogo ---------- */
 
+/* A PILHA DE DIÁLOGOS (rework, etapa 1, 2026-11-18). Antes cada diálogo ouvia o Esc no documento, e um Esc fechava o de
+   cima e o de baixo juntos (a confirmação dentro dos Controles da Sala levava os Controles). Agora só o diálogo do topo
+   responde ao Esc e ao Tab. */
+const PILHA_DE_DIALOGOS = [];
+const FOCAVEIS = "a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex='-1'])";
+
 /**
- * Painel por cima da tela (D-28): fecha no Esc e no clique fora, e põe o foco no primeiro controle marcado com
- * `data-foco-inicial`, senão no primeiro botão. Vai por portal para a raiz do Encontro (`.afty-ficha`), onde os tokens
- * valem.
+ * Painel por cima da tela (D-28, D-72): fecha no Esc e no clique fora, põe o foco no primeiro controle marcado com
+ * `data-foco-inicial` (senão no primeiro controle), prende o Tab dentro dele e devolve o foco a quem o abriu. Vai por
+ * portal para a raiz do Encontro (`.afty-ficha`), onde os tokens valem.
+ *
+ * O efeito roda UMA vez, na abertura. Ele dependia do `onFechar`, que quase todo chamador passa como seta nova a cada
+ * render, e o foco voltava ao primeiro campo a cada mudança da tela (no Reforços, a cada Adicionar).
+ * Campo que trata o Esc sozinho (a busca que limpa) chama `preventDefault`, e o diálogo não fecha junto.
  */
 export function Dialogo({ titulo, onFechar, children, rodape = null, largura = "28rem", icone: Icone = null }) {
   const caixa = useRef(null);
+  const fechar = useRef(onFechar);
+  useEffect(() => { fechar.current = onFechar; });
   // O diálogo é uma camada da pilha: o Voltar do aparelho o fecha (o mesmo que Cancelar).
   useCamadaDeVoltar(true, onFechar);
   useEffect(() => {
-    const aoTeclar = (e) => { if (e.key === "Escape") onFechar(); };
-    document.addEventListener("keydown", aoTeclar);
+    const id = {};
+    PILHA_DE_DIALOGOS.push(id);
+    const antes = typeof document !== "undefined" ? document.activeElement : null;
     const el = caixa.current;
-    (el?.querySelector("[data-foco-inicial]") ?? el?.querySelector("button, input, select"))?.focus();
-    return () => document.removeEventListener("keydown", aoTeclar);
-  }, [onFechar]);
+    (el?.querySelector("[data-foco-inicial]") ?? el?.querySelector(FOCAVEIS))?.focus();
+    const aoTeclar = (e) => {
+      if (PILHA_DE_DIALOGOS[PILHA_DE_DIALOGOS.length - 1] !== id || e.defaultPrevented) return;
+      if (e.key === "Escape") { e.preventDefault(); fechar.current?.(); return; }
+      if (e.key !== "Tab" || !el) return;
+      const lista = [...el.querySelectorAll(FOCAVEIS)].filter((x) => x.offsetParent !== null || x === document.activeElement);
+      if (!lista.length) return;
+      const primeiro = lista[0];
+      const ultimo = lista[lista.length - 1];
+      const dentro = el.contains(document.activeElement);
+      if (e.shiftKey && (document.activeElement === primeiro || !dentro)) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && (document.activeElement === ultimo || !dentro)) { e.preventDefault(); primeiro.focus(); }
+    };
+    document.addEventListener("keydown", aoTeclar);
+    return () => {
+      document.removeEventListener("keydown", aoTeclar);
+      const i = PILHA_DE_DIALOGOS.indexOf(id);
+      if (i >= 0) PILHA_DE_DIALOGOS.splice(i, 1);
+      if (antes && typeof antes.focus === "function" && document.contains(antes)) antes.focus();
+    };
+  }, []);
   const destino = (typeof document !== "undefined" && document.querySelector(".ec-raiz")) || document.body;
   return createPortal(
     <div className="ec-veu" onMouseDown={(e) => { if (e.target === e.currentTarget) onFechar(); }}>
@@ -229,6 +260,33 @@ export function Confirmar({ titulo, children, rotulo, onConfirmar, onCancelar })
     >
       {children}
     </Dialogo>
+  );
+}
+
+/* ---------- trilha ---------- */
+
+/**
+ * A trilha do cabeçalho (rework, etapa 1): o nome da rota e a lista de Encontros, cada um um link de verdade (o clique do
+ * meio e o Ctrl abrem noutra aba). O clique comum troca a tela sem recarregar. `itens` é `[{ rotulo, href, onIr }]`.
+ */
+export function Trilha({ itens }) {
+  if (!itens?.length) return null;
+  const ir = (item) => (e) => {
+    if (!item.onIr || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    item.onIr();
+  };
+  return (
+    <nav className="ec-trilha" aria-label="Trilha">
+      <ol>
+        {itens.map((item, i) => (
+          <li key={item.href ?? i}>
+            {i > 0 && <ChevronRight aria-hidden="true" />}
+            <a href={item.href} onClick={ir(item)}>{item.rotulo}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 }
 

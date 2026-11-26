@@ -1,12 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import {
-  Heart, Zap, Sparkles, ShieldHalf, Shield, Swords, ScrollText, Activity, Plus, X, Minus, Crosshair, Lock, ShieldAlert,
+  Heart, Zap, Sparkles, ShieldHalf, Shield, Swords, ScrollText, Activity, Plus, X, Minus, Crosshair, Lock, ShieldAlert, ChevronDown,
 } from "lucide-react";
 
 import * as V from "../motores/m252-vital";
 import { Vital } from "../../ui/vital";
 import { DicaDeTexto } from "../../ui/fontes";
 import { Aviso, BarraCurta, Vazio } from "./pecas-encontro";
+import BandejaDeRolagens252 from "../../ui/BandejaDeRolagens252";
+import { useRolagens252 } from "../../ui/usar-rolagens-252";
 
 /**
  * ============================================================
@@ -163,12 +165,70 @@ function Retorno({ retorno, onLimpar }) {
     : <p className="ec-retorno" role="status" data-kind={retorno.kind}><Zap aria-hidden="true" />{retorno.text}</p>;
 }
 
+/* Uma Ação da ficha. O nome abre o texto dela embaixo, igual ao cartão da ficha da 2.5.2 (CombatantPanel.jsx:1005-1008).
+
+   ⚠ ERA SÓ UMA DICA NO HOVER até 2026-11-23, e lia só o texto gravado. A Ação montada pelos campos (a Expansão do Jogo, o
+   Sopro Carbonizador) não tem texto gravado, e a dica nem abria: o mestre precisava sair do Encontro para ler. Agora o
+   texto vem do adaptador (`textoDaAcao`), que monta o mesmo da ficha, e abre no clique, que também serve ao toque. */
+/* O número que rola no clique (2026-11-23): o valor continua onde estava, com um sublinhado pontilhado que diz que ele
+   é botão, igual ao número que rola na Ficha do Afty. */
+function BotaoDeRolar({ titulo, onClick, children }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={titulo}
+      aria-label={titulo}
+      className="bg-transparent border-0 p-0 cursor-pointer underline decoration-dotted underline-offset-4"
+      style={{ color: "inherit", font: "inherit" }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function LinhaDaAcao({ a, nomeDaCriatura, onRolar, margemAtaque }) {
+  const [aberta, setAberta] = useState(false);
+  const texto = useMemo(() => V.textoDaAcao(a, nomeDaCriatura), [a, nomeDaCriatura]);
+  const nome = <span className="ec-acao-nome">{a.name || "Ação"}</span>;
+  return (
+    <li className="ec-acao">
+      <div className="ec-acao-topo">
+        {texto ? (
+          <button
+            type="button"
+            onClick={() => setAberta((v) => !v)}
+            aria-expanded={aberta}
+            className="flex items-center gap-1 min-w-0 text-left bg-transparent border-0 p-0 cursor-pointer"
+            style={{ color: "inherit" }}
+          >
+            <ChevronDown aria-hidden="true" className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${aberta ? "" : "-rotate-90"}`} style={{ color: "var(--ec-t2)" }} />
+            {nome}
+          </button>
+        ) : nome}
+        <span className="afty-chip">{TIPO_DE_ACAO[a.type] ?? titulo(a.type)}</span>
+      </div>
+      <div className="ec-acao-numeros afty-base">
+        {a.attackType === "acerto" && <span>Acerto <BotaoDeRolar titulo={`Rolar Acerto de ${a.name}`} onClick={() => onRolar({ tipo: "teste", rotulo: `${a.name} · Acerto`, bonus: a.toHit ?? 0, margem: margemAtaque })}><b className="afty-valor">+{a.toHit ?? 0}</b></BotaoDeRolar></span>}
+        {a.attackType !== "acerto" && a.cd != null && <span>CD <b className="afty-valor">{a.cd}</b>{a.trType ? ` ${titulo(a.trType)}` : ""}</span>}
+        {a.damage?.roll && <span>Dano <BotaoDeRolar titulo={`Rolar Dano de ${a.name}`} onClick={() => onRolar({ tipo: "dano", rotulo: `${a.name} · Dano`, notacao: a.damage.roll })}><b className="afty-valor">{a.damage.roll}</b></BotaoDeRolar>{a.damage.type ? ` ${titulo(a.damage.type)}` : ""}</span>}
+        {a.range && <span>{a.range}</span>}
+        {a.cost > 0 && <span>Custo <b className="afty-valor ec-pe">{a.cost} PE</b></span>}
+      </div>
+      {aberta && texto && <p className="afty-base m-0! text-[13px] leading-relaxed whitespace-pre-wrap">{texto}</p>}
+    </li>
+  );
+}
+
 export default function PainelCriatura252({ combatente: c, derivado: d, estado: cs, resumo, combatentes, acoes }) {
   const passo = (fn) => acoes.sessao(c.id, (s) => fn(s));
   const morte = useMemo(() => V.desafiandoAMorte(cs, { abatido: c.flags.abatido }), [cs, c.flags.abatido]);
   const nomes = useMemo(() => new Map(combatentes.map((x) => [x.id, x.nome])), [combatentes]);
   const extras = useMemo(() => (cs && d ? V.extrasDoPainel(d, cs) : null), [d, cs]);
   const [retorno, setRetorno] = useState(null);
+  /* Rolar direto no painel (2026-11-23, feedback do lançamento): o mesmo rolador da ficha do `/`, com a bandeja grudada no topo. */
+  const { rolagens, modo, setModo, rolar, limpar } = useRolagens252();
+  const pedeTeste = (rotulo, bonus, margem) => () => rolar({ tipo: "teste", rotulo, bonus: bonus ?? 0, margem });
   const limparRetorno = useMemo(() => () => setRetorno(null), []);
   const ativar = (regra, entidade, grupo) => {
     let feito = null;
@@ -201,6 +261,11 @@ export default function PainelCriatura252({ combatente: c, derivado: d, estado: 
 
   return (
     <div className="ec-p252">
+      {rolagens.length > 0 && (
+        <div className="sticky top-0 z-20">
+          <BandejaDeRolagens252 rolagens={rolagens} modo={modo} onModo={setModo} onLimpar={limpar} variante="embutida" />
+        </div>
+      )}
       <section className="afty-card ec-secao">
         <div className="ec-p252-vitais">
           <Vital
@@ -279,7 +344,7 @@ export default function PainelCriatura252({ combatente: c, derivado: d, estado: 
             {[["Defesa", s.defesa], ["Atenção", s.atencao], ["Iniciativa", s.iniciativa], ["Deslocamento", `${numero(s.deslocamento)}m`],
               ["RD Geral", s.rdGeral], ["RD Irredutível", s.rdIrredutivel],
               ...(rdReduz ? [["RD no Próximo Dano", V.rdNoProximoDano(s, cs)]] : []), ["Acerto", s.acerto], ["CD", s.cdBase]].map(([k, v]) => (
-              <div key={k} className="ec-stat"><dt>{k}</dt><dd className="afty-valor">{numero(v)}</dd></div>
+              <div key={k} className="ec-stat"><dt>{k}</dt><dd className="afty-valor">{k === "Iniciativa" ? <BotaoDeRolar titulo="Rolar Iniciativa" onClick={pedeTeste("Iniciativa", v)}>{numero(v)}</BotaoDeRolar> : numero(v)}</dd></div>
             ))}
           </dl>
           <div className="ec-linha-controles">
@@ -307,7 +372,7 @@ export default function PainelCriatura252({ combatente: c, derivado: d, estado: 
 
         <Secao titulo="Testes de Resistência" icone={ShieldHalf}>
           <dl className="ec-stats">
-            {TR.map(([k, r]) => <div key={k} className="ec-stat"><dt>{r}</dt><dd className="afty-valor">+{numero(d.saves?.[k] ?? 0)}</dd></div>)}
+            {TR.map(([k, r]) => <div key={k} className="ec-stat"><dt>{r}</dt><dd className="afty-valor"><BotaoDeRolar titulo={`Rolar ${r}`} onClick={pedeTeste(r, d.saves?.[k], snap.critMargins?.[k])}>+{numero(d.saves?.[k] ?? 0)}</BotaoDeRolar></dd></div>)}
           </dl>
           {(s.resistenciaParcialMax > 0 || s.resistenciaTotalMax > 0) && (
             <div className="ec-contadores">
@@ -381,23 +446,7 @@ export default function PainelCriatura252({ combatente: c, derivado: d, estado: 
       <Secao titulo="Ações" icone={Swords} contagem={acoesDaFicha.length}>
         {acoesDaFicha.length === 0 ? <Vazio titulo="Nenhuma Ação na Ficha" /> : (
           <ul className="ec-acoes">
-            {acoesDaFicha.map((a) => (
-              <li key={a.id ?? a.name} className="ec-acao">
-                <div className="ec-acao-topo">
-                  <DicaDeTexto titulo={a.name} texto={a.description || a.finalTextManual || ""}>
-                    <span className="ec-acao-nome">{a.name || "Ação"}</span>
-                  </DicaDeTexto>
-                  <span className="afty-chip">{TIPO_DE_ACAO[a.type] ?? titulo(a.type)}</span>
-                </div>
-                <div className="ec-acao-numeros afty-base">
-                  {a.attackType === "acerto" && <span>Acerto <b className="afty-valor">+{a.toHit ?? 0}</b></span>}
-                  {a.attackType !== "acerto" && a.cd != null && <span>CD <b className="afty-valor">{a.cd}</b>{a.trType ? ` ${titulo(a.trType)}` : ""}</span>}
-                  {a.damage?.roll && <span>Dano <b className="afty-valor">{a.damage.roll}</b>{a.damage.type ? ` ${titulo(a.damage.type)}` : ""}</span>}
-                  {a.range && <span>{a.range}</span>}
-                  {a.cost > 0 && <span>Custo <b className="afty-valor ec-pe">{a.cost} PE</b></span>}
-                </div>
-              </li>
-            ))}
+            {acoesDaFicha.map((a) => <LinhaDaAcao key={a.id ?? a.name} a={a} nomeDaCriatura={snap.name ?? c.nome} onRolar={rolar} margemAtaque={snap.critMargins?.ataque} />)}
           </ul>
         )}
       </Secao>

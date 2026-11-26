@@ -6800,29 +6800,74 @@ function NivelFeiticoPicker({ value, onChange, nivelMax, nivelMin = 0, niveisSem
   );
 }
 
+/* As rolagens próprias de um Personalizado: o Feitiço Personalizado e, desde 2026-11-24, a Ação Personalizada da
+   Invocação. Cada uma é { rotulo, dados, faces, fixo, vezes, tom }, e `vezes` é quantas vezes ela acontece, sem
+   multiplicar os dados (ver `rolagensDoFeitico` e `rolagensDaAcaoPersonalizada`). */
+function EditorDeRolagens({ rolagens: lista, onChange }) {
+  const rolagens = Array.isArray(lista) ? lista : [];
+  const patchRolagem = (indice, parcial) => onChange(rolagens.map((rolagem, i) => (i === indice ? { ...rolagem, ...parcial } : rolagem)));
+  const adicionarRolagem = () => onChange([...rolagens, { rotulo: "Dano", dados: 1, faces: 6, fixo: 0, vezes: 1, tom: "dano" }]);
+  const removerRolagem = (indice) => onChange(rolagens.filter((_, i) => i !== indice));
+  return (
+    <div className="space-y-2">
+      {rolagens.map((rolagem, indice) => (
+        <div key={indice} className="rounded-lg border border-slate-800 bg-slate-950/50 p-2.5 space-y-2">
+          <div className="flex items-end gap-2">
+            <div className="flex-1 min-w-0">
+              <FieldLabel>Nome</FieldLabel>
+              <TextInput value={rolagem.rotulo || ""} onChange={(v) => patchRolagem(indice, { rotulo: v })} placeholder="Rolagem" />
+            </div>
+            <button
+              type="button"
+              onClick={() => removerRolagem(indice)}
+              className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 hover:text-rose-300 hover:border-rose-900"
+              title="Remover rolagem"
+              aria-label="Remover rolagem"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div>
+              <FieldLabel>Dados</FieldLabel>
+              <NumberInput value={rolagem.dados ?? 1} min={1} onChange={(v) => patchRolagem(indice, { dados: v })} />
+            </div>
+            <div>
+              <FieldLabel>Faces</FieldLabel>
+              <NumberInput value={rolagem.faces ?? 6} min={2} onChange={(v) => patchRolagem(indice, { faces: v })} />
+            </div>
+            <div>
+              <FieldLabel>Fixo</FieldLabel>
+              <NumberInput value={rolagem.fixo ?? 0} onChange={(v) => patchRolagem(indice, { fixo: v })} />
+            </div>
+            <div>
+              <FieldLabel>Vezes</FieldLabel>
+              <NumberInput value={rolagem.vezes ?? 1} min={1} onChange={(v) => patchRolagem(indice, { vezes: v })} />
+            </div>
+          </div>
+          <OptionChips
+            value={rolagem.tom === "cura" ? "cura" : "dano"}
+            onChange={(v) => patchRolagem(indice, { tom: v })}
+            options={[{ value: "dano", label: "Dano" }, { value: "cura", label: "Cura" }]}
+          />
+        </div>
+      ))}
+      <button
+        type="button"
+        onClick={adicionarRolagem}
+        className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
+      >
+        <Plus className="w-4 h-4" /> Adicionar Rolagem
+      </button>
+    </div>
+  );
+}
+
 /* Feitiço de mesa. Os campos já fazem parte do schema e do resumo da Ficha,
    mas o criador não os renderizava. As rolagens são independentes porque uma
    mesma habilidade pode ter dano inicial, dano recorrente ou outro ramo. */
 function FeiticoPersonalizadoEditor({ feitico, onPatch }) {
   const f = feitico;
-  const rolagens = Array.isArray(f.rolagens) ? f.rolagens : [];
-  const patchRolagem = (indice, parcial) => onPatch({
-    rolagens: rolagens.map((rolagem, i) => (i === indice ? { ...rolagem, ...parcial } : rolagem)),
-  });
-  const adicionarRolagem = () => onPatch({
-    rolagens: [...rolagens, {
-      rotulo: "Dano",
-      dados: 1,
-      faces: 6,
-      fixo: 0,
-      vezes: 1,
-      tom: "dano",
-    }],
-  });
-  const removerRolagem = (indice) => onPatch({
-    rolagens: rolagens.filter((_, i) => i !== indice),
-  });
-
   return (
     <div className="rounded-lg border border-slate-800 bg-slate-950/30 p-3 space-y-3">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -6861,57 +6906,7 @@ function FeiticoPersonalizadoEditor({ feitico, onPatch }) {
       <BoolChip ativo={f.comCd !== false} onToggle={() => onPatch({ comCd: f.comCd === false })}>CD</BoolChip>
 
       <SecaoFeitico titulo="Rolagens">
-        <div className="space-y-2">
-          {rolagens.map((rolagem, indice) => (
-            <div key={indice} className="rounded-lg border border-slate-800 bg-slate-950/50 p-2.5 space-y-2">
-              <div className="flex items-end gap-2">
-                <div className="flex-1 min-w-0">
-                  <FieldLabel>Nome</FieldLabel>
-                  <TextInput value={rolagem.rotulo || ""} onChange={(v) => patchRolagem(indice, { rotulo: v })} placeholder="Rolagem" />
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removerRolagem(indice)}
-                  className="h-9 w-9 inline-flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 hover:text-rose-300 hover:border-rose-900"
-                  title="Remover rolagem"
-                  aria-label="Remover rolagem"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                <div>
-                  <FieldLabel>Dados</FieldLabel>
-                  <NumberInput value={rolagem.dados ?? 1} min={1} onChange={(v) => patchRolagem(indice, { dados: v })} />
-                </div>
-                <div>
-                  <FieldLabel>Faces</FieldLabel>
-                  <NumberInput value={rolagem.faces ?? 6} min={2} onChange={(v) => patchRolagem(indice, { faces: v })} />
-                </div>
-                <div>
-                  <FieldLabel>Fixo</FieldLabel>
-                  <NumberInput value={rolagem.fixo ?? 0} onChange={(v) => patchRolagem(indice, { fixo: v })} />
-                </div>
-                <div>
-                  <FieldLabel>Vezes</FieldLabel>
-                  <NumberInput value={rolagem.vezes ?? 1} min={1} onChange={(v) => patchRolagem(indice, { vezes: v })} />
-                </div>
-              </div>
-              <OptionChips
-                value={rolagem.tom === "cura" ? "cura" : "dano"}
-                onChange={(v) => patchRolagem(indice, { tom: v })}
-                options={[{ value: "dano", label: "Dano" }, { value: "cura", label: "Cura" }]}
-              />
-            </div>
-          ))}
-          <button
-            type="button"
-            onClick={adicionarRolagem}
-            className="w-full inline-flex items-center justify-center gap-1.5 text-[12px] font-semibold px-3 py-2 rounded-lg border border-dashed border-slate-700 text-slate-400 hover:text-white hover:border-slate-600"
-          >
-            <Plus className="w-4 h-4" /> Adicionar Rolagem
-          </button>
-        </div>
+        <EditorDeRolagens rolagens={f.rolagens} onChange={(rolagens) => onPatch({ rolagens })} />
       </SecaoFeitico>
     </div>
   );
@@ -18889,6 +18884,11 @@ function bonusSuf(n) {
 /* Resumo curto dos valores resolvidos de uma Ação (para o cabeçalho). */
 function resumoAcaoTexto(res) {
   if (!res) return "";
+  if (res.familia === "personalizada") {
+    const rolagens = (res.rolagens ?? []).map((r) => `${r.vezes > 1 ? `${r.vezes}x ` : ""}${r.dados}d${r.faces}${bonusSuf(r.fixo)}`);
+    const extra = res.resolucao === "tr" ? `CD ${res.cd}` : res.resolucao === "jogada" ? `ataque ${res.bonusAtaque >= 0 ? "+" : ""}${res.bonusAtaque}` : "";
+    return [...rolagens, extra].filter(Boolean).join(" · ");
+  }
   if (res.familia === "ataque") {
     // O dado extra da Melhoria Agressividade entra na mesma rolagem, então
     // aparece somado à notação, e não numa linha à parte.
@@ -18910,6 +18910,7 @@ function resumoAcaoTexto(res) {
 function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, onRemove }) {
   const [open, setOpen] = useState(!acao.nome);
   const isAtaque = acao.familia === "ataque";
+  const isPersonalizada = acao.familia === "personalizada";
   const isCura = acao.familia === "auxilio" && acao.auxilioSub === "cura";
   /* As fontes que mexem NA ROLAGEM desta ação. Ataque abre as de dano, Cura as
      de cura, e uma Ação de outro auxílio não abre nenhuma, porque nenhum desses
@@ -18937,7 +18938,13 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
   const alvosBloqueados = [...(alvosOk.multiplos ? [] : ["multiplos"]), ...(alvosOk.area ? [] : ["area"])];
   const curaMultOk = curaMultiplosDisponivel(grau);
 
-  const setFamilia = (v) => onPatch(v === "ataque" ? { familia: "ataque", classe: "complexa" } : { familia: "auxilio" });
+  /* A Personalizada (2026-11-24) não força Classe nem tira a marca especial à toa: ela só troca a família e limpa o
+     especial, que é regra das Ações do livro (Reduzir Cura pede TR de ataque, Cobertura tem custo próprio). */
+  const setFamilia = (v) => onPatch(
+    v === "ataque" ? { familia: "ataque", classe: "complexa" }
+      : v === "personalizada" ? { familia: "personalizada", especial: "" }
+        : { familia: "auxilio" },
+  );
   const setSub = (v) => onPatch(v === "cura" ? { auxilioSub: "cura", classe: "complexa" } : { auxilioSub: v });
 
   return (
@@ -18947,7 +18954,7 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
           <ChevronDown className={`w-3.5 h-3.5 text-slate-500 flex-shrink-0 transition-transform ${open ? "" : "-rotate-90"}`} />
           <span className="text-[12px] font-semibold text-slate-100 truncate">{acao.nome || "Ação sem nome"}</span>
           <span className="text-[9px] font-bold uppercase tracking-wide px-1 py-0.5 rounded bg-slate-800 text-slate-400 flex-shrink-0">
-            {isAtaque ? "Ataque" : "Auxílio"}
+            {isAtaque ? "Ataque" : isPersonalizada ? "Personalizada" : "Auxílio"}
           </span>
         </button>
         {/* ⚠ SÓ COM O CARTÃO FECHADO. Aberto, as pílulas do topo do editor
@@ -18993,7 +19000,7 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
             </div>
             <div>
               <FieldLabel>Família</FieldLabel>
-              <OptionChips value={acao.familia} options={[{ value: "ataque", label: "Ataque" }, { value: "auxilio", label: "Auxílio" }]} onChange={setFamilia} />
+              <OptionChips value={acao.familia} options={[{ value: "ataque", label: "Ataque" }, { value: "auxilio", label: "Auxílio" }, { value: "personalizada", label: "Personalizada" }]} onChange={setFamilia} />
             </div>
             {/* ⚠ CLASSE SÓ QUANDO HÁ ESCOLHA. Ataque e Cura são Complexa
                 obrigatória, e o controle aparecia mesmo assim, com "Simples"
@@ -19017,11 +19024,11 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
           <div className="flex flex-wrap items-center gap-1.5">
             <BoolChip ativo={!!acao.reacao} onToggle={() => onPatch({ reacao: !acao.reacao })}>Reação</BoolChip>
             <BoolChip ativo={!!acao.manobra} onToggle={() => onPatch({ manobra: !acao.manobra })}>Manobra</BoolChip>
-            <OptionChips
+            {!isPersonalizada && <OptionChips
               value={acao.especial || ""}
               options={[{ value: "", label: "Comum" }, { value: "reducaoCura", label: "Reduzir Cura" }, { value: "cobertura", label: "Cobertura" }]}
               onChange={(v) => onPatch({ especial: v })}
-            />
+            />}
             {acao.especial === "reducaoCura" && (
               <OptionChips
                 value={acao.reducaoCura || "terco"}
@@ -19118,6 +19125,41 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
                   <Select value={acao.tipoDano} onChange={(v) => onPatch({ tipoDano: v })} options={tiposDanoOpcoes} placeholder="escolher..." />
                 </div>
               </>
+            ) : isPersonalizada ? (
+              /* A AÇÃO PERSONALIZADA (2026-11-24): a resolução usa os números da invocação (Acerto da Jogada de Ataque ou
+                 CD do ataque por TR), e o resto é texto de mesa e rolagem própria, logo abaixo desta fila. */
+              <>
+                <div>
+                  <FieldLabel>Resolução</FieldLabel>
+                  <OptionChips
+                    value={acao.resolucao || "nenhuma"}
+                    options={[{ value: "nenhuma", label: "Nenhuma" }, { value: "jogada", label: "Jogada de Ataque" }, { value: "tr", label: "Teste de Resistência" }]}
+                    onChange={(v) => onPatch({ resolucao: v })}
+                  />
+                </div>
+                {acao.resolucao === "jogada" && (
+                  <div title="O Ataque Treinado da invocação vale no alcance escolhido">
+                    <FieldLabel>Ataque</FieldLabel>
+                    <OptionChips
+                      value={acao.corpoACorpo ? "corpo" : "distancia"}
+                      options={[{ value: "corpo", label: "Corpo a Corpo" }, { value: "distancia", label: "A Distância" }]}
+                      onChange={(v) => onPatch({ corpoACorpo: v === "corpo" })}
+                    />
+                  </div>
+                )}
+                {(acao.resolucao === "jogada" || acao.resolucao === "tr") && (
+                  <div className="w-[8.5rem]">
+                    <FieldLabel>Atributo</FieldLabel>
+                    <Select value={acao.atributoChave} onChange={(v) => onPatch({ atributoChave: v })} options={ATTR_OPCOES} />
+                  </div>
+                )}
+                {acao.resolucao === "tr" && (
+                  <div className="w-[9.5rem]" title="Exceto Integridade">
+                    <FieldLabel>TR do Alvo</FieldLabel>
+                    <Select value={acao.trTipo} onChange={(v) => onPatch({ trTipo: v })} options={TR_OPCOES} />
+                  </div>
+                )}
+              </>
             ) : (
               <>
                 <div>
@@ -19175,6 +19217,40 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
             </div>
           </div>
 
+          {isPersonalizada && (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <FieldLabel>Alcance</FieldLabel>
+                  <TextInput value={acao.alcanceTexto || ""} onChange={(v) => onPatch({ alcanceTexto: v })} placeholder="Alcance" />
+                </div>
+                <div>
+                  <FieldLabel>Alvo</FieldLabel>
+                  <TextInput value={acao.alvoTexto || ""} onChange={(v) => onPatch({ alvoTexto: v })} placeholder="Alvo" />
+                </div>
+                <div>
+                  <FieldLabel>Duração</FieldLabel>
+                  <TextInput value={acao.duracaoTexto || ""} onChange={(v) => onPatch({ duracaoTexto: v })} placeholder="Duração" />
+                </div>
+              </div>
+              <div>
+                <FieldLabel>Rolagens</FieldLabel>
+                <EditorDeRolagens rolagens={acao.rolagens} onChange={(rolagens) => onPatch({ rolagens })} />
+              </div>
+              {/* O Motor lê as linhas RESOLVIDAS (`res.efeitos`), como o da Característica Livre: o editor
+                  reescreve a lista inteira a partir do que recebe, e a crua não traz valor. */}
+              <TecnicaMotorEditor
+                efeitos={res?.efeitos ?? acao.efeitos ?? []}
+                onChange={(v) => onPatch({ efeitos: v })}
+                dslGrupos={grupos}
+                canalGrupos={INV_EFEITO_CANAL_GRUPOS}
+                alvoOpcoesDe={alvoOpcoesInvocacao}
+                comDuracao={false}
+                titulo="Efeitos da Ação"
+              />
+            </>
+          )}
+
           {res?.prejuizoMultiplos && (
             <p className="text-[10px] text-slate-500">Prejuízo por múltiplos auxílios: {res.prejuizoMultiplos}.</p>
           )}
@@ -19184,12 +19260,13 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
               volta de um número que não faz nada. */}
           {(acao.custoPE ?? 0) > 0 && (
             <div className="rounded-md border border-slate-800 bg-slate-950/40 px-2.5 py-2">
-              <BeneficiosCustoEditor acao={acao} res={res} onPatch={onPatch} />
+              {/* A Personalizada não compra Benefícios por PE: o custo dela é à mão (autor, 2026-11-24). */}
+              {!isPersonalizada && <BeneficiosCustoEditor acao={acao} res={res} onPatch={onPatch} />}
               {/* Otimização de Energia (Controlador 2°): uma Ação com Custo por
                   invocação sai 1 PE mais barata. Só aparece quando a ficha tem a
                   habilidade e a ação tem custo. */}
               {otimizacaoEnergia && (
-                <div className="mt-2 flex items-center gap-2">
+                <div className={`${isPersonalizada ? "" : "mt-2 "}flex items-center gap-2`}>
                   <BoolChip ativo={!!acao.custoOtimizado} onToggle={() => onPatch({ custoOtimizado: !acao.custoOtimizado })}>
                     Otimização de Energia
                   </BoolChip>
@@ -19211,10 +19288,18 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
               nunca toca, e o segundo é texto opcional. Juntos custavam duas
               filas inteiras no caso comum. O resumo do recolhido diz quando há
               algo escrito lá dentro, senão fechar esconderia trabalho feito. */}
+          {/* ⚠ A DESCRIÇÃO SAIU DO AVANÇADO EM 2026-11-24 (feedback do lançamento: "não dá para inspecionar o texto que
+              compõe a descrição"). Era uma linha só de `TextInput`, escondida e cortada. Agora é o `TextoLongo` com
+              formatação, o mesmo do Funcionamento Básico, e a Ficha abre o texto na linha da Ação. */}
+          <div>
+            <FieldLabel>Descrição</FieldLabel>
+            <TextoLongo value={acao.descricao || ""} onChange={(v) => onPatch({ descricao: v })} placeholder="Texto da ação" minRows={3} formatacao />
+          </div>
+
           <SecaoRecolhivel
             titulo="Avançado"
-            resumo={[acao.modificadorExpr ? "Modificador" : null, acao.descricao ? "Descrição" : null].filter(Boolean).join(" · ")}
-            defaultOpen={!!(acao.modificadorExpr || acao.descricao)}
+            resumo={acao.modificadorExpr ? "Modificador" : ""}
+            defaultOpen={!!acao.modificadorExpr}
           >
             <div className="space-y-3 pt-2">
               <ExprField
@@ -19227,10 +19312,6 @@ function AcaoCard({ acao, res, grau, otimizacaoEnergia, grupos, efe, onPatch, on
                 resultadoLabel={res?.modificadorLabel}
                 grupos={grupos}
               />
-              <div>
-                <FieldLabel>Descrição</FieldLabel>
-                <TextInput value={acao.descricao} onChange={(v) => onPatch({ descricao: v })} placeholder="texto da ação (opcional)" />
-              </div>
             </div>
           </SecaoRecolhivel>
         </div>
@@ -19278,12 +19359,18 @@ function ResumoDaAcao({ res, classe, partes }) {
       </span>,
     );
   }
+  /* As rolagens próprias da Ação Personalizada (2026-11-24), uma pílula cada, com o rótulo que a pessoa deu. */
+  (res.rolagens ?? []).forEach((r, i) => pilulas.push(
+    <span key={`rol${i}`} className={pill}>{r.rotulo}: {r.vezes > 1 ? `${r.vezes}x ` : ""}{r.dados}d{r.faces}{bonusSuf(r.fixo)}{r.tom === "cura" ? " Cura" : ""}</span>,
+  ));
   if (res.danoAdicional?.dado) pilulas.push(<span key="adic" className={pill}>Adicional: {res.danoAdicional.dado}</span>);
   if (res.valor != null) pilulas.push(<span key="valor" className={pill}>Valor: {res.valor}{res.auxilioSub === "rd" ? " RD" : ""}</span>);
   if (res.bonusAtaque != null) pilulas.push(<span key="atq" className={pill}>Ataque: {res.bonusAtaque >= 0 ? "+" : ""}{res.bonusAtaque}</span>);
   if (res.cd != null) pilulas.push(<span key="cd" className={pill}>CD: {res.cd}</span>);
   if (res.alcance) pilulas.push(<span key="alc" className={pill}>Alcance: {res.alcance}</span>);
   if (res.area) pilulas.push(<span key="area" className={pill}>Área: {res.area}</span>);
+  if (res.alvoTexto) pilulas.push(<span key="alvo" className={pill}>Alvo: {res.alvoTexto}</span>);
+  if (res.duracaoTexto) pilulas.push(<span key="dur" className={pill}>Duração: {res.duracaoTexto}</span>);
   if (res.condicoes?.length > 0) pilulas.push(<span key="cond" className={pill}>Condição: {res.condicoes.join(", ")}</span>);
   if (classe) pilulas.push(<span key="classe" className={`${pill} text-slate-400`}>{classe === "simples" ? "Simples" : "Complexa"}</span>);
 
@@ -19605,9 +19692,10 @@ function CaracteristicaCard({ carac, res, grau, grupos, onPatch, onRemove }) {
             />
           )}
 
+          {/* ⚠ TEXTO LONGO DESDE 2026-11-24 (feedback do lançamento), pela mesma razão da Descrição da Ação. */}
           <div>
             <FieldLabel>Descrição</FieldLabel>
-            <TextInput value={carac.descricao} onChange={(v) => onPatch({ descricao: v })} placeholder="texto da característica (opcional)" />
+            <TextoLongo value={carac.descricao || ""} onChange={(v) => onPatch({ descricao: v })} placeholder="Texto da característica" minRows={3} formatacao />
           </div>
         </div>
       )}

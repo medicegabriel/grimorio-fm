@@ -14,6 +14,7 @@ import {
 import { collectConditionModifiers } from "../../../../components/fm-conditions";
 import { buildDslContext } from "../../../../components/fm-dsl";
 import { CONDITIONS, SANGRAMENTO_LADDER } from "../../../../components/fm-tables";
+import { resolveActionFinalText } from "../../../../components/fm-action-calc";
 // Quem aplicou cada duração (etapa 5). FOLHA, zero imports.
 import { APLICADOR_PROPRIO, aplicadorDe, semMarcaDoTurno } from "../../ficha/ficha-uso-estado";
 
@@ -705,6 +706,15 @@ export function estadoDaRegra(regra, combatState, contexto) {
     motivo: !reqOk ? `Pré-requisito não atendido: ${regra.requires}` : !peOk ? `PE insuficiente (precisa de ${custo})` : null,
   };
 }
+
+/**
+ * O texto de uma Ação como a ficha da 2.5.2 o mostra. Origem: CombatantPanel.jsx:1007 (`resolveActionFinalText`).
+ *
+ * ⚠ NASCEU DE UM FEEDBACK DO LANÇAMENTO (2026-11-23): "não consigo ver o que a expansão do Jogo faz". A Ação montada
+ * pelos campos (dano, TR, Expansão de Domínio) tem `description` e `finalTextManual` vazios, e o texto dela é GERADO.
+ * O painel lia só os dois campos gravados, e a dica não abria. Seis das oito Ações do Jogo eram assim.
+ */
+export const textoDaAcao = (acao, nomeDaCriatura) => semTravessao(resolveActionFinalText(acao, nomeDaCriatura) ?? "").trim();
 
 /** O efeito de uma regra em texto curto, para o botão de reação. Origem: CombatantPanel.jsx:684-686. */
 export const efeitoDaRegra = (regra, contexto) => semTravessao(summarizeRule(regra, contexto)?.effects?.join(" · ") ?? "");

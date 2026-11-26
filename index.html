@@ -23,6 +23,7 @@
           : /^\/(?:jogador|player)\/?$/i.test(biblioteca) ? "Ficha de Jogador"
           : /^\/afty\/?$/i.test(biblioteca) ? "Grimório Afty"
           : /^\/eclesiastes\/?$/i.test(biblioteca) ? "Eclesiastes"
+          : /^\/comunidade\/?$/i.test(p) ? "Comunidade | fichafm"
           : /^\/sala\//i.test(p) ? "Sala"
           : null;
         if (t) document.title = t;

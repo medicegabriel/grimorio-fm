@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Info } from "lucide-react";
-import { definirPreferencia, lerPreferencia, ouvirPreferencia } from "./coleta.js";
+import {
+  definirPreferencia, lerPreferencia, ouvirPreferencia, ID_PREFERENCIAS_BALANCEAMENTO, LINK_PREFERENCIAS_BALANCEAMENTO,
+} from "./coleta.js";
 
 const link = "underline underline-offset-4 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400";
 const botao = "min-h-10 shrink-0 rounded-md border border-slate-600 px-3 text-sm font-semibold text-slate-100 hover:bg-slate-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-violet-400";
@@ -33,11 +35,10 @@ export function AvisoDeColeta() {
           <p>
             O site coleta informações sobre suas escolhas na ficha, como especializações e aptidões,
             para ajudar a balancear e melhorar o sistema. Você pode desativar essa opção nas
-            {" "}<a className={link} href="/Jogador#preferencias-de-privacidade">Preferências de Privacidade</a>.
+            {" "}<a className={link} href={LINK_PREFERENCIAS_BALANCEAMENTO}>Preferências de Privacidade</a>.
           </p>
         </div>
         <div className="ml-auto flex gap-2">
-          <button type="button" className={botao} onClick={() => definirPreferencia("desativada")}>Desativar</button>
           <button type="button" className={botao} onClick={() => {
             if (lerPreferencia() === null) definirPreferencia("ativa");
             setVisivel(false);
@@ -51,15 +52,22 @@ export function AvisoDeColeta() {
 export function PreferenciaDeColeta() {
   const preferencia = useSyncExternalStore(ouvirPreferencia, lerPreferencia);
   const detalhes = useRef(null);
-  const abrirPorLink = location.hash === "#preferencias-de-privacidade";
   useEffect(() => {
-    if (abrirPorLink) detalhes.current?.scrollIntoView({ block: "nearest" });
-  }, [abrirPorLink]);
+    const abrirPorLink = () => {
+      const elemento = detalhes.current;
+      if (!elemento || location.hash !== `#${ID_PREFERENCIAS_BALANCEAMENTO}`) return;
+      elemento.open = true;
+      elemento.scrollIntoView({ block: "nearest" });
+      elemento.querySelector("summary")?.focus({ preventScroll: true });
+    };
+    abrirPorLink();
+    window.addEventListener("hashchange", abrirPorLink);
+    return () => window.removeEventListener("hashchange", abrirPorLink);
+  }, []);
   return (
     <details
       ref={detalhes}
-      id="preferencias-de-privacidade"
-      open={abrirPorLink || undefined}
+      id={ID_PREFERENCIAS_BALANCEAMENTO}
       className="mx-auto mb-2 max-w-lg text-sm open:mb-4"
     >
       <summary className={`${link} cursor-pointer`}>Preferências de Privacidade</summary>

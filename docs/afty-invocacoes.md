@@ -1496,6 +1496,35 @@ e um seletor mostrando o PV final enquanto a expressão lê o PV base seria um s
 - **Marcador sem a opção escolhida** aparecia igual aos outros e não entregava efeito nenhum (o
   `quando` testa `marc_<id>_<opcao>` e nenhuma bate). Virou aviso.
 
+### ✅ AÇÃO PERSONALIZADA E DESCRIÇÃO QUE ABRE (2026-11-24, feedback do lançamento)
+
+Pedido de jogador: *"não dá para criar característica/ação de invocação personalizada de forma eficiente e bem feita
+como dá para fazer com feitiço"*, e *"não dá para inspecionar o texto que compõe a descrição"*.
+
+- **Família `personalizada`** na Ação (`createBlankAcao`, `resolveAcao`), no molde do Feitiço Personalizado. Campos:
+  `resolucao` (`"nenhuma"`, `"jogada"` ou `"tr"`, com `atributoChave`, `trTipo` e `corpoACorpo`), `alcanceTexto`,
+  `alvoTexto`, `duracaoTexto` e `rolagens` (`[{ rotulo, dados, faces, fixo, vezes, tom }]`, a mesma forma das do
+  Feitiço). O Acerto sai da conta da Jogada de Ataque e a CD da conta do ataque por TR, então Precisão, Auxílio de
+  Acerto próprio e o Modificador (alvo Acerto ou CD, `alvosDeModificador`) alcançam a Personalizada. As rolagens
+  chegam limpas e com `grupos` por `rolagensDaAcaoPersonalizada`.
+- **Decisão do autor:** ocupa vaga de Ação (conta no `orcamento` como as outras), e o custo em PE é à mão, com o teto do
+  grau (`custoMaxAcao`, aviso quando passa). Ela NÃO compra Benefícios por PE nem exige Ação Complexa, que são regras
+  da Ação com Custo do livro. A marca especial (Reduzir Cura, Cobertura) não aparece nela.
+- **Criador:** o chip Personalizada na Família, a fila de Resolução, os textos de mesa e o `EditorDeRolagens`, que
+  agora é o mesmo componente do Feitiço Personalizado. A **Descrição** da Ação saiu do Avançado e, com a da
+  Característica, virou `TextoLongo` com formatação (o mesmo do Funcionamento Básico).
+- **Ficha** (`AbaInvocacoes.jsx`, que serve à clássica, à G2 e ao Encontro): o nome da Ação e da Característica abre a
+  descrição na própria linha, pelo `TextoRico` (era só o `title` de um nome truncado). A Personalizada mostra Acerto ou
+  CD, alvo, duração e uma rolagem por linha das próprias, cada uma com o rótulo dela.
+- **Motor de Efeitos** (`efeitos`, mesmo formato da Característica Livre), pedido na decisão do autor. As linhas resolvem
+  num pré-passe do `resolveInvocacao`, ANTES do `donoLocal`, por `resolverMotorDaCaracteristica`: resolvidas dentro do
+  `resolveAcao` elas apareceriam no card e não mexeriam no Acerto, na CD ou na Defesa. Cada Ação Personalizada entra na
+  disputa do `agregarCaracteristicas` como uma Livre a mais (`deAcao`): duas fontes do mesmo efeito não acumulam, vale a
+  maior, e o dado extra é proibido com aviso. As linhas valem sempre que a invocação tem a Ação (o `quando` lê as
+  variáveis de mesa), e não só no turno em que ela é usada, porque não existe variável de "Ação usada". A Ação resolvida
+  traz `efeitos` e `resumoMotor`, o hover leva o nome da Ação, e a Ficha mostra o resumo como chip.
+- Assert em `asserts/t-invocacao-acao-personalizada.mjs`.
+
 ### ✅ QUINTA LEVA (2026-09-10): o Motor de Automação na Característica Livre
 
 Detalhe na sessão de 2026-09-10 (parte 2) em `afty-status.md`. Vale para a criatura E para o

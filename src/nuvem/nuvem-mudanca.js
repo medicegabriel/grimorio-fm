@@ -8,10 +8,8 @@
    As duas pontas conferem `event.origin` contra a origem exata da outra, e o
    envio nunca usa "*", senão qualquer site poderia injetar fichas. */
 
-import { ORIGEM_ANTIGA, ORIGEM_NOVA, ehChaveDeFichas, chaveDaPessoa } from "./nuvem-config";
+import { ORIGEM_ANTIGA, ORIGEM_NOVA, PARAM_RECEBER, ehChaveDeFichas, chaveDaPessoa } from "./nuvem-config";
 import { unirPorId, listaDeIds, lerLocal, gravarCru } from "./nuvem-sync";
-
-export const PARAM_RECEBER = "receber-fichas";
 
 // ---------------------------------------------------------------- host antigo
 export function levarFichas({ aoEnviar } = {}) {

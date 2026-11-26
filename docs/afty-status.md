@@ -1,5 +1,59 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-25 · CENTRAL DE JOGO
+
+A Central de Jogo aprovada é a Home em `/`. Ela orienta jogadores e mestres em seis pontos.
+
+- **Propósito:** chegar a fichas, preparação de encontros e Salas a partir de uma só entrada.
+- **Visual:** fundo escuro, lateral em uma superfície mais clara, roxo nos estados ativos e na ação de entrar.
+- **Percurso:** abrir Jogador, Criatura ou Encontros direto, ou informar um código e entrar pelo fluxo da Sala.
+- **Primeira tela:** menu à esquerda, três atalhos no centro e o formulário da Sala antes dos livros.
+- **Adaptação:** no celular, o botão Menu abre a navegação e os atalhos ficam em uma coluna nos aparelhos estreitos.
+- **Referência:** esboço Central de Jogo aprovado no chat, com o destino de Catarse pendente.
+
+A Home normal carrega separada do Grimório. Ela aceita código ou link de Sala, usa o mesmo validador do app e guarda `/` como origem para o botão Voltar da Sala. A abertura preserva os fluxos de retorno do login e de recebimento de fichas do endereço antigo. A conta aparece na barra compartilhada quando a nuvem está configurada, e a Home restaura uma sessão existente pelo mesmo fluxo da Comunidade. A visita sem sessão continua sem iniciar a sincronização.
+
+A Home e as bibliotecas públicas de Criatura e Jogador compartilham a marca fichafm.com.br com a assinatura Feiticeiros & Maldições e a paleta escura da Central. Nas bibliotecas, a marca e o link Início levam à Home. A navegação entre Criatura e Jogador fica ao lado da conta no cabeçalho do site e o painel abaixo concentra as ações de ficha.
+
+O cabeçalho também aparece na lista e no detalhe dos Encontros públicos. O item Encontros abre a lista da biblioteca atual, o link da biblioteca na trilha abre o painel correspondente e o link Encontros no detalhe volta à lista. A moldura usa a paleta da Central e respeita a altura disponível durante o combate.
+
+O menu lateral de 226 px da Home é o padrão das bibliotecas e dos Encontros públicos. Até 760 px o botão Menu abre a navegação recolhida. Durante o combate, em telas entre 761 e 1399 px, a lateral usa ícones em 68 px para dar mais largura à mesa. A lista de Encontros segue o painel das bibliotecas, com título e criação no topo, pastas adaptadas à largura disponível, uma barra de busca e filtros e cartões que priorizam o nome.
+
+Home, Comunidade, Criatura, Jogador e Encontros usam um só componente de navegação, com os mesmos links na mesma ordem. Os botões principais de Salas, Comunidade, Encontros e das bibliotecas usam o roxo de Novo Personagem. Os botões secundários de Encontros usam a cor neutra de Importar e Modelos.
+
+O autor definiu Comunidade como área interna de compartilhamento. A rota `/Comunidade` apresenta o propósito da área e explica as categorias Fichas de Jogador, Fichas de Criatura, CSS Personalizado e Addons para quem chega pela primeira vez. A publicação fica para a implementação da Comunidade.
+
+A prévia da Comunidade agora tem catálogo com seis criações demonstrativas, busca, filtros, ordenação e endereços para abrir detalhes. Os filtros ficam na URL. Temas oferecem uma amostra da Ficha Final que alterna entre o estilo de exemplo e o padrão. Publicar continua em preparação. O catálogo usa dados locais de demonstração e não grava no Supabase.
+
+O refinamento da Comunidade trouxe o catálogo para mais perto do topo no celular, organizou os dados dos cards por rótulo e deixou a publicação em preparação como status. As categorias são seleções nativas navegáveis pelas setas. Limpar a busca preserva a categoria, e limpar os filtros preserva a ordenação. A prévia do tema compara os estilos lado a lado no desktop e alterna entre eles no celular.
+
+A seta da ordenação tem margem interna alinhada ao campo de busca. O seletor continua nativo e usa a seta do navegador quando o sistema força cores de alto contraste.
+
+A Comunidade passou a consultar o catálogo real do Supabase. As contas existentes podem compartilhar cópias de fichas do aparelho, CSS com texto opcional e tópicos de discussão. Os comentários abrem dentro da publicação e carregam pelo ID dela. Cada autor pode remover seu conteúdo. As fichas são baixadas em JSON para o importador atual, e o CSS pode ser copiado ou baixado. A categoria CSS e a publicação de temas mostram a mesma ficha de nível 10 com e sem tema. A prévia compara visão geral, ações, habilidades, perícias, equipamentos e efeitos. O exemplo usa o CSS Dehya enviado pelo autor e permite escolher entre Sekhmet e Hator. Addons permanecem trancados. A API de produção responde à leitura pública. A liberação no site depende do próximo deploy do frontend.
+
+A tela de publicação mostra os quatro tipos em seleções nativas com ícones e uma prévia ao vivo do cartão do catálogo. A ficha selecionada fornece título inicial, edição e nível ou ND. O editor de CSS mostra a contagem em bytes e a ficha de nível 10 com e sem tema. O seletor de ficha tem o mesmo recuo de seta da ordenação do catálogo. O texto da publicação tem barra de formatação e prévia, com negrito, itálico, sublinhado, riscado, títulos de seção e listas. A marcação fica no campo de texto existente e é renderizada em componentes React.
+
+A autoria de publicações e comentários vem da conta autenticada. A migração deriva a assinatura do usuário do Discord vinculado ou da parte anterior ao arroba do e-mail confirmado, substitui os nomes dos registros antigos e aplica a regra em cada novo envio. A prévia e o formulário consultam essa assinatura no banco.
+
+Resumo e comentários usam a mesma barra de formatação e prévia do editor de publicações. O resumo renderiza os estilos no catálogo e no tópico, e os comentários exibem a formatação na discussão. Os campos usam a marcação de texto existente e têm limites de 240 e 2.000 caracteres, respectivamente.
+
+O autor pode editar ao lado de Retirar Publicação. O formulário carrega o título, resumo, texto e CSS salvos. Em publicações de ficha, o autor pode manter a cópia compartilhada ou selecionar outra ficha da mesma categoria. A edição grava na publicação original e preserva os comentários. A migração de edição já está no Supabase de produção e limita as alterações às colunas de conteúdo e ao autor.
+
+## SESSÃO DE 2026-11-24 · FEEDBACK DO LANÇAMENTO 1 (AÇÃO PERSONALIZADA DA INVOCAÇÃO)
+
+- A Ação de Invocação ganhou a família **Personalizada**, no molde do Feitiço Personalizado: resolução opcional pelos números nativos da invocação (Acerto da Jogada de Ataque ou CD do ataque por TR), alcance, alvo e duração em texto, e rolagens próprias. Decisão do autor: ocupa vaga de Ação, custo em PE à mão com o teto do grau, sem Benefícios por PE.
+- A Descrição da Ação e da Característica virou texto longo com formatação no criador (a da Ação saiu do Avançado), e na Ficha o nome abre a descrição na linha, pelo `TextoRico`. O editor de rolagens do Feitiço Personalizado virou o `EditorDeRolagens`, que a Ação usa também.
+- Depois, a Personalizada ganhou o **Motor de Efeitos** (o editor da Característica Livre). As linhas resolvem antes das Ações, então sobem o Acerto e a CD da própria Ação, e entram na disputa das Características como uma Livre a mais: duas fontes do mesmo efeito não acumulam, e dado extra é proibido.
+- Guia em `docs/afty-invocacoes.md` ("Ação Personalizada e descrição que abre"), assert em `asserts/t-invocacao-acao-personalizada.mjs`. Prints de antes e depois em `C:\Projetos\Grimorio\outputs\feedback-lancamento\`. Com isto, dos cinco feedbacks do lançamento só o 2 (ajuste à mão) segue aberto, reservado ao Modo Livre.
+
+## SESSÃO DE 2026-11-23 · FEEDBACKS DO LANÇAMENTO (3, 4 E 5)
+
+- **Rolar na Criatura do `/` (feedback 5).** Exceção de Forma 1 nova no `CombatTracker.jsx` e no `CombatantPanel.jsx`, a prop opcional `onRolar` (registrada no AGENTS.md, seção 6). Com ela, Iniciativa, Testes de Resistência (com a margem de crítico da ficha) e Perícias rolam no clique, e a Ação ganha Rolar Acerto e Rolar (dano) ao lado do Copiar. O `App.jsx` carrega a casca `ui/CriaturaComRolagem252.jsx` na tela `tracker`, que rola com `ui/rolagem-252.js` (o mesmo `rolarTeste` e `rolarDano` da Ficha do Afty, mais `gruposDaNotacao` para ler "4d10+26") e mostra a `BandejaDeRolagens252.jsx` no canto de baixo à esquerda, com Desvantagem, Normal e Vantagem. O painel da criatura da 2.5.2 no Encontro rola igual (números sublinhados em pontilhado) e mostra a bandeja grudada no topo. As linhas antes do fim do `CombatantPanel.jsx` não andaram, porque o `m252-vital.js` as cita como origem. Assert em `asserts/t-rolagem-252.mjs`. As rolagens do Encontro ainda não vão para o Registro.
+
+- **Conjuração Aprimorada no Player.** O bônus de dano do Feitiço (`bonusConjuracaoAprimorada`) somava em toda ficha, e o Suporte do Player o ganhava sem ter a habilidade. Nova divergência `conjuracaoAprimoradaNoDano` em `afty-sistema.js` (autor: "Só no Player"): a criatura segue com o bônus grátis de 2026-08-06, o jogador só soma com a Conjuração Aprimorada, inclusive o Conjurador em multiclasse. O `ctxFeiticos` do derive leva `conjuracaoAprimorada`, e só o `false` explícito zera o bônus. A cópia de uma herdeira conta, a remendada não: `clonesDaHeranca` marca `remendada: true`, e o Especialista em Estilo (que reescreve a habilidade em vagas de Estilo) não soma dano. Assert em `asserts/t-conjuracao-aprimorada-player.mjs`.
+- **Texto da Ação no Encontro.** O painel da criatura da 2.5.2 (`PainelCriatura252`) lia só `description` e `finalTextManual`, e a Ação montada pelos campos (a Expansão do Jogo, seis das oito Ações dele) tem os dois vazios, então a dica não abria. O adaptador `m252-vital.js` expõe `textoDaAcao`, que chama o `resolveActionFinalText` da 2.5.2 (puro, importado como os outros), e a linha da Ação abre o texto no clique, igual ao cartão da ficha da 2.5.2. Assert em `asserts/t-encontro-texto-acao.mjs`, e o `t-encontro-252-porte` passou a aceitar o `fm-action-calc` na lista de imports.
+- Prints de antes e depois em `C:\Projetos\Grimorio\outputs\feedback-lancamento\`. O feedback 1 segue com decisão tomada e sem código, o 2 vai para o Modo Livre.
+- Na suíte, o `t-reconciliacao-g00` falha nesta árvore (65 integrações herdadas contra 118) com ou sem esta mudança.
 ## SESSÃO DE 2026-11-23 · CRIATURA DA GUILDA DESCE ATÉ O ND 1
 
 - **Pedido do autor:** "Na /era de ouro as criaturas estao travadas no level cap 3 deixe abaixar ainda mais o level".
@@ -12,6 +66,8 @@
 
 - O salvamento explícito do criador de Jogador envia, após o aviso, um resumo de escolhas de catálogo. A recusa e o identificador aleatório por ficha ficam no navegador.
 - O painel privado em `/Jogador/balanceamento` consulta contagens, distribuições e combinações agregadas no Supabase. A coleta permanece desligada por padrão. O guia de ativação está em `docs/nuvem-supabase.md`, na seção Balanceamento de Jogador.
+- A revisão visual do painel afasta as setas dos seletores, agrupa os filtros, mostra as proporções em barras alinhadas e pagina rankings longos. Um recorte vazio mostra apenas o estado da amostra e a ação disponível.
+- A lista de fichas de Jogador oferece **Incluir Fichas Já Salvas** em um convite compacto no canto inferior. O botão registra o aceite e envia os resumos disponíveis no navegador em lote. As Preferências de Privacidade concentram a desativação da coleta.
 
 ## SESSÃO DE 2026-11-23 · PUBLICAÇÃO DAS ATUALIZAÇÕES DE ECLESIASTES
 
@@ -23,6 +79,7 @@
 - Motor em `src/systems/eclesiastes/feiticos/`: `tabelas.js` e `modelo.js` (folhas), `orcamento.js` (o extrato com fontes de pontos restritas: geral, Permuta, Condicional, Semiativo e Liberação), `motor.js` (Passivo no Motor, família `feiticoAuxiliarPassivo`, RD líquida no agregado), `resumo.js` (linha no formato do `linhaDoFeitico`) e `derivar.js`. O Feitiço salva em `creature.feiticosEcl`, com compras guardadas como quantidade.
 - No derive, só com `ehFichaEclesiastes`: o Feitiço antigo criado pela pessoa sai depois de `marcarTecnicasMarciais` (ficam Técnicas Marciais, recebidos de aliado e Olhos de Agulha), os novos contam no caixa de aquisições e no requisito Possuir Feitiços, os Passivos entram no Motor, os Condicionais e Semiativos ganham interruptor de bancada, e `feiticos.lista` recebe as linhas novas (`feiticos.ecl` guarda o extrato).
 - A tela (`AbaFeiticosEcl.jsx`, `ecl-feiticos.css`) entra dentro do `FeiticosCard`, que segue dono da lista lateral e das Expansões de Domínio. Quatro faixas: identidade, saldo grudado, sub-abas Base, Alcance e Efeitos com os pontos no chip, e detalhe (Descrição com o `TextoLongo` formatado do criador, recebido por prop). Pinta só com tokens `--afty-*`, que passaram a valer em `.ecl-feiticos` pelo `ficha.css`.
+- Liberação Máxima refeita no mesmo dia, a pedido do autor ("Pode Tudo", Chave de Camada): a sub-aba própria saiu, e uma chave Normal | Liberação no saldo faz Alcance e Efeitos editarem o Feitiço liberado. A camada guarda só o que soma ao base (extras, chaves que ligam, efeitos e Condições novos, `aplicarLiberacaoEcl` e `diferencaLiberacaoEcl` em `modelo.js`), e o orçamento roda o mesmo cálculo no Feitiço liberado e cobra a diferença da fonte da Liberação, então toda compra e todo teto valem nela. O saldo tem as MESMAS casas nos dois modos (ND, Custo, Fadiga e a chave em cima, a barra de Pontos e o Sobram embaixo): em Liberação só os números mudam para o total liberado, e as parcelas (base + Liberação) ficam no hover. O campo Componentes do Ritual saiu da tela e da linha da Ficha.
 - Liberação Máxima refeita no mesmo dia, a pedido do autor ("Pode Tudo", Chave de Camada): a sub-aba própria saiu, e uma chave Normal | Liberação no saldo faz Alcance e Efeitos editarem o Feitiço liberado. A camada guarda só o que soma ao base (extras, chaves que ligam, efeitos e Condições novos, `aplicarLiberacaoEcl` e `diferencaLiberacaoEcl` em `modelo.js`), e o orçamento roda o mesmo cálculo no Feitiço liberado e cobra a diferença da fonte da Liberação, então toda compra e todo teto valem nela. O saldo em Liberação mostra o PE junto (8 + 4 = 12 PE), a Fadiga e os pontos da camada. O campo Componentes do Ritual saiu da tela e da linha da Ficha.
 - Conferido no navegador: criação, estouro com Faltam em âmbar, Passivo somando no Preview, 375 px sem rolagem lateral, e a linha na Ficha G2 rolando o dado com as propriedades.
 - Fica para a fase 2: Fadiga na sessão, desconto do PE extra da Liberação, manutenção do Sustentado, usos do Semiativo, melhorias de Ritual e buffs de Feitiço Ativo no Motor. Furos e leituras em `docs/a-fazer.md`, seção Eclesiastes: Feitiços por pontos.
@@ -57,6 +114,11 @@
 - No Criador de Criaturas e Jogadores de Eclesiastes, a aba Cálculos mostra Condições e Simulação de Combate quando disponíveis. O painel de valores editáveis saiu da aba, e o cartão Estudos saiu dos Interlúdios.
 - Em Eclesiastes, a 4ª etapa do Treino de Perícia permite repetir um d20 abaixo de 5 e manter o maior resultado. O sucesso garantido saiu da edição. O Treinamento Completo soma metade do Bônus de Treinamento aos testes da perícia escolhida, com arredondamento para baixo.
 
+## SESSÃO DE 2026-11-18 · ROTAS PÚBLICAS E BASE DE ECLESIASTES
+
+- A raiz abre `/Criatura`. `/Jogador` é o endereço da ficha de personagem. O alternador público mostra só esses dois. `/Player` e os caminhos antigos de Encontros continuam resolvendo para os equivalentes atuais, com as mesmas chaves de fichas, pastas e Encontros.
+- Eclesiastes tem biblioteca de personagens e criaturas, Encontros e rascunhos próprios. As fichas carregam `edicaoDeRegras: "eclesiastes"` e mantêm `rulesVersion` como o tipo. O ponto de entrada do cálculo em `src/systems/eclesiastes/regras.js` usa a base atual. Os catálogos de Especializações e Feitiços do novo livro serão implementados nessa edição quando as regras forem fornecidas. As fichas da edição ficam na própria biblioteca e seguem sem os pacotes nativos da Era de Ouro.
+- Em 2026-11-19, o banco de produção do Ficha FM recebeu a atualização pontual da restrição de grupo e da função `criar_sala`. A verificação confirmou o grupo Eclesiastes, as permissões preservadas e as 48 Salas anteriores. O front-end de Eclesiastes e as rotas públicas foram publicados diretamente na Vercel, a partir de uma cópia isolada da versão anterior de produção com as mudanças dessa entrega. Deploy `dpl_EpYQhaiL6YgqzNxbRyquiJB4WY3N`. No domínio de produção, o Chrome criou os dois tipos de ficha, montou um Encontro e reabriu a luta após avançar o turno.
 ## SESSÃO DE 2026-11-22 · ECLESIASTES NO REPOSITÓRIO
 
 - Integração de `/Eclesiastes` com a versão atual do Grimório. A biblioteca, os rascunhos e os Encontros têm armazenamento próprio. A edição é marcada em `edicaoDeRegras` e o tipo continua em `rulesVersion`. Especializações e Feitiços ainda usam a base compartilhada.

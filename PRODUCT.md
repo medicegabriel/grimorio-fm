@@ -31,7 +31,7 @@ O que um tracker genérico de RPG não poderia copiar com verdade:
 ## Operating Context
 
 - Trabalho pesado de criação no desktop (criador de criaturas, Habilidades, Feitiços, Addons) e consulta rápida durante a sessão de jogo (Encontros, ficha do jogador, Ficha Final).
-- Rotas: raiz para o Grimório 2.5.2, `/Afty` (escondida, com storage isolado) e `/Player`.
+- Rotas: `/` para a Central de Jogo, `/Criatura` para o Grimório 2.5.2, `/Jogador` para fichas de personagem (`/Player` segue como alias), e `/Afty` para o sistema Afty (rota escondida, com storage isolado).
 - A Ficha Final aceita CSS personalizado do usuário, e a ficha viaja no export. Por isso campo de texto livre é marcação (`afty-texto-rico.js`), nunca HTML.
 - Deploy é o push para `main`, que a Vercel publica. Quem faz commit e push é o autor.
 

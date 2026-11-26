@@ -12,6 +12,8 @@ A coleta fica desligada por padrão. Os dados das fichas e os resumos de balance
 
 Os períodos do painel usam a data em que o último resumo chegou ao servidor. Fichas salvas antes do lançamento podem entrar ao serem editadas e salvas de novo. Cada navegador e domínio conserva seu próprio código por ficha e sua preferência de coleta.
 
+O convite **Incluir Fichas Já Salvas** envia as fichas elegíveis disponíveis no navegador após o clique no botão. Ele reaproveita o código por ficha do salvamento individual e inclui a versão e a data do aceite no resumo recebido. O envio em sequência respeita o limite da API. Em caso de interrupção, o botão de tentativa envia apenas as fichas pendentes. As Preferências de Privacidade desativam os próximos envios neste navegador.
+
 Implementado em 2026-11-16. O código fica INERTE até as variáveis de ambiente existirem: sem elas o
 site é o de sempre, só com localStorage, e a biblioteca do Supabase nem é baixada.
 
@@ -158,6 +160,16 @@ Quem tiver conta também pode só entrar nos dois endereços: o antigo sobe, o n
 
 O banco só pesa para quem entra. Meça o tamanho de uma ficha real em Supabase, Table Editor, e
 confira o limite do plano grátis (banco e usuários ativos por mês) na página de preços atual.
+
+## Comunidade
+
+A rota `/Comunidade` usa a conta já existente do fichafm. Qualquer visitante pode listar publicações, baixar fichas e CSS e ler comentários. Contas Google ou Discord podem publicar uma cópia da ficha selecionada, CSS ou um tópico, escrever sobre a publicação e comentar. Addons ficam trancados. O banco assina cada envio com o usuário do Discord vinculado ou com a parte anterior ao arroba do e-mail confirmado. O identificador da conta fica privado.
+
+O Supabase de produção do fichafm já recebeu [publicações e comentários](../supabase/migrations/20261126014725_comunidade_publicacoes_e_comentarios.sql), [autoria da conta](../supabase/migrations/20261126014733_comunidade_autoria_da_conta.sql) e [edição de publicações](../supabase/migrations/20261126020955_comunidade_editar_publicacao.sql), nessa ordem. Para liberar a rota no domínio público, publique a versão do frontend que inclui a Comunidade. As URLs de retorno existentes cobrem `/Comunidade` quando o domínio foi configurado com `/**`.
+
+O catálogo lista até 24 publicações por página e só lê o conteúdo completo ao abrir uma publicação. Os comentários têm paginação independente. A publicação de uma ficha usa uma cópia de até 240 KB sem o retrato principal. CSS tem limite de 32 KB e é exibido em uma amostra isolada de nível 10. Cada conta pode manter até 50 publicações e 200 comentários. O autor pode editar e retirar publicações próprias ou excluir comentários próprios. A edição grava na publicação original e preserva a discussão. Retirar uma publicação apaga todos os comentários dela.
+
+Para verificar o SQL localmente, instale `@electric-sql/pglite@0.5.15` fora do repositório e execute `node supabase/prova-comunidade-pglite.mjs <pasta dist do pglite>`. No ambiente escolhido para publicação, confira a leitura sem login e, com duas contas, publique um tópico, comente na segunda conta e verifique se só a primeira conta consegue editar o tópico.
 
 ## Sala Online (2026-11-17 e 2026-11-18)
 

@@ -10,6 +10,7 @@ import { HABILIDADES_GERAIS } from "../afty-gerais.js";
 import { resolveEspecializacoes } from "../afty-especializacoes.js";
 
 export const VERSAO_RESUMO = 1;
+export const VERSAO_ACEITE_LOTE = 1;
 export const PERIODOS = [7, 30, 90];
 export const MAX_NIVEL = 10000;
 

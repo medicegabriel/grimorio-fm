@@ -4,7 +4,8 @@ import Dashboard from "./components/Dashboard";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
 import { quandoOcioso, useListaAdiada } from "./celular/usar-lista-adiada";
 import { grupoDaRota } from "./systems/afty/encontros/listas";
-import { caminhoDe, lerCaminho } from "./systems/afty/encontros/rota-encontros";
+/* A volta da Sala e a chave de aparelho da moldura nova vêm do rework dos Encontros (etapa 1, 2026-11-18). */
+import { caminhoDe, lerCaminho, lerOrigemDaSala, ligarMolduraDoAparelho } from "./systems/afty/encontros/rota-encontros";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useDashboardView from "./useDashboardView";
@@ -12,11 +13,12 @@ import { vocabularioDoDashboard, vocabularioDeFichas, sistemaGravado, getSistema
 import { MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO } from "./systems/eradeouro/era-de-ouro";
 import { ECLESIASTES, aceitaFichaEclesiastes, ehFichaEclesiastes } from "./systems/eclesiastes/regras";
 import { Analytics } from '@vercel/analytics/react';
-import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
 import AvisoMudanca from "./nuvem/AvisoMudanca";
 import { enviar as enviarNuvem, lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
-import { nuvemAtiva } from "./nuvem/nuvem-config";
+import { ehHostAntigo, nuvemAtiva, ORIGEM_NOVA } from "./nuvem/nuvem-config";
+import BarraLateralSite from "./home/BarraLateralSite";
+import "./home/biblioteca-publica.css";
 import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
 import { usePilhaDeTelas } from "./celular/usar-pilha-de-telas";
 import { useCamadaDeVoltar } from "./celular/camadas";
@@ -41,13 +43,16 @@ import { podeRegistrar } from "./celular/sw-regras";
 import { SW_LIGADO } from "./celular/pwa-config";
 import { coletaLigada, enviarResumoDaFicha } from "./systems/afty/balanceamento/coleta.js";
 import { AvisoDeColeta, PreferenciaDeColeta } from "./systems/afty/balanceamento/PreferenciaDeColeta.jsx";
+import ConviteDeBalanceamento from "./systems/afty/balanceamento/ConviteDeBalanceamento.jsx";
 
 /* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
    abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
    biblioteca da 2.5.2 e as enciclopédias, antes de desenhar a primeira ficha. Agora cada uma é baixada quando aparece.
    ⚠ Tela nova sob demanda pede abrir a frio no navegador: um import a menos na abertura muda a ordem em que os módulos do
    motor são avaliados (a tela branca de 2026-09-02), e só o `t-ordem-modulos` e o `t-app-entradas` não veem o navegador. */
-const CombatTracker = telaSobDemanda(() => import("./components/CombatTracker"));
+/* A ficha da Criatura do `/` com rolagem (2026-11-23): a casca do Afty carrega o CombatTracker da 2.5.2 e lhe passa o
+   `onRolar` (AGENTS.md, seção 6, Forma 1). O nome fica `CombatTracker` porque a tela é a mesma. */
+const CombatTracker = telaSobDemanda(() => import("./systems/afty/ui/CriaturaComRolagem252"));
 const CreatureBuilder = telaSobDemanda(() => import("./components/CreatureBuilder"));
 const AftyCreatureBuilder = telaSobDemanda(() => import("./systems/afty/AftyCreatureBuilder"));
 const TemplateLibrary = telaSobDemanda(() => import("./components/TemplateLibrary"));
@@ -67,6 +72,9 @@ const AbaSala = telaSobDemanda(() => import("./systems/eradeouro/app/AbaSala"));
 /* O botão Abrir Sala do cabeçalho do Encontro (etapa 7c) também entra por `lazy`: ele puxa o cliente da Sala, e só aparece com a Sala
    liberada e a nuvem ligada. */
 const BotaoAbrirSala = React.lazy(() => import("./nuvem/sala-ui/AbrirSala"));
+
+/* A chave de aparelho do visual novo dos Encontros (rework, etapas 3 a 7): marca o `<html>` antes do primeiro render. */
+ligarMolduraDoAparelho();
 
 // Helper para achar a criatura seja no compêndio ou no localstorage
 const findCreatureAnywhere = (id, storageList, compendium) =>
@@ -104,10 +112,7 @@ function GrimorioApp() {
   // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
   const aftyMode = rotaId !== null;
 
-  /* Lançamento público (autor, 2026-11-16). As duas rotas abertas a todos são o
-     Grimório 2.5.2 (`/`) e a Ficha de Player (`/Player`): só elas ganham o
-     alternador. O cadeado dos Encontros delas saiu depois da revisão final do
-     Encontro Unificado (autor, 2026-11-18). */
+  // Só as bibliotecas públicas aparecem no alternador do site.
   const rotaPublica = rotaId === null || rotaId === "player";
   useEffect(() => {
     if (rotaPublica) return undefined;
@@ -473,6 +478,18 @@ function GrimorioApp() {
     ir({ name: "templates" });
   }, [ir]);
 
+  /* A trilha do cabeçalho dos Encontros (rework, etapa 1): o nome da rota é o mesmo título do Dashboard dela. */
+  const rotuloDaRota = tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : rotaPublica ? "Criatura" : "Grimório");
+  const trilhaInicio = useMemo(() => ({
+    rotulo: rotuloDaRota,
+    href: caminhoDe(rotaId, TELA_LISTA),
+    onIr: rotaPublica ? undefined : goToDashboard,
+  }), [rotuloDaRota, rotaId, rotaPublica, goToDashboard]);
+  // De dentro de um Encontro, a lista é para TRÁS no histórico (a mesma volta do botão), e não uma entrada nova.
+  const trilhaLista = useMemo(() => ({
+    rotulo: "Encontros", href: caminhoDe(rotaId, { name: "encounters" }), onIr: voltarAosEncontros,
+  }), [rotaId, voltarAosEncontros]);
+
   const handleDuplicateEncounter = useCallback((id) => {
     listaEncontros.duplicar(id);
     voltarAosEncontros();
@@ -529,6 +546,16 @@ function GrimorioApp() {
     else substituir({ name: tela });
   };
 
+  const bibliotecaPublica = rotaPublica && !rotaSala && view.name === "dashboard";
+  const encontrosPublicos = rotaPublica && !rotaSala && (view.name === "encounters" || view.name === "encounter");
+  const molduraPublica = bibliotecaPublica || encontrosPublicos;
+  const enderecoInicio = ehHostAntigo() ? ORIGEM_NOVA : "/";
+
+  function irAosEncontrosPeloMenu() {
+    if (view.name === "encounter") voltarAosEncontros();
+    else if (view.name !== "encounters") goToEncounters();
+  }
+
   const views = {
     sala: () => (cascaNoCelular && nuvemAtiva ? <AbaSala /> : views.dashboard()),
     mais: () => (cascaNoCelular ? <MaisDaGuilda fichas={storage.creatures} pastas={storage.folders} importar={storage.importMany} /> : views.dashboard()),
@@ -562,7 +589,7 @@ function GrimorioApp() {
            clique rodava a Ficha do Afty sobre uma criatura da 2.5.2, e o lápis
            a clonava para o inventário do Afty. É a porta espelho, e fecha aqui
            pela mesma prop, sem tocar em `src/components/`. */
-        titulo={tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : undefined)}
+        titulo={tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : bibliotecaPublica ? "Criatura" : undefined)}
         showSystemView={!aftyMode}
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
@@ -573,8 +600,7 @@ function GrimorioApp() {
         onCreateNew={() => (bibliotecaMista ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
-        cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
-        cabecalhoAcoes={<>{mesa && nuvemAtiva && <BotaoEntrarNaSala />}<ContaNuvem /></>}
+        cabecalhoAcoes={bibliotecaPublica ? null : <>{mesa && nuvemAtiva && <BotaoEntrarNaSala />}<ContaNuvem /></>}
       />
     ),
     tracker: () => {
@@ -659,6 +685,7 @@ function GrimorioApp() {
           encontroId={view.encounterId}
           lista={listaEncontros}
           onVoltar={voltarAosEncontros}
+          trilha={cascaNoCelular ? null : [trilhaInicio, trilhaLista]}
           onDuplicar={handleDuplicateEncounter}
           onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
           namespaceDaBiblioteca={rotaId}
@@ -669,7 +696,8 @@ function GrimorioApp() {
       );
     },
     encounters: () => (!listaPronta ? <Carregando /> :
-      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular} />
+      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular}
+        trilha={cascaNoCelular ? null : [trilhaInicio]} publica={encontrosPublicos} />
     ),
     templates: () => (
       <TemplateLibrary
@@ -688,12 +716,17 @@ function GrimorioApp() {
       {/* Coluna de altura mínima de tela. O rodapé de feedback saiu em
           2026-08-06 (a pesquisa fechou), junto com o aviso de abertura. O
           componente continua em `components/FeedbackPrompt.jsx`, sem uso. */}
-      <div className="min-h-screen flex flex-col">
-        <div className="flex-1">
+      <div className={`min-h-screen flex flex-col${molduraPublica ? " fichafm-tema biblioteca-publica" : ""}`}>
+        {molduraPublica && (
+          <BarraLateralSite atual={encontrosPublicos ? "encontros" : rotaId === "player" ? "player" : "criatura"}
+            inicio={enderecoInicio} encontros={trilhaLista.href} onEncontros={irAosEncontrosPeloMenu} />
+        )}
+        <div className={`flex-1${bibliotecaPublica ? " biblioteca-painel" : ""}${encontrosPublicos ? " biblioteca-painel-encontros" : ""}`}>
           {rotaSala ? (
             <React.Suspense fallback={null}>
-              {/* O Voltar da Sala vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
-              <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(rotaDoGrupo(grupo))} />
+              {/* O Voltar da Sala volta para a rota e o Encontro de onde ela foi aberta (rework, etapa 1). Quem entrou por um
+                  link não tem origem guardada e vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
+              <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(lerOrigemDaSala(codigoDaSala) ?? rotaDoGrupo(grupo))} />
             </React.Suspense>
           ) : precisaCompendio && !compendio ? <Carregando /> : (
             // A tela sob demanda mostra o Carregando enquanto chega (etapa E3).
@@ -704,14 +737,18 @@ function GrimorioApp() {
             </React.Suspense>
           )}
         </div>
-        {rotaPublica && !rotaSala && view.name === "dashboard" && (
-          <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
+        {coletaLigada && rotaId === "player" && !rotaSala && view.name === "dashboard" && (
+          <ConviteDeBalanceamento fichas={fichasDaRota} />
+        )}
+        {bibliotecaPublica && (
+          <footer className="biblioteca-rodape bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
             {coletaLigada && rotaId === "player" && <PreferenciaDeColeta />}
             <a href="/privacidade.html" className="underline underline-offset-4 hover:text-white">
               Política de Privacidade
             </a>
           </footer>
         )}
+        <PdfFab />
       </div>
       {/* A lista de Encontros chega por aqui, sob demanda (etapa E10). Não desenha nada. */}
       {ponteDaLista}
@@ -809,7 +846,6 @@ function GrimorioApp() {
           </div>
         </div>
       )}
-      <PdfFab />
       <AvisoMudanca />
       {/* ⚠ O SELO FIXO DO AMBIENTE PRIVADO SAIU em 2026-09-09, a pedido do autor
          (*"Remova isso. É meio feio."*). Era uma cápsula `position: fixed` no

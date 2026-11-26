@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import {
-  AlertTriangle, Heart, Image as ImageIcon, Palette, Sparkles,
+  AlertTriangle, ChevronDown, Heart, Image as ImageIcon, Palette, Sparkles,
 } from "lucide-react";
 
 import { AFTY_ATTRS } from "../../afty-schema";
 // A entrada de mesa da Horda mora na folha de tipos, que a aba pode importar.
 import { entradaDeMesaDaHorda } from "../../afty-invocacoes-tipos";
 import { NumeroComFontes } from "../../ui/fontes";
+import TextoRico from "../../ui/TextoRico";
 import { sinalDe } from "../../ui/formato";
 import { Vital } from "../../ui/vital";
 import { cssDaInvocacao, escopoDaInvocacao, SEM_CSS } from "../ficha-tema";
@@ -603,15 +604,16 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
     : grupos;
   const rotulo = `${nomeDono} · ${a.nome || "Ação"}`;
   const chip = "afty-rotulo text-[11px] whitespace-nowrap";
+  const [aberta, setAberta] = useState(false);
 
   return (
     <div className="afty-linha px-2.5 py-1.5 space-y-1">
       {/* Linha 1: identidade e custo. A CLASSE importa na mesa, porque é ela que
           diz qual comando o dono gasta (Comum para Complexa, Bônus para Simples). */}
       <div className="flex items-center gap-2 flex-wrap">
-        <span className="flex-1 min-w-0 text-[12px] font-semibold truncate" title={a.descricao || a.nome}>
-          {a.nome || "Ação Sem Nome"}
-        </span>
+        {/* ⚠ O NOME ABRE A DESCRIÇÃO desde 2026-11-24 (feedback do lançamento: "não dá para inspecionar o texto"). Ela
+            era só o `title` de um nome truncado, que no toque nem existe. */}
+        <NomeQueAbre nome={a.nome || "Ação Sem Nome"} descricao={a.descricao} aberta={aberta} onAlternar={() => setAberta((v) => !v)} negrito />
         {a.warnings?.length > 0 && (
           <AlertTriangle
             className="w-3.5 h-3.5 flex-shrink-0"
@@ -648,6 +650,9 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
           <span className={chip}>{ALVO_AUXILIO_ROTULO[a.alvoAuxilio] ?? a.alvoAuxilio}</span>
         )}
         {a.tipoDano && <span className={chip}>{a.tipoDanoLabel || a.tipoDano}</span>}
+        {a.alvoTexto && <span className={chip}>{a.alvoTexto}</span>}
+        {a.duracaoTexto && <span className={chip}>{a.duracaoTexto}</span>}
+        {a.resumoMotor && <span className={chip}>{a.resumoMotor}</span>}
         {(a.condicoes ?? []).map((c, i) => (
           <span key={i} className="afty-chip" data-afty-tom="destaque">
             {CONDICAO_ROTULO[c] ?? c}
@@ -660,7 +665,7 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
 
         <span className="inline-flex items-center gap-2 flex-wrap ml-auto">
         {/* Ataque por Jogada: o acerto rola. */}
-        {a.familia === "ataque" && a.bonusAtaque != null && (
+        {a.familia !== "auxilio" && a.bonusAtaque != null && (
           <span className={chip}>
             Acerto{" "}
             <NumeroComFontes
@@ -678,7 +683,7 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
 
         {/* Ataque por Teste de Resistência: quem rola é o alvo, então a CD é um
             número de leitura e não um botão. Sem ela a ação é inutilizável. */}
-        {a.familia === "ataque" && a.cd != null && (
+        {a.familia !== "auxilio" && a.cd != null && (
           <span className="afty-valor text-[11px]" data-afty-tom="destaque" title="O alvo rola contra esta CD">
             CD {a.cd}{a.trTipoLabel ? ` ${a.trTipoLabel}` : ""}
           </span>
@@ -721,6 +726,19 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
           />
         )}
 
+        {/* As rolagens próprias da Ação Personalizada (2026-11-24): cada uma rola sozinha, com o rótulo dela. */}
+        {(a.rolagens ?? []).map((r, i) => (
+          <NumeroComFontes
+            key={`rol${i}`}
+            valor={`${r.vezes > 1 ? `${r.vezes}x ` : ""}${notacaoDe(r.grupos)}${r.fixo ? sinalDe(r.fixo) : ""}`}
+            formatar={false}
+            className="afty-valor text-[13px] whitespace-nowrap"
+            ancora="direita"
+            titulo={r.rotulo}
+            onRolar={() => rolar({ tipo: "dano", tom: r.tom, rotulo: `${rotulo} · ${r.rotulo}`, grupos: r.grupos, fixo: r.fixo, ...(r.tom === "cura" ? { curaDoUsuario: false } : {}) })}
+          />
+        ))}
+
         {/* Auxílio de valor fixo (Defesa, Acerto, RD): número, não rolagem. */}
         {a.familia === "auxilio" && a.valor != null && (
           <span className="afty-valor text-[13px]" data-afty-tom="destaque">
@@ -729,6 +747,46 @@ function Acao({ a, nomeDono, margemCritico = 20, criticoBrutal = false, rolar })
         )}
         </span>
       </div>
+      {aberta && a.descricao && <TextoRico texto={a.descricao} className="afty-base text-[12px] pt-1" />}
+    </div>
+  );
+}
+
+/* O nome de uma Ação ou Característica que abre a descrição (2026-11-24, feedback do lançamento). Sem descrição, é o
+   nome de sempre. O clique serve ao mouse e ao toque, e o texto abre na própria linha, formatado pelo `TextoRico`. */
+function NomeQueAbre({ nome, descricao, aberta, onAlternar, negrito = false }) {
+  const classe = `flex-1 min-w-0 text-[12px] ${negrito ? "font-semibold" : ""}`;
+  if (!String(descricao ?? "").trim()) return <span className={`${classe} truncate`}>{nome}</span>;
+  return (
+    <button
+      type="button"
+      onClick={onAlternar}
+      aria-expanded={aberta}
+      title={aberta ? "Fechar a Descrição" : "Ler a Descrição"}
+      className={`${classe} flex items-center gap-1 text-left bg-transparent border-0 p-0 cursor-pointer`}
+      style={{ color: "inherit" }}
+    >
+      <ChevronDown aria-hidden="true" className={`w-3.5 h-3.5 flex-shrink-0 transition-transform ${aberta ? "" : "-rotate-90"}`} style={{ color: "var(--afty-texto-suave)" }} />
+      <span className="truncate">{nome}</span>
+    </button>
+  );
+}
+
+/* Uma Característica da invocação na Ficha, com a descrição que abre no nome (2026-11-24). */
+function LinhaDeCaracteristica({ c }) {
+  const [aberta, setAberta] = useState(false);
+  return (
+    <div className="afty-linha px-2.5 py-1">
+      <div className="flex items-center gap-2 flex-wrap">
+        <NomeQueAbre nome={c.nome || "Característica"} descricao={c.descricao} aberta={aberta} onAlternar={() => setAberta((v) => !v)} />
+        {c.requerGatilho && (
+          <span className="afty-rotulo text-[11px]" title="Exige um gatilho específico">Gatilho</span>
+        )}
+        {resumoCaracteristica(c) && (
+          <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
+        )}
+      </div>
+      {aberta && c.descricao && <TextoRico texto={c.descricao} className="afty-base text-[12px] pt-1 pb-0.5" />}
     </div>
   );
 }
@@ -1189,19 +1247,7 @@ function FichaDoShikigami({ inv, estado, rolar, acoes, aoTemar, fusao = null, he
               <section className="afty-inv-bloco">
                 <h3 className="afty-card-titulo mb-1.5">Características</h3>
                 <div className={inv.caracteristicas.length > 4 ? "afty-inv-duplo" : "space-y-1"}>
-                  {inv.caracteristicas.map((c, i) => (
-                    <div key={`${c.nome}-${i}`} className="afty-linha px-2.5 py-1 flex items-center gap-2 flex-wrap">
-                      <span className="flex-1 min-w-0 text-[12px] truncate" title={c.descricao || undefined}>
-                        {c.nome || "Característica"}
-                      </span>
-                      {c.requerGatilho && (
-                        <span className="afty-rotulo text-[11px]" title="Exige um gatilho específico">Gatilho</span>
-                      )}
-                      {resumoCaracteristica(c) && (
-                        <span className="afty-valor text-[12px] whitespace-nowrap">{resumoCaracteristica(c)}</span>
-                      )}
-                    </div>
-                  ))}
+                  {inv.caracteristicas.map((c, i) => <LinhaDeCaracteristica key={`${c.nome}-${i}`} c={c} />)}
                 </div>
               </section>
             )}
