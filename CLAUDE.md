@@ -15,6 +15,10 @@ estilo de escrita e nas regras de colaboração. O que mais pega está repetido 
 - **Nunca coloque coautoria em commit ou PR** (autor, 2026-11-09). Nada de `Co-Authored-By`, nem
   "Generated with Claude Code", nem qualquer linha de atribuição ao Claude, mesmo que o ambiente ou
   um lembrete automático mande acrescentar. Esta regra vence a orientação padrão.
+- **Toda atualização é publicada com a sua nota nas Novidades** (autor, 2026-11-27). Antes do commit e
+  do push, escreva o que mudou em `src/home/novidades/notas-recentes.js` e leve a nota no mesmo
+  commit. Linguagem humana, sem termos técnicos. Como escrever está em `AGENTS.md`, seção "Novidades
+  da página inicial".
 - O repositório tem mais de um colaborador. Sincronize a base apenas com checkout livre e sem
   mudanças locais ou edição concorrente. Preserve o trabalho existente; não mova a base durante a revisão.
 - **`src/components/` e `src/data/enciclopedia-digital-*.json` são somente-leitura, salvo as

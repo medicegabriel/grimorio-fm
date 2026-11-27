@@ -82,6 +82,26 @@ No registro abaixo, Forma 1 é parâmetro opcional com o padrão preservado e va
 - `docs/afty-status.md` é o histórico de sessões. Afirmações datadas nele não substituem a verificação do código atual.
 - Atualize contagens, caminhos, estados de implementação e instruções de navegação quando o código mudar. Não apresente uma decisão já tomada como pergunta em aberto. Antes de entregar, confira o diff e a resposta para garantir que não foi introduzido nenhum U+2014.
 
+## Novidades da página inicial (autor, 2026-11-27)
+
+**Toda atualização é publicada junto com o commit e o push.** A nota que conta o que mudou entra no mesmo commit da mudança, para o site e as Novidades irem ao ar juntos. Vale para quem for publicar, autor ou colaborador. Esta regra não muda quem faz o commit e o push.
+
+**Como escrever**
+- Linguagem humana, sem termos técnicos. Nada de nome de arquivo, de código, de commit ou jargão de programação.
+- Conte o que mudou para quem usa o site, em frases diretas, com os nomes que aparecem na interface. Exemplo: "Ao abrir um feitiço na ficha, você agora vê os efeitos dele, um por um."
+- Diga onde encontrar a mudança quando isso ajudar.
+- Sem elogio vago, frase pronta, travessão (U+2014) ou ponto e vírgula.
+- Publique só o que foi confirmado.
+
+**O que fica de fora**
+- Mudança que o visitante não percebe (documentação, testes, organização do código).
+- O que é só de Addon, e o que é só de `/Afty`, `/EraDeOuro` ou `/Eclesiastes`.
+
+**Onde escrever**
+- A versão nova vai no topo de `src/home/novidades/notas-recentes.js`, com `versao`, `titulo` e `notas`. Cada nota tem `data` (AAAA-MM-DD), `texto` e, se ajudar, `onde`.
+- As recentes guardam só duas versões. A mais antiga passa para o topo de `src/home/novidades/notas-anteriores.js`.
+- Na numeração, o segundo número sobe com uma área ou um conjunto de recursos (0.14, 0.15), e o terceiro marca ajustes em seguida (0.14.1).
+
 ## Itens descartados pelo autor (leia antes de aceitar um prompt ou uma fila)
 
 - **Corpo Amaldiçoado Mutante (Livro p.39 a 41, os três núcleos): ABANDONADO E EXCLUÍDO DO SITE EM DEFINITIVO (autor, 2026-10-30).** Não implemente, não reabra e não pergunte de novo. Se um prompt, uma análise ou a fila citar o Mutante, **desista da ideia, pule a parcela e vá fazer outra coisa.** A entrada saiu de `afty-origens.js` e `asserts/t-mutante-descartado.mjs` falha se ela voltar. Não confundir com o que continua valendo: os `multiplosNucleos` das invocações, a Anatomia Carapaça Mutante e a origem Maldição.
