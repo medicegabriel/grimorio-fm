@@ -1,0 +1,145 @@
+/* Novidades da página inicial (2026-11-27). Segue a seção Livros e Regras: divisor fino, sem cartão, e só as cores da
+   Central. A data fica numa coluna própria para o olho correr por ela. */
+.central-novidades {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+  padding-top: 17px;
+  border-top: 1px solid var(--central-borda);
+}
+
+.novidades-versao {
+  display: grid;
+  gap: 10px;
+}
+
+.central-novidades h3 {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  margin: 0;
+  color: var(--central-texto);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.35;
+  text-wrap: balance;
+}
+
+.central-novidades h3 span {
+  color: var(--central-suave);
+  font-size: 13px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.novidades-notas {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.novidades-notas li {
+  display: grid;
+  grid-template-columns: 6.5rem minmax(0, 1fr);
+  align-items: baseline;
+  gap: 2px 14px;
+}
+
+.central-novidades time {
+  color: var(--central-suave);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.novidades-notas p {
+  max-width: 68ch;
+  color: var(--central-texto);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.novidades-notas .novidades-onde {
+  color: var(--central-suave);
+  font-size: 13px;
+}
+
+.novidades-onde a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  color: var(--central-roxo);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.novidades-onde a:hover { color: var(--central-roxo-hover); }
+
+.novidades-mais {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--central-borda);
+  border-radius: 8px;
+  background: var(--central-acao-secundaria);
+  color: var(--central-texto);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.novidades-mais:hover { border-color: var(--central-borda-controle); }
+
+.central-novidades .novidades-mais svg { width: 16px; height: 16px; }
+
+.novidades-mais[aria-expanded="true"] svg,
+.novidades-historico details[open] > summary svg { transform: rotate(180deg); }
+
+.novidades-carregando {
+  color: var(--central-suave);
+  font-size: 14px;
+}
+
+.novidades-historico details { border-bottom: 1px solid var(--central-borda); }
+.novidades-historico details:first-child { border-top: 1px solid var(--central-borda); }
+
+.novidades-historico summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 0;
+  list-style: none;
+  cursor: pointer;
+}
+
+.novidades-historico summary::-webkit-details-marker { display: none; }
+
+.central-novidades summary svg {
+  width: 16px;
+  height: 16px;
+  color: var(--central-suave);
+}
+
+.novidades-historico summary:hover h3,
+.novidades-historico summary:hover svg { color: var(--central-roxo); }
+
+.novidades-historico details > .novidades-notas { padding: 4px 0 16px; }
+
+@media (max-width: 480px) {
+  .novidades-notas li { grid-template-columns: minmax(0, 1fr); }
+  .novidades-notas { gap: 16px; }
+}
+
+/* No toque o link ganha área de 40 px (D-81), e a margem negativa devolve o respiro da linha. */
+@media (pointer: coarse) {
+  .novidades-onde a { min-height: 40px; margin-block: -8px; }
+}

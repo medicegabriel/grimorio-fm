@@ -1,5 +1,34 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-27 · NOVIDADES NA PÁGINA INICIAL
+
+Pedido do autor: "criar uma seção na página inicial para que jogadores e mestres acompanhem as novidades e correções do site",
+com as versões desde a 0.1, sem o que é de Addon, escritas "com o que foi feito, e não pelo que eu escrevi no commit". Depois:
+"Use as Skills de Design" e "deixar parelho com os Designs já existentes". Por fim: "Poste para mim, sem o CO-Authored by
+Claude", e que toda atualização passe a ser publicada com a sua nota, "com linguagem humana e sem termos tecnicos".
+
+| Decisão | Escolha |
+|---|---|
+| Áreas com endereço próprio (`/Afty`, `/EraDeOuro`, `/Eclesiastes`) | "Nenhuma delas" aparece nas notas |
+| Registros só de Addon | fora ("Está certa", sobre a separação feita no rascunho) |
+| Registros em dúvida (feedback, quatro opções que viraram Addon, Conhecimento Aplicado, Restrição Intelectual) | fora |
+| Branch | a que estava aberta (`main`) |
+| Publicação | commit e push feitos pelo agente a pedido do autor, só nesta entrega, sem coautoria |
+
+- **`src/home/CentralDeJogo.jsx`:** `<Novidades />` abaixo de Livros e Regras.
+- **`src/home/novidades/` (nova):** `Novidades.jsx` mostra as duas versões mais novas e o botão Ver Atualizações Anteriores.
+  `HistoricoDeNovidades.jsx` chega por `telaSobDemanda` (S-23) e traz as outras recolhidas, em `details`. `ListaDeNotas.jsx` e
+  `data-na-tela.js` servem às duas. `novidades.css` usa só os tokens `--central-*`.
+- **Dados:** `notas-recentes.js` (no pacote da Central) e `notas-anteriores.js` (sob demanda), 27 versões e 98 notas, da 0.1
+  (2026-04-23) à 0.14 (2026-11-27). Ao publicar uma versão, ela entra no topo das recentes e a mais antiga delas passa para o
+  topo das anteriores.
+- **`AGENTS.md` e `CLAUDE.md`:** regra nova, toda atualização é publicada com a nota nas Novidades, no mesmo commit.
+- **Origem do texto:** o registro de status e os textos de tela alterados em cada commit. A data é a do commit. Os recursos não
+  foram testados um a um no site.
+- **Verificado:** `npx eslint src/home/` limpo, `t-ordem-modulos` 71 de 71, `npx vite build` (histórico em pedaço próprio de
+  16 KB), `npm run asserts` com 357 de 358 arquivos (só `t-reconciliacao-g00`, vermelho já anotado antes). No navegador, desktop
+  e 375 px: sem rolagem lateral, histórico abre e fecha, console sem erro.
+
 ## SESSÃO DE 2026-11-26 · CARREGAMENTO: LISTA SEM O COMPÊNDIO, ABERTURA SEM REGRAVAR E CARDS EM LEVAS
 
 O autor respondeu as duas decisões do diagnóstico ("Sim, como proposto" para o compêndio, "Sim, nas três rotas (Forma 3)" para o

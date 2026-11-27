@@ -9,6 +9,7 @@ import { PDF_DOCS } from "../components/fm-docs";
 import { codigoDoTexto } from "../nuvem/sala-ui/sala-ui-dados";
 import { caminhoDe, guardarOrigemDaSala } from "../systems/afty/encontros/rota-encontros";
 import BarraLateralSite from "./BarraLateralSite";
+import Novidades from "./novidades/Novidades";
 import "./central-de-jogo.css";
 
 const Comunidade = telaSobDemanda(() => import("./comunidade/Comunidade"));
@@ -64,6 +65,8 @@ function Inicio() {
           ))}
         </ul>
       </section>
+
+      <Novidades />
     </>
   );
 }
