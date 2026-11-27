@@ -10069,6 +10069,9 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema, mudarAj
   const semQuantidadeDePE = regraDo(sistema, "quantidadeDePE") === "player";
   const semTipoNemPatamar = regraDo(sistema, "pvPePorEspecializacao") === "player";
   const tetoDeNivel = regraDo(sistema, "tetoDeNivel") === "player";
+  // A criatura da Guilda desce até o ND 1 (autor, 2026-11-23: "as criaturas estão travadas no level cap 3, deixe abaixar ainda mais").
+  // O motor já aceita o ND 1 (todo leitor usa `Math.max(1, ...)`), e só este campo segurava em 3. Fora da Guilda o piso da criatura segue 3.
+  const pisoUmNaMesa = mesaDaFicha(draft) !== null;
   const tetoDaFicha = nivelMaximoDaFicha(draft);
   const tetoDaOrigem = nivelMaximoDaOrigem(draft);
   const nivelMaximo = tetoDaOrigem == null ? tetoDaFicha : Math.min(tetoDaFicha ?? Infinity, tetoDaOrigem);
@@ -10113,7 +10116,7 @@ function ValoresBasicosCard({ draft, derived, patch, patchCore, sistema, mudarAj
               <NumberInput
                 value={draft.core.nd}
                 onChange={(v) => patchCore({ nd: v })}
-                min={tetoDeNivel ? 1 : 3}
+                min={tetoDeNivel || pisoUmNaMesa ? 1 : 3}
                 {...(nivelMaximo == null ? {} : { max: nivelMaximo })}
               />
             )}

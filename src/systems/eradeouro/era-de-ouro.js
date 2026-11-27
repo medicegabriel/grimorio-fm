@@ -436,7 +436,7 @@ export const REGRAS_DA_MESA = [
     sistemas: ["player"],
     fonte: "Um sistema similar ao Addon de carteira já embutido seguindo essas tabelas: Sendo inicial lv1 1 e apenas a parte de eventos tendo os valores totalmente personalizados. [...] Nível 1 / 0 de XP / +2 - Grau 4 [...] Nível 20 / 1250 de XP / +6",
     base: "Sem Carteira. Com o addon Carteira da Guilda, 0 de XP é o Nível 3 e a tabela vai até o 30",
-    eradeouro: "Carteira embutida: o XP vira o Nível pela tabela da Guilda (0 de XP é o Nível 1, 1250 é o 20), os Focos de Interlúdio viram o orçamento de Focos, e as linhas nascem das Missões e dos Eventos",
+    eradeouro: "Carteira embutida: o XP vira o Nível pela tabela da Guilda (0 de XP é o Nível 1, 1250 é o 20), o orçamento de Focos é 2 + o Nível + os Interlúdios da Carteira (Nível 1 começa com 3), e as linhas nascem das Missões e dos Eventos",
     ativa: true,
   },
   {

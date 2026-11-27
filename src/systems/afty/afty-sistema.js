@@ -669,7 +669,7 @@ export const DIVERGENCIAS = [
     tipo: "regra",
     onde: "afty-derive.js (nd) e AftyCreatureBuilder.jsx (campo Nível)",
     fonte: "E os Leveis são TRAVADOS em 30. Player só vai até 30. (autor, 2026-08-30)",
-    afty: "ND de 3 a infinito",
+    afty: "ND de 3 a infinito (de 1 na Guilda, desde 2026-11-23)",
     player: "Nível de 1 a 30",
     ativa: true,
   },

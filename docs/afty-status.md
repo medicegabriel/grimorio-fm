@@ -424,6 +424,13 @@ O autor pode editar ao lado de Retirar Publicação. O formulário carrega o tí
 - **Texto da Ação no Encontro.** O painel da criatura da 2.5.2 (`PainelCriatura252`) lia só `description` e `finalTextManual`, e a Ação montada pelos campos (a Expansão do Jogo, seis das oito Ações dele) tem os dois vazios, então a dica não abria. O adaptador `m252-vital.js` expõe `textoDaAcao`, que chama o `resolveActionFinalText` da 2.5.2 (puro, importado como os outros), e a linha da Ação abre o texto no clique, igual ao cartão da ficha da 2.5.2. Assert em `asserts/t-encontro-texto-acao.mjs`, e o `t-encontro-252-porte` passou a aceitar o `fm-action-calc` na lista de imports.
 - Prints de antes e depois em `C:\Projetos\Grimorio\outputs\feedback-lancamento\`. O feedback 1 segue com decisão tomada e sem código, o 2 vai para o Modo Livre.
 - Na suíte, o `t-reconciliacao-g00` falha nesta árvore (65 integrações herdadas contra 118) com ou sem esta mudança.
+## SESSÃO DE 2026-11-23 · CRIATURA DA GUILDA DESCE ATÉ O ND 1
+
+- **Pedido do autor:** "Na /era de ouro as criaturas estao travadas no level cap 3 deixe abaixar ainda mais o level".
+- **Onde travava:** só no campo Nível (ND) do criador (`AftyCreatureBuilder.jsx`, `min={tetoDeNivel ? 1 : 3}`). O motor já aceita o ND 1 em todo leitor (`Math.max(1, ...)`).
+- **O que mudou:** a ficha da Guilda (`mesaDaFicha(draft) !== null`) passa a ter piso 1 também na criatura (`pisoUmNaMesa`). Fora da Guilda, a criatura do `/Afty` segue com piso 3. A linha `tetoDeNivel` das `DIVERGENCIAS` (`afty-sistema.js`) e o comentário do `afty-schema.js` dizem isso.
+- **Detalhe que ficou como estava:** o `NumberInput` (de `src/components/`, só leitura) não corta o número digitado, só os botões de mais e menos. Isso já era assim nas três rotas.
+- Verificado: `t-era-de-ouro.mjs` (318, dois novos: a criatura da Guilda deriva no ND 1, 2 e 3, e o campo desce a 1 só na Guilda), `t-sistema`, `t-ordem-modulos`, lint, e no `npm run dev` o menos da Guilda indo de 2 para 1 e o do `/Afty` parando em 3.
 
 ## SESSÃO DE 2026-11-23 · DADOS DE BALANCEAMENTO DE JOGADOR
 
