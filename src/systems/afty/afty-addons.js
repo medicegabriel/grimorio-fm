@@ -160,6 +160,9 @@ export function registrarFamilia(id, def) {
 export const familiasDeAddon = () =>
   [...FAMILIAS.values()].map((f) => ({ id: f.id, rotulo: f.rotulo }));
 
+/** Catálogo do livro, antes das adições e substituições de uma ficha. */
+export const catalogoBasicoDaFamilia = (id) => FAMILIAS.get(id)?.basicos?.() ?? [];
+
 /* ============================================================ */
 /* NAMESPACE                                                     */
 /* ============================================================ */

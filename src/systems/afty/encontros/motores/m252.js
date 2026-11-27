@@ -93,6 +93,8 @@ export const motor252 = {
   iniciaCombate: (cs, d, op) => V.turnoIniciaCombate(cs, d, op),
   // O Encontro da 2.5.2 não mexe nos combatentes ao encerrar (END_COMBAT só muda o status).
   encerraCombate: (cs) => cs,
+  // O Reabrir sem o retorno exato (rework, etapa 2): nada a religar, porque o encerrar não mexeu.
+  retomaCombate: (cs) => cs,
   iniciaTurno: (cs, d, op) => V.turnoIniciaTurno(cs, d, op),
   encerraTurno: (cs, d, op) => V.turnoEncerraTurno(cs, d, op),
   viraRodada: (cs, d, op) => V.turnoViraRodada(cs, d, op),

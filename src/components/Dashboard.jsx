@@ -1,5 +1,5 @@
 // Dashboard.jsx
-import { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { useState, useMemo, useRef, useCallback, useEffect, startTransition } from "react";
 import {
   Search, Plus, Upload, Download, Trash2, Copy, Edit3,
   X, AlertTriangle, MoreVertical, Users, Image,
@@ -103,6 +103,14 @@ const VOCAB_PADRAO = {
   removidas: (n) => `${n} criatura(s) serão removidas permanentemente.`,
 };
 
+/* A LISTA MONTA EM DUAS LEVAS (autor, 2026-11-26, "Tudo, nas três rotas").
+   Com 60 fichas, montar todos os cards de uma vez dava 264 ms de thread presa
+   no celular. A primeira leva cobre a primeira tela (seis linhas de três
+   colunas no computador), e o resto entra numa transição depois do primeiro
+   quadro, que o React fatia. A troca é de mão única: depois de montada, a
+   lista não volta a cortar. */
+const PRIMEIRA_LEVA = 18;
+
 const VIEW_FILTERS = {
   all:      (c) => !c.isBuiltIn,
   unfiled:  (c) => !c.isBuiltIn && (c.folderId == null),
@@ -126,6 +134,9 @@ const CreatureAvatar = ({ imageUrl, name, focus }) => {
     <img
       src={imageUrl}
       alt={name}
+      // O retrato externo vem em tamanho cheio: só desce perto da tela, e decodifica fora do quadro (2026-11-26).
+      loading="lazy"
+      decoding="async"
       className="w-14 h-14 rounded-md border border-slate-700/50 shrink-0 object-cover"
       style={{ objectPosition: `${focus?.x ?? 50}% ${focus?.y ?? 50}%` }}
       onError={() => setFailed(true)}
@@ -905,6 +916,19 @@ export default function Dashboard({
     });
   }, [allCreatures, view, search, filters]);
 
+  const [montouTudo, setMontouTudo] = useState(false);
+  const cortaLista = !montouTudo && filtered.length > PRIMEIRA_LEVA;
+  useEffect(() => {
+    if (!cortaLista) return undefined;
+    const quadro = requestAnimationFrame(() => startTransition(() => setMontouTudo(true)));
+    return () => cancelAnimationFrame(quadro);
+  }, [cortaLista]);
+  const visiveis = useMemo(
+    () => (cortaLista ? filtered.slice(0, PRIMEIRA_LEVA) : filtered),
+    [cortaLista, filtered]
+  );
+  const idsVisiveis = useMemo(() => visiveis.map((c) => c.id), [visiveis]);
+
   const selectableFiltered = useMemo(
     () => filtered.filter((c) => !c.isBuiltIn),
     [filtered]
@@ -1523,11 +1547,11 @@ export default function Dashboard({
               </div>
             ) : isSortableView ? (
               <SortableContext
-                items={filtered.map((c) => c.id)}
+                items={idsVisiveis}
                 strategy={rectSortingStrategy}
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 px-1 items-start">
-                  {filtered.map((c) => {
+                  {visiveis.map((c) => {
                     const isGhosted = activeId !== null && selected.has(c.id) && selected.has(activeId);
                     return (
                       <div key={c.id} className={isGhosted ? "opacity-0 pointer-events-none" : undefined}>
@@ -1544,7 +1568,7 @@ export default function Dashboard({
             ) : (
               // Vista "Criaturas Base" — sem DnD
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 px-1 items-start">
-                {filtered.map((c) => (
+                {visiveis.map((c) => (
                   <CreatureCard
                     key={c.id}
                     creature={c}

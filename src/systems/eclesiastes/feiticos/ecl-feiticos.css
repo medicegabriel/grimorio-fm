@@ -144,13 +144,17 @@ textarea.ecl-campo { width: 100%; min-height: 84px; line-height: 1.45; resize: v
   position: sticky;
   top: var(--afty-topo, 0px);
   z-index: 10;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  display: flex; flex-direction: column; gap: 10px;
   padding: 10px 12px;
   background: var(--afty-card);
   border: 1px solid var(--afty-borda);
   border-radius: var(--afty-raio);
   box-shadow: var(--afty-sombra);
 }
+.ecl-saldo-topo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; min-height: 36px; }
+.ecl-saldo-barra { display: flex; align-items: center; gap: 14px; }
+.ecl-saldo-barra .ecl-medidor { flex: 1 1 auto; min-width: 0; }
+.ecl-saldo-barra .ecl-saldo-resto { min-width: 92px; text-align: right; justify-content: flex-end; }
 .ecl-saldo-item { position: relative; display: inline-flex; align-items: baseline; gap: 6px; }
 .ecl-rotulo-mini {
   font-size: 11px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;

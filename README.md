@@ -1,6 +1,6 @@
 # Grimório Tracker
 
-Aplicação React para criação, consulta e acompanhamento de fichas e encontros. A raiz abre o Grimório 2.5.2 em `/Criatura`. As fichas de personagem estão em `/Jogador`, com compatibilidade para links antigos de `/Player`.
+Aplicação React para criação, consulta e acompanhamento de fichas e encontros. A Central de Jogo fica em `/`, o Grimório 2.5.2 em `/Criatura` e as fichas de personagem em `/Jogador`, com compatibilidade para links antigos de `/Player`.
 
 ## Começar
 
@@ -13,7 +13,8 @@ O projeto usa Vite. Os comandos disponíveis são `npm run build`, `npm run lint
 
 ## Onde encontrar
 
-- `src/App.jsx`: entrada do app e seleção das rotas.
+- `src/main.jsx`: entrada do site e escolha entre a Central de Jogo e o Grimório.
+- `src/App.jsx`: seleção das telas de fichas, encontros e Salas.
 - `src/components/`: interface do Grimório 2.5.2 e componentes compartilhados.
 - `src/systems/afty/`: criador, ficha, encontros, regras e Addons do Afty e do Player.
 - `asserts/`: verificações da lógica do sistema.

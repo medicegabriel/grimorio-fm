@@ -6218,7 +6218,9 @@ function clonesDaHeranca(lista) {
          `coletarEfeitos` em 2026-08-22: um remendo que troca o texto da regra e
          deixa o número antigo é pior que não remendar, porque mente em silêncio.
          Aqui a ordem do spread já resolve, e a nota fica para quem mexer. */
-      out.push(patch ? { ...clone, ...patch, id: clone.id, especializacaoId: esp.id } : clone);
+      /* `remendada` diz que a herdeira reescreveu esta linha. A Conjuração Aprimorada lê isso: a do
+         Especialista em Estilo vira vagas de Estilo e não soma dano em Feitiço (`conjuracaoAprimoradaNoDano`). */
+      out.push(patch ? { ...clone, ...patch, id: clone.id, especializacaoId: esp.id, remendada: true } : clone);
       origem[clone.id] = h.id;
     }
   }

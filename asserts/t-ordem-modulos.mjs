@@ -124,6 +124,7 @@ const FOLHAS = [
   // A aba nova entra pelo criador e o derive os lê, então não podem puxar o ciclo.
   ["../eclesiastes/feiticos/tabelas.js", "a aba de Feitiços de Eclesiastes entra cedo no criador"],
   ["../eclesiastes/feiticos/modelo.js", "o criador e o derive criam e normalizam o Feitiço por ele"],
+  ["../eradeouro/identidade-da-era-de-ouro.js", "o App lê a identidade da Guilda sem trazer as regras da mesa para a abertura"],
 ];
 
 /* 1. NENHUM IMPORT, lido do próprio texto do arquivo. É a garantia estrutural:

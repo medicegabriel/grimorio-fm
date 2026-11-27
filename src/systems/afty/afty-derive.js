@@ -94,7 +94,7 @@ import {
   AFTY_HABILIDADES,
   resolveArmasDedicadas, efeitosArmasDedicadas, resolveEmpolgacao,
   encantamentosDeManejoEspecial, habilidadesConcedidasPelasEspecializacoes,
-  aptidoesConcedidasPelasHabilidades, expandeHerdadas,
+  aptidoesConcedidasPelasHabilidades, expandeHerdadas, habilidadeHerdadaDe,
 } from "./afty-habilidades";
 import {
   resolveTalentos, resolveTreinoEscudo, getTalento, OPCAO_TALENTO_NOME, AFTY_TALENTOS,
@@ -3672,7 +3672,13 @@ function deriveAftyUmaPassada(creature, opcoes = {}, auraDaOrigem = null, talent
     acoesMovimento: Math.max(0, canal("acoesMovimento")),
     multiplicadorAlcance: Math.max(1, canal("alcanceHabilidadeMult")),
   } : null;
+  /* O bônus de dano da Conjuração Aprimorada (divergência `conjuracaoAprimoradaNoDano`, 2026-11-23): a
+     criatura o tem de graça, o jogador só com a habilidade. A cópia de uma herdeira conta, a remendada não
+     (o Especialista em Estilo a reescreve em vagas de Estilo). */
+  const temConjuracaoAprimorada = habilidades.efetivas.some((id) => id === CONJURACAO_APRIMORADA_ID
+    || (habilidadeHerdadaDe(id) === CONJURACAO_APRIMORADA_ID && !getHabilidade(id)?.remendada));
   const ctxFeiticos = {
+    conjuracaoAprimorada: regraDo(sistema, "conjuracaoAprimoradaNoDano") === "player" ? temConjuracaoAprimorada : true,
     servo,
     nd,
     reversoes,

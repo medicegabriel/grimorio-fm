@@ -42,7 +42,7 @@ Os pontos da tabela são usados na criação. Para conjurar o Feitiço, você pr
 
 ## FADIGA E EXAUSTÃO NA CONJURAÇÃO
 
-Você também pode criar um Feitiço que cause Fadiga ou Exaustão ao próprio conjurador quando utilizado. Cada ponto de Fadiga concede **1 ponto de distribuição**, e cada ponto de Exaustão que o Feitiço causar diretamente concede **4 pontos de distribuição**.
+Você também pode criar um Feitiço que cause Fadiga ou Exaustão ao próprio conjurador quando utilizado. Cada ponto de Fadiga concede **1 ponto de distribuição**, e cada ponto de Exaustão que o Feitiço causar diretamente concede **4 pontos de distribuição**. 
 
 A Fadiga se acumula até alcançar a metade do seu BT, arredondada para baixo. Quando atingir esse valor, volte a 0 pontos de Fadiga e receba 1 ponto de Exaustão. Caso receba vários pontos de Fadiga de uma vez, aplique um de cada vez.
 

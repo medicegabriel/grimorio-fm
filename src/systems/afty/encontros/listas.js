@@ -148,6 +148,40 @@ export function fichasDoInventario(encontro, inventario) {
  * `editLog` mudou. Sem carimbo nos dois lados não dá para saber, e ela conta como em dia. Personagem ligado, marcador e
  * criatura sem origem nunca têm ficha nova.
  */
+/* ---------- as Criaturas Base no Adicionar do / (rework, etapa 2, 2026-11-23) ---------- */
+
+/**
+ * A chave de mentira das Criaturas Base: elas são o compêndio da 2.5.2 (`src/fm-compendium.js`, só leitura) e não moram em
+ * chave nenhuma do armazenamento. A cópia que entra num Encontro guarda esta chave na `origem`, e é assim que a Luta sabe que
+ * ela não tem original para editar (o "Editar Original" some, D-70).
+ */
+export const CHAVE_CRIATURAS_BASE = "compendio";
+
+export const ehCopiaDeCriaturaBase = (combatente) => combatente?.origem?.chave === CHAVE_CRIATURAS_BASE;
+
+const MEMO_BASE = new WeakMap();
+
+/**
+ * O inventário de um grupo com as Criaturas Base no fim, como criaturas da 2.5.2 (`base: true`). O compêndio chega por
+ * parâmetro, e só no Grimório público (`/`): no /Player e nas outras rotas elas não aparecem, como no Dashboard (porta de uso do
+ * `App.jsx`, autor 2026-09-09 e 2026-10-03). A ficha do inventário do usuário com o mesmo id vence no `porId`. Memorizado pelo
+ * inventário e pelo compêndio, para a identidade das fichas não mudar entre renderizações (o cache do derivado é por ela).
+ */
+export function inventarioComCriaturasBase(inventario, compendio) {
+  if (!Array.isArray(compendio) || !compendio.length || !inventario) return inventario;
+  let porCompendio = MEMO_BASE.get(inventario);
+  if (porCompendio?.compendio === compendio) return porCompendio.saida;
+  const base = compendio
+    .filter((f) => ehObjeto(f) && typeof f.id === "string" && f.id && !sistemaGravado(f))
+    .map((ficha) => ({ chave: CHAVE_CRIATURAS_BASE, motor: "252", tipo: "criatura", marca: "2.5.2", base: true, ficha }));
+  const porId = new Map(inventario.porId ?? []);
+  for (const e of base) if (!porId.has(e.ficha.id)) porId.set(e.ficha.id, e);
+  const saida = { ...inventario, fichas: [...(inventario.fichas ?? []), ...base], porId };
+  porCompendio = { compendio, saida };
+  MEMO_BASE.set(inventario, porCompendio);
+  return saida;
+}
+
 export function fichaNovaDe(combatente, inventario) {
   const c = combatente;
   if (!c || c.tipo !== "criatura" || !c.motor) return null;

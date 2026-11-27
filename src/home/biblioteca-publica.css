@@ -1,0 +1,418 @@
+.biblioteca-publica {
+  --biblioteca-margem: 16px;
+  --color-slate-950: var(--central-fundo);
+  --color-slate-900: var(--central-superficie);
+  --color-slate-800: var(--central-acao-secundaria);
+  --color-slate-700: var(--central-borda);
+  --color-slate-500: #968da9;
+  --color-slate-400: var(--central-suave);
+  --color-slate-300: #ddd5e8;
+  --color-purple-900: #37234e;
+  --color-purple-800: var(--central-acao);
+  --color-purple-700: var(--central-acao-hover);
+  --color-purple-600: #835bae;
+  --color-purple-500: var(--central-roxo);
+  background: var(--central-fundo);
+  color: var(--central-texto);
+}
+
+.biblioteca-publica ::selection {
+  background: var(--central-roxo);
+  color: var(--central-texto-no-roxo);
+}
+
+.biblioteca-painel > .min-h-screen {
+  min-height: 0;
+  background: var(--central-fundo);
+}
+
+.biblioteca-painel > .min-h-screen > header {
+  border-color: var(--central-borda);
+  background: var(--central-lateral);
+  backdrop-filter: none;
+}
+
+.biblioteca-painel input::placeholder { color: var(--central-suave); }
+
+.biblioteca-rodape { border-top: 1px solid var(--central-borda); }
+
+@media (min-width: 640px) {
+  .biblioteca-publica { --biblioteca-margem: 24px; }
+}
+
+@media (min-width: 1024px) {
+  .biblioteca-publica { --biblioteca-margem: 32px; }
+}
+
+@media (min-width: 761px) {
+  .biblioteca-publica {
+    display: grid;
+    grid-template-columns: var(--central-menu-largura) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+  }
+
+  .biblioteca-publica > .barra-lateral-site {
+    grid-column: 1;
+    grid-row: 1 / -1;
+  }
+
+  .biblioteca-publica > :not(.barra-lateral-site) { grid-column: 2; min-width: 0; }
+}
+
+@media (min-width: 761px) and (max-width: 1399px) {
+  .biblioteca-publica:has(> .biblioteca-painel-encontros > .ec-raiz[data-status="ativo"]) {
+    --central-menu-largura: 68px;
+    --barra-lateral-gap: 16px;
+    --barra-lateral-padding: 10px;
+
+    & :is(.fichafm-marca, .barra-lateral-grupo > :is(a, button)) {
+      justify-content: center;
+      width: 100%;
+      min-height: 44px;
+      margin: 0;
+    }
+
+    & :is(.fichafm-marca, .barra-lateral-grupo > :is(a, button)) > span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+
+    & .barra-lateral-conta > div > button {
+      width: 44px;
+      min-height: 44px;
+      padding: 0;
+    }
+
+    & .barra-lateral-conta > div > button > :is(svg:last-child, span:not(:first-child)) { display: none; }
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1249px) {
+  .biblioteca-painel > .min-h-screen > header button { min-width: 36px; padding-inline: 8px; }
+  .biblioteca-painel > .min-h-screen > header button > span.hidden { display: none; }
+}
+
+@media (max-width: 540px) {
+  .biblioteca-painel > .min-h-screen > header > div > div:first-child { gap: 6px; }
+}
+
+@media (max-width: 370px) {
+  .biblioteca-painel > .min-h-screen > header h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+}
+
+.biblioteca-painel-encontros {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+.biblioteca-publica:has(> .biblioteca-painel-encontros > .ec-raiz[data-status="ativo"]) {
+  height: 100dvh;
+}
+
+.biblioteca-publica .biblioteca-painel-encontros > .ec-raiz.afty-ficha {
+  --afty-fundo: var(--central-fundo);
+  --afty-fundo-brilho: none;
+  --afty-card: var(--central-superficie);
+  --afty-poco: var(--central-fundo);
+  --afty-borda: var(--central-borda);
+  --afty-borda-forte: var(--central-borda-controle);
+  --afty-borda-controle: var(--central-borda-controle);
+  --afty-texto: var(--central-texto);
+  --afty-texto-suave: var(--central-suave);
+  --afty-texto-fraco: var(--color-slate-500);
+  --afty-destaque: var(--central-roxo);
+  --afty-destaque-texto: var(--central-roxo);
+  --afty-destaque-fundo: var(--central-selecao);
+  --ec-display: var(--afty-fonte);
+  --ec-sel: var(--central-selecao);
+  --ec-cartao: var(--central-superficie);
+  --ec-painel: var(--central-superficie);
+  --ec-principal: var(--central-acao);
+  --ec-principal-hover: var(--central-acao-hover);
+  flex: 1;
+  height: auto;
+  min-height: 0;
+  background: var(--central-fundo);
+}
+
+.biblioteca-publica .biblioteca-painel-encontros .ec-topo {
+  padding-inline: max(var(--biblioteca-margem), calc((100% - 1600px) / 2 + var(--biblioteca-margem)));
+  border-color: var(--central-borda);
+  background: var(--central-lateral);
+}
+
+.biblioteca-painel-encontros .ec-topo::after { display: none; }
+.biblioteca-painel-encontros .ec-trilha a { color: var(--central-roxo); }
+.biblioteca-painel-encontros .ec-centro { min-height: min(400px, 60dvh); }
+
+.biblioteca-painel-encontros .ec-raiz[data-status] .ec-topo {
+  padding-block: 14px;
+}
+
+.biblioteca-painel-encontros .ec-raiz[data-status] .ec-titulo {
+  font: 750 1.375rem/1.2 system-ui, "Segoe UI", sans-serif !important;
+  letter-spacing: -.02em;
+}
+
+.biblioteca-publica .biblioteca-painel-encontros .ec-raiz .afty-botao:not([data-afty-tom], [aria-pressed="true"], :where(.e-ficha-g2 *)) {
+  border-color: var(--central-borda);
+  background: var(--central-acao-secundaria);
+  color: var(--central-texto);
+}
+
+.biblioteca-publica .biblioteca-painel-encontros .ec-raiz .afty-botao:not([data-afty-tom], [aria-pressed="true"], :where(.e-ficha-g2 *)):hover:not(:disabled) {
+  border-color: var(--central-borda-controle);
+  background: var(--central-borda);
+}
+
+.biblioteca-painel-encontros .ec-plano-caixa .ec-plano {
+  max-width: 1600px;
+  gap: 16px;
+  padding: 20px var(--biblioteca-margem);
+}
+
+.biblioteca-painel-encontros .ec-plano .ec-secao {
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+.biblioteca-painel-encontros .ec-plano .ec-secao-topo .afty-card-titulo {
+  color: var(--central-texto);
+  font-size: .875rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.biblioteca-publica .biblioteca-painel-encontros .ec-raiz .afty-botao[data-afty-tom="destaque"]:not(:where(.e-ficha-g2 *)) {
+  color: var(--central-acao-texto);
+  border-color: transparent;
+  background: var(--central-acao);
+}
+
+.biblioteca-publica .biblioteca-painel-encontros .ec-raiz .afty-botao[data-afty-tom="destaque"]:not(:where(.e-ficha-g2 *)):hover:not(:disabled) {
+  color: var(--central-acao-texto);
+  background: var(--central-acao-hover);
+}
+
+/* A lista pública segue a área de trabalho das bibliotecas e mede a largura ao lado do menu. */
+.biblioteca-publica .biblioteca-painel-encontros .ec-lista-publica > .ec-topo {
+  position: static;
+  width: 100%;
+  max-width: 1600px;
+  margin-inline: auto;
+  padding: 26px var(--biblioteca-margem) 16px;
+  border: 0;
+  background: transparent;
+}
+
+.ec-lista-publica .ec-topo .ec-titulo {
+  color: var(--central-texto);
+  font: 750 1.75rem/1.15 system-ui, "Segoe UI", sans-serif !important;
+  letter-spacing: -.03em;
+}
+
+.ec-lista-publica .ec-topo .ec-subtitulo { margin-top: 6px; }
+.ec-lista-publica .ec-topo-acoes .afty-botao { min-height: 42px; }
+
+.biblioteca-painel-encontros .ec-lista-publica .ec-lista {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 16px;
+  max-width: 1600px;
+  padding: 0 var(--biblioteca-margem) 24px;
+}
+
+.ec-lista-publica .ec-pastas {
+  padding: 12px;
+  border: 1px solid var(--central-borda);
+  border-radius: 12px;
+  background: var(--central-lateral);
+}
+
+.ec-lista-publica .ec-pastas-titulo {
+  display: none;
+  margin: 0;
+  padding-inline: 6px;
+  color: var(--central-texto);
+  font: 650 .875rem/1.4 system-ui, "Segoe UI", sans-serif;
+}
+
+.ec-lista-publica .ec-pastas-abrir {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 40px;
+  padding-inline: 5px;
+  border-radius: 8px;
+  color: var(--central-texto);
+  font-weight: 650;
+}
+
+.ec-lista-publica .ec-pastas-abrir[aria-expanded="true"] > svg:last-child { rotate: 180deg; }
+.ec-pastas-atual {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--central-suave);
+  font-weight: 500;
+  text-align: end;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ec-lista-publica .ec-pastas-corpo { display: grid; gap: 8px; }
+.ec-lista-publica .ec-pastas[data-abertas="false"] .ec-pastas-corpo { display: none; }
+.ec-lista-publica .ec-pastas-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 2px;
+}
+
+.ec-lista-publica .ec-pasta-botao { border-radius: 8px; }
+
+@container ec-lista (min-width: 960px) {
+  .biblioteca-painel-encontros .ec-lista-publica .ec-lista {
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 24px;
+  }
+
+  .ec-lista-publica .ec-pastas-titulo { display: block; }
+  .ec-lista-publica .ec-pastas-abrir { display: none; }
+  .ec-lista-publica .ec-pastas[data-abertas] .ec-pastas-corpo { display: grid; }
+  .ec-lista-publica .ec-pastas-lista { grid-template-columns: minmax(0, 1fr); max-height: 52dvh; }
+}
+
+.ec-lista-publica .ec-lista-corpo { gap: 16px; }
+
+.ec-lista-publica .ec-filtros {
+  padding: 9px;
+  border: 1px solid var(--central-borda);
+  border-radius: 12px;
+  background: var(--central-lateral);
+}
+
+.ec-lista-publica .ec-busca {
+  min-height: 40px;
+  border-radius: 8px;
+}
+
+.ec-lista-publica .ec-busca input:focus-visible { outline: none; }
+.ec-lista-publica .ec-busca:has(input:focus-visible) { outline: 2px solid var(--central-roxo); outline-offset: -1px; }
+
+.ec-lista-publica .ec-segmento {
+  min-height: 38px;
+  border-color: transparent;
+  border-radius: 8px;
+}
+
+.ec-lista-publica .ec-segmento[aria-pressed="true"] {
+  border-color: var(--central-borda-controle);
+  background: var(--central-selecao);
+  color: var(--central-roxo);
+}
+
+.ec-lista-publica .ec-cartao {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 13px;
+  border-color: var(--central-borda);
+  border-radius: 12px;
+  background: var(--central-superficie);
+  box-shadow: none;
+}
+
+.ec-lista-publica .ec-cartao[data-status="ativo"] { border-color: var(--central-borda-controle); }
+.ec-lista-publica .ec-cartao[data-selecionado] { border-color: var(--central-roxo); }
+
+.ec-lista-publica .ec-cartao-topo .ec-cartao-nome {
+  display: -webkit-box;
+  flex: 1;
+  min-width: 0;
+  font-stretch: normal;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.ec-lista-publica .ec-cartao-topo .ec-caixa { margin-inline-start: 0; }
+
+.ec-cartao-estado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 9px;
+}
+
+.ec-lista-publica .ec-cartao-estado .ec-status {
+  min-height: 25px;
+  padding-inline: 7px;
+  border: 1px solid var(--central-borda);
+  border-radius: 8px;
+  background: var(--central-lateral);
+}
+
+.ec-lista-publica .ec-cartao-estado .ec-status[data-status="ativo"] { color: var(--central-roxo); }
+.ec-lista-publica .ec-cartao-rodape { margin-block-start: auto; padding-block-start: 10px; }
+.ec-lista-publica .ec-cartao-rodape .ec-remover { margin-inline-start: 0; }
+
+.ec-lista-publica .ec-vazio {
+  min-height: 220px;
+  align-content: center;
+  border: 1px dashed var(--central-borda-controle);
+  border-radius: 12px;
+  background: var(--central-lateral);
+}
+
+.ec-seletor-pasta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.ec-lista-publica .ec-cartao-pasta-linha .ec-seletor-pasta { flex: 1; }
+
+.ec-lista-publica .ec-seletor-pasta select {
+  width: 100%;
+  min-width: 0;
+  max-width: none;
+  padding-inline-end: 38px;
+  appearance: none;
+}
+
+.ec-lista-publica .ec-seletor-pasta > svg {
+  position: absolute;
+  inset-inline-end: 12px;
+  color: var(--central-suave);
+  pointer-events: none;
+}
+
+@media (max-width: 540px) {
+  .biblioteca-publica .biblioteca-painel-encontros .ec-lista-publica > .ec-topo { padding-block: 20px 12px; }
+  .ec-lista-publica .ec-topo .ec-titulo { font-size: 1.5rem !important; }
+  .ec-lista-publica .ec-topo-titulo { flex-basis: min(8rem, 100%); }
+}
+
+@media (pointer: coarse) {
+  .ec-lista-publica :is(.ec-busca, .ec-segmento, .ec-pasta-botao, .ec-pastas-abrir, .ec-topo-acoes .afty-botao) { min-height: 44px; }
+}
+
+@media (forced-colors: active) {
+  .ec-lista-publica .ec-busca:has(input:focus-visible) { outline-color: Highlight; }
+  .ec-lista-publica .ec-seletor-pasta select { padding-inline-end: 9px; appearance: auto; }
+  .ec-lista-publica .ec-seletor-pasta > svg { display: none; }
+}

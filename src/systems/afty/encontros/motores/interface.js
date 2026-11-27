@@ -45,6 +45,9 @@ export const VERBOS_DO_MOTOR = [
   // (estado, derivado) -> estado.
   "iniciaCombate",
   "encerraCombate",
+  /* O Reabrir de um Encontro Finalizado (rework, etapa 2, 2026-11-23) quando o retorno exato do Encerrar não fecha (alguém mexeu
+     depois): religa o combate sem a cena nova do `iniciaCombate` (a rodada e as cascas ficam como estão). */
+  "retomaCombate",
   "iniciaTurno",
   "encerraTurno",
   // (estado, derivado) -> { estado, expirou: [{ nome }] }. Só o que é POR RODADA: as durações não descem aqui (etapa 5).

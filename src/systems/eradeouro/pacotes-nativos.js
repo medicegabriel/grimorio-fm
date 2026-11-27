@@ -6,7 +6,7 @@
  * moram em `era-de-ouro.js` (NATIVOS_DA_GUILDA_IDS). Quem as normaliza e as entrega
  * à hidratação da ficha é o `afty-addons.js`, que tem o `normalizarPacote`.
  *
- * ⚠ FOLHA: só os JSONs de `addons/` e o `era-de-ouro.js`, que também é folha. O
+ * ⚠ Só importa os JSONs de `addons/` e o `era-de-ouro.js`, que depende só da folha de identidade. O
  * `afty-addons.js` importa este módulo, e um import dele de volta fecharia o ciclo.
  *
  * ⚠ OS JSONs ENTRAM COM `with { type: "json" }`. O atributo é o que deixa o Node dos

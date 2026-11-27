@@ -52,19 +52,11 @@
  * ============================================================
  */
 
-export const MESA_ERA_DE_OURO = "eradeouro";
-
-/** O namespace do localStorage da rota: `fm_creatures_eradeouro_v1` e as irmãs. */
-export const NAMESPACE_ERA_DE_OURO = "eradeouro";
+import { MESA_ERA_DE_OURO } from "./identidade-da-era-de-ouro.js";
+export { MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO } from "./identidade-da-era-de-ouro.js";
 
 /** Os encontros da Guilda, fora de `afty_encontros_v1`, que o Afty e o Player dividem. */
 export const CHAVE_ENCONTROS_ERA_DE_OURO = "afty_encontros_eradeouro_v1";
-
-export const ERA_DE_OURO = {
-  id: MESA_ERA_DE_OURO,
-  label: "Era de Ouro",
-  rota: "/EraDeOuro",
-};
 
 /** A rota, sem diferenciar maiúscula de minúscula, como as outras duas. */
 export const ehRotaEraDeOuro = (pathname) => /^\/eradeouro\/?$/i.test(pathname ?? "");

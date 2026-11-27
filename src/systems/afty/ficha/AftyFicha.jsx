@@ -6,6 +6,7 @@ import { telaSobDemanda } from "../../../celular/sob-demanda";
    `.ec-faixa-raiz { position: sticky; min-height: 0 }`: a faixa da luta do jogador ocupava a tela inteira e deixava de grudar.
    Mesma especificidade, então quem manda é a ordem, e a ordem certa é a de antes. O `t-app-entradas.mjs` confere. */
 import "./ficha.css";
+import EsqueletoDaFicha from "./EsqueletoDaFicha";
 
 // A Ficha Final G2 é a ficha padrão (2026-11-09). A clássica continua no código e abre
 // com `?ficha-g2=0` na rota, como saída de emergência.
@@ -20,7 +21,7 @@ export default function AftyFicha(props) {
     && new URLSearchParams(location.search).get("ficha-g2") === "0";
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<EsqueletoDaFicha />}>
       {usaClassica ? <AftyFichaClassica {...props} /> : <AftyFichaG2 {...props} />}
     </Suspense>
   );

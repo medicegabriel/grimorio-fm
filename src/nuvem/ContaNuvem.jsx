@@ -18,10 +18,10 @@ import { useCelular } from "../celular/usar-celular";
 
 const BOTAO = "inline-flex items-center justify-center gap-1.5 h-9 min-w-9 lg:px-3 shrink-0 rounded bg-slate-800 hover:bg-slate-700 text-sm font-semibold text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/60";
 
-export default function ContaNuvem() {
+export default function ContaNuvem({ lateral = false }) {
   const estado = useSyncExternalStore(ouvirNuvem, lerEstadoNuvem);
   const [aberto, setAberto] = useState(false);
-  const celular = useCelular();
+  const celular = useCelular(lateral ? "(max-width: 760px), (max-height: 500px) and (pointer: coarse)" : undefined);
   const raiz = useRef(null);
 
   /* Fechar ao tocar fora vale só para o menu suspenso. A folha tem véu próprio, e
@@ -74,7 +74,7 @@ export default function ContaNuvem() {
           </div>
         </FolhaInferior>
       ) : aberto && (
-        <div role="menu" className="absolute right-0 top-full mt-2 w-56 z-50 rounded border border-slate-700 bg-slate-900 p-1 shadow-xl">
+        <div role="menu" className={`absolute w-56 z-50 rounded border border-slate-700 bg-slate-900 p-1 shadow-xl ${lateral ? "bottom-0 left-full ml-2" : "right-0 top-full mt-2"}`}>
           <PainelDaConta estado={estado} aoFechar={fecharMenu} />
         </div>
       )}

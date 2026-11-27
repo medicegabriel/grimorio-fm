@@ -4,26 +4,31 @@ import Dashboard from "./components/Dashboard";
 import AftyFicha from "./systems/afty/ficha/AftyFicha";
 import { quandoOcioso, useListaAdiada } from "./celular/usar-lista-adiada";
 import { grupoDaRota } from "./systems/afty/encontros/listas";
-import { caminhoDe, lerCaminho } from "./systems/afty/encontros/rota-encontros";
+/* A volta da Sala e a chave de aparelho da moldura nova vêm do rework dos Encontros (etapa 1, 2026-11-18). */
+import { caminhoDe, lerCaminho, lerOrigemDaSala, ligarMolduraDoAparelho } from "./systems/afty/encontros/rota-encontros";
 import PdfFab from "./components/PdfFab";
 import useCreatureStorage from "./components/useCreatureStorage";
 import useDashboardView from "./useDashboardView";
 import { vocabularioDoDashboard, vocabularioDeFichas, sistemaGravado, getSistema } from "./systems/afty/afty-sistema";
-import { MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO } from "./systems/eradeouro/era-de-ouro";
+import { MESA_ERA_DE_OURO, NAMESPACE_ERA_DE_OURO, ERA_DE_OURO } from "./systems/eradeouro/identidade-da-era-de-ouro";
 import { ECLESIASTES, aceitaFichaEclesiastes, ehFichaEclesiastes } from "./systems/eclesiastes/regras";
 import { Analytics } from '@vercel/analytics/react';
-import AlternadorSistema from "./nuvem/AlternadorSistema";
 import ContaNuvem from "./nuvem/ContaNuvem";
 import AvisoMudanca from "./nuvem/AvisoMudanca";
 import { enviar as enviarNuvem, lerEstadoNuvem, ouvirNuvem } from "./nuvem/nuvem-sync";
-import { nuvemAtiva } from "./nuvem/nuvem-config";
+import { ehHostAntigo, nuvemAtiva, ORIGEM_NOVA } from "./nuvem/nuvem-config";
+import BarraLateralSite from "./home/BarraLateralSite";
+import "./home/biblioteca-publica.css";
 import { rotaDoGrupo } from "./nuvem/sala-ui/sala-ui-dados";
 import { usePilhaDeTelas } from "./celular/usar-pilha-de-telas";
 import { useCamadaDeVoltar } from "./celular/camadas";
 import { TELA_LISTA } from "./celular/pilha";
 import { telaSobDemanda } from "./celular/sob-demanda";
+import { preCarregarQuandoOcioso } from "./celular/pre-carga";
 import { useCompendio, ehIdDoCompendio } from "./celular/usar-compendio";
 import Carregando from "./celular/Carregando";
+import { EsqueletoDoCompendio } from "./celular/EsqueletoDaLista";
+import FalhaDoCompendio from "./celular/FalhaDoCompendio";
 import ConviteInstalar from "./celular/ConviteInstalar";
 /* A Sala no celular (etapa E7, docs/app-celular.md): entrar pelo código, editar pela Sala sem janela nova, e o link aberto no app. */
 import BotaoEntrarNaSala from "./nuvem/sala-ui/EntrarPorCodigo";
@@ -39,16 +44,22 @@ import AvisoNovaVersao from "./celular/AvisoNovaVersao";
 import { ativarNovaVersao, desligarServiceWorker, registrarServiceWorker } from "./celular/registrar-sw";
 import { podeRegistrar } from "./celular/sw-regras";
 import { SW_LIGADO } from "./celular/pwa-config";
+import { coletaLigada, enviarResumoDaFicha } from "./systems/afty/balanceamento/coleta.js";
+import { AvisoDeColeta, PreferenciaDeColeta } from "./systems/afty/balanceamento/PreferenciaDeColeta.jsx";
+import ConviteDeBalanceamento from "./systems/afty/balanceamento/ConviteDeBalanceamento.jsx";
 
 /* ⚠ AS TELAS PESADAS CHEGAM SOB DEMANDA (etapa E3 do app de celular, 2026-11-19, S-23). Até aqui todas iam no pacote de
    abertura de toda rota: a lista da Guilda no celular baixava 6,6 MB de JavaScript, com os dois criadores, o rastreador e a
    biblioteca da 2.5.2 e as enciclopédias, antes de desenhar a primeira ficha. Agora cada uma é baixada quando aparece.
    ⚠ Tela nova sob demanda pede abrir a frio no navegador: um import a menos na abertura muda a ordem em que os módulos do
    motor são avaliados (a tela branca de 2026-09-02), e só o `t-ordem-modulos` e o `t-app-entradas` não veem o navegador. */
-const CombatTracker = telaSobDemanda(() => import("./components/CombatTracker"));
+/* A ficha da Criatura do `/` com rolagem (2026-11-23): a casca do Afty carrega o CombatTracker da 2.5.2 e lhe passa o
+   `onRolar` (AGENTS.md, seção 6, Forma 1). O nome fica `CombatTracker` porque a tela é a mesma. */
+const CombatTracker = telaSobDemanda(() => import("./systems/afty/ui/CriaturaComRolagem252"));
 const CreatureBuilder = telaSobDemanda(() => import("./components/CreatureBuilder"));
 const AftyCreatureBuilder = telaSobDemanda(() => import("./systems/afty/AftyCreatureBuilder"));
 const TemplateLibrary = telaSobDemanda(() => import("./components/TemplateLibrary"));
+const PainelBalanceamento = React.lazy(() => import("./systems/afty/balanceamento/PainelBalanceamento.jsx"));
 /* O Encontro unificado (etapa 6a, 2026-11-17): as três listas e o novo Encontro, no lugar do AftyEncontros e do
    EncountersDashboard e EncounterTracker da 2.5.2 (que seguem em src/components/, intocados e sem uso aqui). */
 const ListaDeEncontros = telaSobDemanda(() => import("./systems/afty/encontros/telas/ListaDeEncontros"));
@@ -65,11 +76,21 @@ const AbaSala = telaSobDemanda(() => import("./systems/eradeouro/app/AbaSala"));
    liberada e a nuvem ligada. */
 const BotaoAbrirSala = React.lazy(() => import("./nuvem/sala-ui/AbrirSala"));
 
+/* A chave de aparelho do visual novo dos Encontros (rework, etapas 3 a 7): marca o `<html>` antes do primeiro render. */
+ligarMolduraDoAparelho();
+
 // Helper para achar a criatura seja no compêndio ou no localstorage
 const findCreatureAnywhere = (id, storageList, compendium) =>
   storageList.find((c) => c.id === id) ?? compendium.find((c) => c.id === id) ?? null;
 
 export default function App() {
+  if (typeof location !== "undefined" && /^\/(Jogador|Player)\/balanceamento\/?$/i.test(location.pathname)) {
+    return <React.Suspense fallback={<Carregando />}><PainelBalanceamento /></React.Suspense>;
+  }
+  return <GrimorioApp />;
+}
+
+function GrimorioApp() {
   // Gatilho de teste da tela de erro: abrir o site com "?testar-erro=1" na URL
   // força um erro de propósito para validar o ErrorBoundary (útil pra testar no
   // celular). Só afeta quem adiciona o parâmetro manualmente — inofensivo.
@@ -94,10 +115,7 @@ export default function App() {
   // tela. Quem precisa saber QUAL dos dois lê `sistemaDaRota`.
   const aftyMode = rotaId !== null;
 
-  /* Lançamento público (autor, 2026-11-16). As duas rotas abertas a todos são o
-     Grimório 2.5.2 (`/`) e a Ficha de Player (`/Player`): só elas ganham o
-     alternador. O cadeado dos Encontros delas saiu depois da revisão final do
-     Encontro Unificado (autor, 2026-11-18). */
+  // Só as bibliotecas públicas aparecem no alternador do site.
   const rotaPublica = rotaId === null || rotaId === "player";
   useEffect(() => {
     if (rotaPublica) return undefined;
@@ -116,10 +134,10 @@ export default function App() {
   })();
   const rotaSala = !!codigoDaSala;
 
-  /* O compêndio da 2.5.2 só no `/` (usar-compendio.js). Lá a lista espera ele chegar, para as Criaturas Base aparecerem
-     junto. Nas outras rotas ele nem é baixado. */
+  /* O compêndio da 2.5.2 só no `/` (usar-compendio.js). Nas outras rotas ele nem é baixado. A espera mostra o esqueleto da
+     lista, e a falha, o Tentar de Novo. Quem espera é `esperaCompendio`, logo abaixo do `folderView`. */
   const precisaCompendio = rotaId === null && !rotaSala;
-  const compendio = useCompendio(precisaCompendio);
+  const { compendio, falhou: compendioFalhou, tentarDeNovo: tentarCompendio } = useCompendio(precisaCompendio);
   const COMPENDIUM = compendio?.COMPENDIUM ?? SEM_COMPENDIO;
   const getCompendiumById = useCallback((id) => compendio?.getCompendiumById(id) ?? null, [compendio]);
 
@@ -463,6 +481,18 @@ export default function App() {
     ir({ name: "templates" });
   }, [ir]);
 
+  /* A trilha do cabeçalho dos Encontros (rework, etapa 1): o nome da rota é o mesmo título do Dashboard dela. */
+  const rotuloDaRota = tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : rotaPublica ? "Criatura" : "Grimório");
+  const trilhaInicio = useMemo(() => ({
+    rotulo: rotuloDaRota,
+    href: caminhoDe(rotaId, TELA_LISTA),
+    onIr: rotaPublica ? undefined : goToDashboard,
+  }), [rotuloDaRota, rotaId, rotaPublica, goToDashboard]);
+  // De dentro de um Encontro, a lista é para TRÁS no histórico (a mesma volta do botão), e não uma entrada nova.
+  const trilhaLista = useMemo(() => ({
+    rotulo: "Encontros", href: caminhoDe(rotaId, { name: "encounters" }), onIr: voltarAosEncontros,
+  }), [rotaId, voltarAosEncontros]);
+
   const handleDuplicateEncounter = useCallback((id) => {
     listaEncontros.duplicar(id);
     voltarAosEncontros();
@@ -483,15 +513,17 @@ export default function App() {
       editLog: [...(prior?.editLog ?? data.editLog ?? []), now],
     };
 
+    let ficha = stamped;
     if (isEditing) {
       /* O Atualizar da Ficha (etapa 6b, 2026-11-17) trocou a janela que abria aqui (`EncounterSyncModal`): a criatura editada não
          reescreve mais nenhum Encontro. Quem está numa luta vê o botão Atualizar da Ficha no combatente. */
       storage.update(stamped.id, stamped);
     } else {
-      storage.create(stamped);
+      ficha = storage.create(stamped);
     }
     sairDoCriador();
-  }, [storage, sairDoCriador]);
+    if (coletaLigada && rotaId === "player") void enviarResumoDaFicha(ficha, now);
+  }, [storage, sairDoCriador, rotaId]);
 
   const activeCreature = view.creatureId
     ? findCreatureAnywhere(view.creatureId, storage.creatures, COMPENDIUM)
@@ -516,6 +548,37 @@ export default function App() {
     else if (plano === "ir") ir({ name: tela });
     else substituir({ name: tela });
   };
+
+  const bibliotecaPublica = rotaPublica && !rotaSala && view.name === "dashboard";
+  const encontrosPublicos = rotaPublica && !rotaSala && (view.name === "encounters" || view.name === "encounter");
+  const molduraPublica = bibliotecaPublica || encontrosPublicos;
+  const enderecoInicio = ehHostAntigo() ? ORIGEM_NOVA : "/";
+
+  /* A FICHA DESCE ANTES DO TOQUE (2026-11-26, fila "Carregamento"). Com a lista na tela e o navegador ocioso, os arquivos da Ficha
+     G2 e do motor são baixados SEM executar (`src/celular/pre-carga.js`), e o toque no card só avalia. Só quando há na lista uma
+     ficha que abre na Ficha G2: no `/Criatura` o card da 2.5.2 abre o painel de combate dela, e o motor seria banda perdida. */
+  /* A LISTA NÃO ESPERA O COMPÊNDIO (autor, 2026-11-26, "Sim, como proposto"). Até aqui a lista inteira do `/Criatura`
+     esperava os 2,9 MB do compêndio, mas a vista padrão filtra `!c.isBuiltIn` e não o mostra. Agora só a pasta Criaturas Base
+     espera, e nas outras o Dashboard desenha com o compêndio vazio e se completa quando ele chega (o contador da pasta sai de
+     0). Fora da lista a espera continua: o criador, o painel e o Encontro abertos com um id `builtin_` precisam dele. */
+  const esperaCompendio = precisaCompendio && !compendio
+    && (view.name !== "dashboard" || folderView.type === "builtins");
+  const listaNaTela = view.name === "dashboard" && !rotaSala && !esperaCompendio;
+  const abreNaFicha = useMemo(() => storage.creatures.some((c) => !!sistemaGravado(c)), [storage.creatures]);
+  const preCarregaFicha = listaNaTela && abreNaFicha
+    && !(typeof location !== "undefined" && new URLSearchParams(location.search).get("ficha-g2") === "0");
+  useEffect(() => {
+    if (!preCarregaFicha) return undefined;
+    // Depois do quadro pintado, e então no ocioso.
+    let cancelar = null;
+    const quadro = requestAnimationFrame(() => { cancelar = preCarregarQuandoOcioso("ficha"); });
+    return () => { cancelAnimationFrame(quadro); cancelar?.(); };
+  }, [preCarregaFicha]);
+
+  function irAosEncontrosPeloMenu() {
+    if (view.name === "encounter") voltarAosEncontros();
+    else if (view.name !== "encounters") goToEncounters();
+  }
 
   const views = {
     sala: () => (cascaNoCelular && nuvemAtiva ? <AbaSala /> : views.dashboard()),
@@ -550,7 +613,7 @@ export default function App() {
            clique rodava a Ficha do Afty sobre uma criatura da 2.5.2, e o lápis
            a clonava para o inventário do Afty. É a porta espelho, e fecha aqui
            pela mesma prop, sem tocar em `src/components/`. */
-        titulo={tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : undefined)}
+        titulo={tituloDaBiblioteca ?? (sistemaDaRota === "player" ? "Jogador" : bibliotecaPublica ? "Criatura" : undefined)}
         showSystemView={!aftyMode}
         // A lista do /Player é de PERSONAGENS (autor, 2026-09-10: "Uma prop
         // opcional"). Sem a prop, o Dashboard fala de criatura como sempre.
@@ -561,8 +624,7 @@ export default function App() {
         onCreateNew={() => (bibliotecaMista ? setEscolhendoTipo(true) : goToBuilder(null))}
         onGoToEncounters={goToEncounters}
         onGoToTemplates={goToTemplates}
-        cabecalhoTitulo={rotaPublica ? <AlternadorSistema atual={rotaId === "player" ? "player" : "criatura"} /> : null}
-        cabecalhoAcoes={<>{mesa && nuvemAtiva && <BotaoEntrarNaSala />}<ContaNuvem /></>}
+        cabecalhoAcoes={bibliotecaPublica ? null : <>{mesa && nuvemAtiva && <BotaoEntrarNaSala />}<ContaNuvem /></>}
       />
     ),
     tracker: () => {
@@ -613,18 +675,21 @@ export default function App() {
     },
     builder: () => (
       criadorDoAfty ? (
-        <AftyCreatureBuilder
-          existingCreature={activeCreature}
-          onSave={handleCreatureSave}
-          onCancel={sairDoCriador}
-          // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
-          // da própria ficha, e não da rota. Ver afty-sistema.js.
-          sistema={view.sistemaNovo ?? sistemaDaRota}
-          mesa={mesa}
-          edicaoDeRegras={eclesiastes ? ECLESIASTES.id : null}
-          // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
-          // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
-        />
+        <>
+          {coletaLigada && rotaId === "player" && <AvisoDeColeta />}
+          <AftyCreatureBuilder
+            existingCreature={activeCreature}
+            onSave={handleCreatureSave}
+            onCancel={sairDoCriador}
+            // Só vale para ficha NOVA. Editando, o sistema sai do `rulesVersion`
+            // da própria ficha, e não da rota. Ver afty-sistema.js.
+            sistema={view.sistemaNovo ?? sistemaDaRota}
+            mesa={mesa}
+            edicaoDeRegras={eclesiastes ? ECLESIASTES.id : null}
+            // Os pacotes da Guilda não nascem na ficha: são nativos, e a hidratação
+            // os põe nela em dia (src/systems/eradeouro/era-de-ouro.js).
+          />
+        </>
       ) : (
         <CreatureBuilder
           existingCreature={activeCreature}
@@ -644,6 +709,7 @@ export default function App() {
           encontroId={view.encounterId}
           lista={listaEncontros}
           onVoltar={voltarAosEncontros}
+          trilha={cascaNoCelular ? null : [trilhaInicio, trilhaLista]}
           onDuplicar={handleDuplicateEncounter}
           onAtualizarBiblioteca={atualizarBibliotecaDoEncontro}
           namespaceDaBiblioteca={rotaId}
@@ -654,7 +720,8 @@ export default function App() {
       );
     },
     encounters: () => (!listaPronta ? <Carregando /> :
-      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular} />
+      <ListaDeEncontros lista={listaEncontros} onAbrir={goToEncounter} onVoltar={goToDashboard} semVoltar={cascaNoCelular}
+        trilha={cascaNoCelular ? null : [trilhaInicio]} publica={encontrosPublicos} />
     ),
     templates: () => (
       <TemplateLibrary
@@ -673,14 +740,23 @@ export default function App() {
       {/* Coluna de altura mínima de tela. O rodapé de feedback saiu em
           2026-08-06 (a pesquisa fechou), junto com o aviso de abertura. O
           componente continua em `components/FeedbackPrompt.jsx`, sem uso. */}
-      <div className="min-h-screen flex flex-col">
-        <div className="flex-1">
+      <div className={`min-h-screen flex flex-col${molduraPublica ? " fichafm-tema biblioteca-publica" : ""}`}>
+        {molduraPublica && (
+          <BarraLateralSite atual={encontrosPublicos ? "encontros" : rotaId === "player" ? "player" : "criatura"}
+            inicio={enderecoInicio} encontros={trilhaLista.href} onEncontros={irAosEncontrosPeloMenu} />
+        )}
+        <div className={`flex-1${bibliotecaPublica ? " biblioteca-painel" : ""}${encontrosPublicos ? " biblioteca-painel-encontros" : ""}`}>
           {rotaSala ? (
             <React.Suspense fallback={null}>
-              {/* O Voltar da Sala vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
-              <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(rotaDoGrupo(grupo))} />
+              {/* O Voltar da Sala volta para a rota e o Encontro de onde ela foi aberta (rework, etapa 1). Quem entrou por um
+                  link não tem origem guardada e vai para a rota do grupo dela (a Guilda volta para /EraDeOuro). */}
+              <SalaPagina codigo={codigoDaSala} onVoltar={(grupo) => location.assign(lerOrigemDaSala(codigoDaSala) ?? rotaDoGrupo(grupo))} />
             </React.Suspense>
-          ) : precisaCompendio && !compendio ? <Carregando /> : (
+          ) : esperaCompendio ? (
+            compendioFalhou ? <FalhaDoCompendio onTentar={tentarCompendio}
+              onSair={view.name === "dashboard" ? () => setFolderView({ type: "all", folderId: null }) : undefined} />
+              : view.name === "dashboard" ? <EsqueletoDoCompendio /> : <Carregando />
+          ) : (
             // A tela sob demanda mostra o Carregando enquanto chega (etapa E3).
             <React.Suspense fallback={<Carregando />}>
               {abaDaCasca ? (
@@ -689,13 +765,18 @@ export default function App() {
             </React.Suspense>
           )}
         </div>
-        {rotaPublica && !rotaSala && view.name === "dashboard" && (
-          <footer className="bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
+        {coletaLigada && rotaId === "player" && !rotaSala && view.name === "dashboard" && (
+          <ConviteDeBalanceamento fichas={fichasDaRota} />
+        )}
+        {bibliotecaPublica && (
+          <footer className="biblioteca-rodape bg-slate-950 px-4 py-3 text-center text-sm text-slate-300">
+            {coletaLigada && rotaId === "player" && <PreferenciaDeColeta />}
             <a href="/privacidade.html" className="underline underline-offset-4 hover:text-white">
               Política de Privacidade
             </a>
           </footer>
         )}
+        <PdfFab />
       </div>
       {/* A lista de Encontros chega por aqui, sob demanda (etapa E10). Não desenha nada. */}
       {ponteDaLista}
@@ -793,7 +874,6 @@ export default function App() {
           </div>
         </div>
       )}
-      <PdfFab />
       <AvisoMudanca />
       {/* ⚠ O SELO FIXO DO AMBIENTE PRIVADO SAIU em 2026-09-09, a pedido do autor
          (*"Remova isso. É meio feio."*). Era uma cápsula `position: fixed` no

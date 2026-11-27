@@ -150,7 +150,7 @@ export default function AdicionarCombatentes({ inventario, naLuta, onAdicionarFi
             <Search aria-hidden="true" />
             <input
               type="text" value={busca} onChange={(e) => setBusca(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Escape") setBusca(""); }}
+              onKeyDown={(e) => { if (e.key === "Escape" && busca) { e.preventDefault(); setBusca(""); } }}
               placeholder={aba === "personagem" ? "Buscar Personagem" : "Buscar Criatura"}
               aria-label={aba === "personagem" ? "Buscar Personagem" : "Buscar Criatura"}
             />

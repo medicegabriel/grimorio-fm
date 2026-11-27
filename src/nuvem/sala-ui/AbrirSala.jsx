@@ -8,6 +8,7 @@ import { abrirSalaDoEncontro } from "../sala-encontro";
 import { Aviso, Dialogo } from "../../systems/afty/encontros/telas/pecas-encontro";
 import { CampoCopiavel } from "./PecasSala";
 import { linkDaSala } from "./sala-ui-dados";
+import { guardarOrigemDaSala } from "../../systems/afty/encontros/rota-encontros";
 
 /**
  * ============================================================
@@ -87,7 +88,7 @@ export function AbrirSalaDialogo({ lista, encontroId, onFechar }) {
         <>
           <button type="button" className="afty-botao" onClick={onFechar}>Fechar</button>
           {codigo ? (
-            <button type="button" className="afty-botao" data-afty-tom="destaque" onClick={() => location.assign(`/Sala/${codigo}`)}><DoorOpen aria-hidden="true" />Entrar na Sala</button>
+            <button type="button" className="afty-botao" data-afty-tom="destaque" onClick={() => { guardarOrigemDaSala(codigo, location.pathname); location.assign(`/Sala/${codigo}`); }}><DoorOpen aria-hidden="true" />Entrar na Sala</button>
           ) : nuvem.usuario && nuvemAtiva ? (
             <button type="submit" form="form-abrir-sala" className="afty-botao" data-afty-tom="destaque" disabled={!senhaValida(senha) || criando}><DoorOpen aria-hidden="true" />Abrir Sala</button>
           ) : null}

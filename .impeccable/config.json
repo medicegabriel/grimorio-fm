@@ -1,0 +1,32 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "design-system-font",
+        "value": "shippori mincho",
+        "createdAt": "2026-11-25T21:53:38.121Z",
+        "reason": "Claude: CSS Personalizado de ficha do usuário (docs/tema-ming-yue.css), não o sistema visual do app. Shippori Mincho está na lista fechada FONTES_WEB de ficha-tema.js"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-26T20:03:31.595Z",
+        "reason": "user asked: the 2026-11-26 loading task requires the skeleton card with the 4 px left border, mirroring the real Dashboard card"
+      },
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-11-26T20:03:31.795Z",
+        "reason": "agent: fixed 2.25rem flex-centered controls in the loading skeleton, same measured geometry as the real Dashboard buttons"
+      }
+    ]
+  }
+}

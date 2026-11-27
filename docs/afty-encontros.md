@@ -99,7 +99,7 @@ Por tipo:
 | personagem cópia | `criaturaId`, `origem`, `ficha`, `sessao` | `afty` |
 | criatura do Afty | `criaturaId`, `origem: { chave, id }`, `ficha`, `sessao` | `afty` |
 | criatura da 2.5.2 | `criaturaId`, `origem`, `snapshot`, `combatState` | `252` |
-| marcador | nada | `null` |
+| marcador | nada, ou `vida: { pv, pvMax }` (Sem Ficha com Vida, rework etapa 2) | `null` gravado. Com `vida`, o adaptador de `motores/marcador.js` |
 
 - **`foraDaOrdem`** substitui o `oculto` antigo (quem sai da ordem de turno). O saneamento lê o
   `oculto` como `foraDaOrdem`. Esconder dos jogadores é a `visao`, outra coisa.
@@ -222,6 +222,9 @@ existem, senão papel com papel. Conta de um lado só conta como outra pessoa. S
 "Personagem por Papel": o Mestre mexendo no personagem entra no histórico do personagem, e o Mestre
 mexendo na criatura não entra. Virada de turno e de rodada nunca entram.
 
+O que o Mestre faz no que é dele (a criatura, o marcador com Vida) não entra em histórico nenhum e vai para a **pilha do Mestre**
+(`encontro.pilhaDoMestre`, rework etapa 2, ver "Rework visual e de usabilidade"), com o mesmo Desfazer. Cada operação mora num lugar só.
+
 ## Desfazer
 
 O Desfazer é uma operação nova (`{ tipo: "desfazer", desfaz: id }`), nunca uma remoção: o registro
@@ -264,12 +267,13 @@ juntas, tudo ou nada, só com autoridade direta.
   `CONFIG_PADRAO`).
 - Operações: `OPERACAO`, `OPERACOES`, `RESOLVER_PEDIDO`, `RECUSAR_PEDIDO`.
 - Fundamentos: `REGISTRAR_FUNDAMENTO_PERDIDO`, `RESULTADO_FUNDAMENTOS_BIBLIOTECA`.
-- Luta: `COMECAR`, `PROXIMO_TURNO`, `NOVA_RODADA`, `ENCERRAR`, `REABRIR`, `LEVANTAR_TODOS`,
+- Luta: `COMECAR { rolagens? }`, `PROXIMO_TURNO`, `NOVA_RODADA`, `VOLTAR_TURNO`, `ENCERRAR`, `REABRIR`, `LEVANTAR_TODOS`,
   `REGISTRAR`.
 
 O fluxo de turno é o do redutor antigo, verbo por verbo, agora pelo adaptador. O personagem ligado
 recebe a sessão do mapa na vista e devolve ao mapa no fim. O assert roda a mesma luta nos dois
-redutores e compara as sessões e as mensagens. A rolagem chega pronta na ação: o redutor não sorteia.
+redutores e compara as sessões e as mensagens. A rolagem chega pronta na ação (`rolagem`, `rolagens`), e sem ela o d20 rola no
+redutor (`ROLAR_UMA`, `ROLAR_TODAS` e as vazias do `COMECAR`).
 
 A criatura da 2.5.2 passa pelo mesmo fluxo, com o terceiro argumento do verbo de turno (ver "O motor da 2.5.2").
 
@@ -287,6 +291,8 @@ A criatura da 2.5.2 passa pelo mesmo fluxo, com o terceiro argumento do verbo de
 Links antigos de `/`, `/Encontros` e `/Player` abrem os endereços públicos atuais. Em Eclesiastes é possível abrir a lista em
 `/Eclesiastes/Encontros` e um Encontro em `/Eclesiastes/Encontros/<id>`. A pilha de navegação também grava o endereço dessas
 telas. Na Era de Ouro a navegação dentro do app conserva o endereço de instalação.
+
+A lista e o detalhe públicos usam o menu lateral da Central de Jogo. Início abre a Home, Criatura e Jogador abrem as bibliotecas correspondentes, e Encontros leva à lista no contexto da biblioteca atual. Dentro de um encontro, a trilha da biblioteca abre diretamente a biblioteca e a trilha de Encontros volta à lista, inclusive quando o detalhe foi aberto por link. Em desktop de largura média, a lateral usa ícones enquanto a luta está ativa para reservar espaço à mesa.
 
 ⚠ **A fronteira é a chave do inventário**, não o `mesa` da ficha (o import da Guilda não carimba
 `mesa`). `classificarNaChave(ficha, chave)`:
@@ -415,9 +421,82 @@ o botão Abrir Sala (com a nuvem ligada) e a recuperação do ausente valem nas 
 - **Não ligado, por decisão:** o contador de erros da 2.5.2 (sem botão no painel de antes) e os gravadores do personagem ligado na G2
   embutida (tema, Espinho, pacotes, recurso próprio). Ver `docs/a-fazer.md`.
 
+## Rework visual e de usabilidade (plano de 2026-11-18)
+
+Plano aprovado pelo autor em 2026-11-18, depois de uma crítica do impeccable que deu 19 de 40: a moldura dos Encontros e da Sala passa
+ao visual do Dashboard (a Ficha G2 embutida não muda), a aba ganha endereço, e o modelo ganha o Desfazer do Mestre e o Voltar Turno.
+Plano e progresso fora do repositório (`PLANO-APROVADO-REWORK-ENCONTROS.md` e `PROGRESSO-REWORK-ENCONTROS.md`, na pasta contêiner).
+A nota de partida está em `.impeccable/critique/`.
+
+**Etapa 1, fundação (2026-11-18):**
+
+- **Endereço:** `rota-encontros.js` (FOLHA, classificado como INTERFACE em `docs/revisao-automacao/escopo.json`) lê e monta o caminho. `/Encontros` é a lista e `/Encontros/<id>` um Encontro, com o
+  prefixo da rota (`/Jogador/Encontros/<id>`, `/Afty/...`, `/Eclesiastes/...`). Reconciliado em 2026-11-23 com o `main`: quem grava o
+  caminho e relê a tela no Voltar é a pilha de telas do app de celular (`usePilhaDeTelas`, etapa E2, com o `enderecoDe` do `App.jsx`), e
+  o `pushState` e o `popstate` próprios da etapa 1 saíram. O módulo segue a forma do `main` (`tela` como `{ name, encounterId }`) e
+  guarda ainda a origem da Sala e a chave da moldura. Na Era de Ouro a pilha conserva o endereço de instalação.
+- **Trilha:** `Trilha` em `pecas-encontro.jsx`, no lugar da seta de voltar, com o título da rota (o mesmo do Dashboard: Grimório,
+  Jogador, a Guilda) e a lista. Cada item é link de verdade (clique do meio abre noutra aba), e o clique comum troca a tela sem recarregar.
+  Na Sala, e na casca da Guilda no celular, a tela vem sem trilha e fica com a seta. De dentro de um Encontro, o item Encontros volta no
+  histórico (o mesmo Voltar do botão).
+- **Voltar da Sala:** o Entrar na Sala guarda a origem na aba (`sessionStorage`, `sala_origem_v1`, só caminho das rotas e só
+  para o mesmo código), e o Voltar volta para ela. Sem origem (quem entrou por link), vai para a rota do grupo da Sala (`rotaDoGrupo`).
+- **Pilha de diálogos:** só o `Dialogo` do topo responde ao Esc e ao Tab, o Tab fica preso nele, o foco volta a quem o abriu, e o efeito
+  roda uma vez (antes dependia do `onFechar` em seta e devolvia o foco ao primeiro campo a cada render). Campo que trata o Esc sozinho
+  chama `preventDefault` (a busca do Adicionar limpa no primeiro Esc e o diálogo fecha no segundo).
+- **Moldura do site, atrás de chave:** com `localStorage.dev_moldura_encontros = "site"` o `<html>` ganha `data-moldura-encontros="site"`,
+  e o bloco "A MOLDURA DO SITE" do `encontro-g2.css` vale: tokens `--ec-*` derivados dos `--afty-*` (botão neutro cheio, principal roxo
+  cheio, raio de botão de 4,5 px, cartão translúcido, fundo em diagonal, fonte do sistema), `.ec-botao` para marcação nova e o mesmo
+  desenho no `.afty-botao` de fora da G2. Sem a chave nada muda. A chave sai na etapa 8.
+- **Fronteira da G2:** a G2 embutida fica como está HOJE no Encontro (inclusive com as regras antigas que já a alcançavam: ícone de
+  16 px e botão de 32 px). O tamanho e a entrelinha do texto e os `--ec-*` que a moldura muda ficam presos nela, e toda regra nova exclui
+  a G2 com `:not(:where(.e-ficha-g2 *))`. Conferido: o estilo calculado dos 210 elementos da G2 embutida é igual com a chave ligada e
+  desligada.
+
+**Etapa 2, modelo sem tela (2026-11-23).** Tudo com assert em `t-encontro-rework-modelo.mjs`. Nenhuma tela mudou, salvo o que a
+mudança de modelo destrava sozinha (o Começar sem trava de iniciativa e o Reabrir que volta à luta).
+
+- **Desfazer do Mestre (`pilhaDoMestre`):** o histórico guarda o que OUTRA pessoa fez, e no Encontro local o Mestre é o dono de toda
+  criatura, então o erro dele não se desfazia. As operações do Mestre que NÃO entraram num histórico (`entraNaPilhaDoMestre`: autor
+  Mestre, alvo com estado, não é Desfazer) vão para `encontro.pilhaDoMestre`, da mais nova para a mais antiga, com teto de 50
+  (`PILHA_DO_MESTRE_MAX`, o Encontro mora no `localStorage`). A do Mestre no personagem de um jogador segue indo para o histórico do
+  personagem, então cada operação mora num lugar só e se desfaz uma vez só. O `prepararDesfazer` procura no histórico do alvo e depois
+  na pilha (só a entrada daquele alvo e de quem desfaz, por `mesmaPessoa`), e o Desfazer é o relativo de sempre. Aplicado, ele marca a
+  entrada da pilha com `desfeita`. `ultimaDesfazivel(mundo, quem)` acha a mais nova de quem pede, na pilha e nos históricos, para o
+  Ctrl+Z da etapa 5. O histórico Personagem por Papel não mudou (o painel Histórico continua sendo "Mudança de Outra Pessoa").
+- **Voltar Turno (`ultimaVirada`):** o Próximo Turno, a Nova Rodada e o Encerrar guardam em `encontro.ultimaVirada` a Vez e a rodada
+  de antes e de depois e, por combatente, o delta do estado que a virada mudou (`diferencaEstrutural`, a mesma das operações). O
+  `VOLTAR_TURNO` (e o `voltarTurno` puro, com `podeVoltarTurno`) desfaz os deltas pela conferência ESTRITA, tudo ou nada: se qualquer
+  caminho mudou depois, nada volta (`"Não Fecha"`, com os caminhos). Outros erros: `"Nada a Voltar"`, `"Turno Mudou"` (a Vez ou a
+  rodada já não são as da virada) e `"Combatente Ausente"`. Um nível só: voltar, começar e reabrir apagam a virada. Nunca por retrato,
+  que sobrescreveria a sessão viva da Ficha. As durações que desceram no fim do turno de quem aplicou voltam junto.
+- **Começar Rola as Vazias:** `validarInicio` não trava mais por iniciativa e devolve `semIniciativa` (a conta), e o `COMECAR` rola quem
+  está sem iniciativa (`semIniciativa(c)`, a mesma conta) antes de achar o primeiro, com `rolagens` por id ou o d20. O Registro ganha
+  "Iniciativas roladas no começo: Goblin (14), Bea (5)." antes do "Combate iniciado.".
+- **Sem Ficha com Vida:** `criarMarcador({ pvMax })` nasce com `vida: { pv, pvMax }`, e `motorDe` devolve o adaptador mínimo de
+  `motores/marcador.js` só quando a `vida` existe (`campoDoEstado` é `"vida"`). Dano, Dano pela Metade, Cura e Descansar mexem na Vida
+  pela operação de sempre (com Registro, pilha e Desfazer relativo, o teto é o `pvMax`). O resto devolve "Nada Mudou". O marcador sem
+  Vida segue sem motor. ⚠ Na Sala o banco recusa tudo de marcador, então a Vida dele ainda não chega a ninguém (etapa 7, `docs/a-fazer.md`).
+- **Reabrir Volta à Luta:** do Finalizado, o `REABRIR` volta a Em Combate na mesma rodada e na mesma Vez. Primeiro tenta desfazer o
+  Encerrar pelos deltas da virada (volta a bancada inteira, com o que o fim desmanchou). Se alguém mexeu depois, ou o Encontro é de antes
+  desta etapa, cada motor só religa o combate pelo verbo novo `retomaCombate` (no Afty, `combate.ativo` de volta, e a Exaustão cobrada
+  fica), e a Vez é a de quando encerrou ou, sem ela, a do primeiro da ordem que joga. Em Combate, o Reabrir segue voltando ao
+  Planejamento. Na Sala o evento é `reabrir` (antes viraria um `comecar`, ver `eventosEntre` em `sala-encontro.js`).
+- **Registro em ordem de tempo:** `registroEmOrdem(log, { maisNovoPrimeiro })` em `afty-encontro.js` devolve o log do mais antigo para o
+  mais novo sem reescrever o guardado. Toda linha nova leva `lote` (o do redutor é um id novo, o da virada é o id dela, o da operação
+  sai do id da operação, para a mesma operação dar a mesma linha em dois aparelhos), e a linha de operação já levava o `operacaoId`. O
+  log de antes, sem `lote`, separa os lotes pela hora que volta. Ainda não está nas telas (etapas 5 e 6).
+- **Criaturas Base no `/`:** `inventarioComCriaturasBase(inventario, compendio)` em `listas.js` põe o compêndio no fim do inventário como
+  criatura da 2.5.2 (`base: true`, chave de mentira `CHAVE_CRIATURAS_BASE`), com a ficha do usuário de mesmo id vencendo. O compêndio
+  chega por parâmetro (o Encontro não importa os 165). A cópia sabe que não tem original (`ehCopiaDeCriaturaBase`). A tela liga só no
+  `/` na etapa 4.
+- **Fora do que a Sala publica:** a pilha, a virada e o `lote` moram no Encontro do Mestre, que a Sala não grava. A operação não mudou
+  de forma. `t-sala-projecao` e a prova `supabase/prova-salas-pglite.mjs` passam como antes.
+
 ## Onde cada coisa foi feita, e o que falta
 
 - Motor da 2.5.2: "O motor da 2.5.2". Duração: "A duração por quem aplicou". Telas locais: "As telas" e "As telas, etapa 6b".
+- Rework visual e de usabilidade: "Rework visual e de usabilidade" (etapas 1 e 2 feitas, etapas 3 a 8 no plano).
 - Sala: "O Encontro na Sala" e "As telas da Sala". O banco e o cliente têm guia próprio em `docs/nuvem-supabase.md`.
 - A operação é o formato que a Sala grava no banco: a RPC confere a pré-condição do delta, e a `visao` decide o que a versão pública mostra.
 - **Ainda não existe** (`docs/a-fazer.md`): a automação completa (Fase 2), o VTT com mapa e tokens (Fase 3), o pedido com vários alvos,
@@ -427,7 +506,10 @@ o botão Abrir Sala (com a nuvem ligada) e a recuperação do ausente valem nas 
 
 `motores/m252.js` põe os verbos da interface sobre `motores/m252-vital.js`. O que é puro e exportado na 2.5.2
 é importado como está (`fm-encounter.js`, `fm-modifiers.js`, `fm-automation.js`, `fm-automation-entities.js`,
-`fm-conditions.js`, `fm-dsl.js`, `fm-tables.js`). O que morava dentro de componentes e do reducer privado foi
+`fm-conditions.js`, `fm-dsl.js`, `fm-tables.js` e, desde 2026-11-23, `fm-action-calc.js`, de onde o `textoDaAcao` tira o texto
+gerado de cada Ação, que o `PainelCriatura252` abre no clique do nome; o mesmo painel rola, desde a mesma data, o Acerto e o
+Dano da Ação, os Testes de Resistência e a Iniciativa, com `ui/usar-rolagens-252.js` e a `ui/BandejaDeRolagens252.jsx` grudada
+no topo, sem passar pelo Registro). O que morava dentro de componentes e do reducer privado foi
 COPIADO, sem melhorar nada, com arquivo e linhas de origem no cabeçalho de cada função. O
 `asserts/t-encontro-252-porte.mjs` confere que a fonte ainda diz o que está citado.
 
@@ -604,6 +686,10 @@ Todos em `asserts/` e rodados por `npm run asserts`. Os da Sala estão descritos
 - `asserts/t-sessao-loja.mjs`: a loja viva da sessão (duas abas, fila de edição, versão pelo texto, gravação sem pisar).
 - `asserts/t-duracao-turno.mjs`: a duração por quem aplicou (Ficha sozinha igual a antes, fim do turno do aplicador, pulado, removido, Desfazer).
 - `asserts/t-encontro-atualizar-ficha.mjs`: o Atualizar da Ficha da 2.5.2 e da cópia do Afty.
+- `asserts/t-rota-encontros.mjs`: o endereço dos Encontros (rota pelo prefixo, ida e volta do caminho, caminho de fora devolve null, origem
+  da Sala só das quatro rotas e do mesmo código, módulo FOLHA).
+- `asserts/t-encontro-rework-modelo.mjs`: a etapa 2 do rework (marcador com Vida, pilha do Mestre, Começar com vazias, Registro em ordem
+  com lotes no mesmo milissegundo, Voltar Turno com durações e conflitos, Reabrir exato e sem retorno, evento da Sala, Criaturas Base).
 - `asserts/t-sala-projecao.mjs`, `t-sala-cliente.mjs`, `t-sala-telas.mjs`, `t-sala-jogador.mjs`: os cortes por visão (com o SQL), o cliente, a lógica das telas
   e as escritas do jogador.
 

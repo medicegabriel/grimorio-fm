@@ -1,5 +1,437 @@
 # Status do Grimório Afty (handoff para chat novo)
 
+## SESSÃO DE 2026-11-26 · CARREGAMENTO: LISTA SEM O COMPÊNDIO, ABERTURA SEM REGRAVAR E CARDS EM LEVAS
+
+O autor respondeu as duas decisões do diagnóstico ("Sim, como proposto" para o compêndio, "Sim, nas três rotas (Forma 3)" para o
+`useCreatureStorage.js` e "Tudo, nas três rotas (Forma 3)" para o `Dashboard.jsx`). A pergunta saiu de PERGUNTAS AO AUTOR.
+
+- **`src/App.jsx`:** `esperaCompendio` decide a espera. Na lista, só a pasta Criaturas Base espera o compêndio, e as outras desenham
+  com o compêndio vazio e se completam quando ele chega (o contador da pasta Base vai de 0 a 165). Fora da lista a espera segue,
+  porque o criador, o painel e o Encontro com um id `builtin_` precisam dele. A falha do compêndio só aparece na pasta Base, com o
+  Tentar de Novo. `t-app-esqueleto` e `t-pre-carga` passaram a conferir a condição nova.
+- **`src/components/useCreatureStorage.js` (exceção Forma 3):** a leitura diz se a migração (`folderId`, `rulesVersion`,
+  `isBuiltIn`) mudou algo ou se o valor não era uma lista legível. Sem mudança, a primeira gravação das fichas e a das pastas são
+  puladas, pela identidade da lista lida. A ficha que precisa de migração continua gravada na primeira abertura, e na segunda já não.
+- **`src/components/Dashboard.jsx` (exceção Forma 3):** os primeiros 18 cards entram com a tela e o resto numa transição depois do
+  primeiro quadro, uma vez só. O `SortableContext` recebe as mesmas fichas da tela. O retrato ganhou `loading="lazy"` e
+  `decoding="async"` (as fichas da bancada não têm retrato, então nenhum ganho foi medido nisso). O arrasto já era ligado só nas
+  vistas que reordenam (todas menos Criaturas Base) e não mudou: um build descartável sem `useSortable` não ganhou além do ruído.
+  A citação `Dashboard.jsx:1168-1546` do `encontro-g2.css` acompanhou as 24 linhas novas.
+- **Saída da pasta Criaturas Base na falha (a pedido do autor, no fim da sessão):** com a falha restrita à pasta Base, a vista
+  gravada prendia a pessoa ali até um pedido dar certo. A `FalhaDoCompendio` (`src/celular/`) ganhou a prop opcional `onSair`, um
+  botão neutro Todas as Criaturas ao lado do Tentar de Novo. O `App.jsx` só a passa na lista. Conferido no build isolado, no
+  computador e no celular: com a vista Base gravada e o compêndio bloqueado, o botão leva às fichas e grava a vista Todas. Ao voltar
+  à pasta Base, a falha reaparece, e o Tentar de Novo com a rede de volta traz os cards. `t-app-esqueleto` ganhou os dois casos (36).
+- **AGENTS.md, seção 6:** duas entradas novas, uma por arquivo, as duas Forma 3. `docs/app-celular.md` ganhou a linha de como desligar.
+- **Bancada:** acima de 60 fichas as cópias saem sem `aparencia`, porque 100 fichas do Gojo passavam da cota de 5 MB do
+  `localStorage` e o `FICHAS=100` falhava nas três corridas. O LEIA.md diz o que o `criaturaFrio` e o `criaturaFalha` esperam agora.
+
+### Antes e depois
+
+Os dois builds saíram da mesma árvore, com o `--outDir` isolado. O "antes" tem só as três mudanças desfeitas, porque outra sessão
+mudou o `vite.config.js` durante esta (os ícones voltaram a descer um por um), e o build anterior a ela não servia de comparação.
+Celular com Slow 4G e CPU 4x, mediana de 5 corridas (`medicoes/carga2-antes-2-*` e `carga2-depois-2-*`). Tempos em ms.
+
+| Cenário | Métrica | Antes | Depois |
+|---|---|---:|---:|
+| `perfilLista`, 60 fichas | TBT | 387 | 280 |
+| | `Storage.setItem` no perfil | 92 | 0 |
+| | maior tarefa longa | 202 | 150 |
+| `perfilLista`, 60 fichas, corridas alternadas | TBT | 636 | 309 |
+| | lista na tela | 1.236 | 1.124 |
+| | fim da última tarefa longa | 2.107 | 1.674 |
+| `perfilLista`, 100 fichas | TBT | 536 | 437 |
+| | `Storage.setItem` no perfil | 85 | 0 |
+| | fim da última tarefa longa | 1.922 | 1.857 |
+| `criaturaFrio`, biblioteca vazia | lista na tela | 2.861 | 1.923 |
+| | LCP | 2.920 | 2.020 |
+| | TBT | 53 | 114 |
+| | fim da última tarefa longa | 955 | 2.052 |
+| `criaturaFalha` | lista na tela em 10 s | nunca | 1.919 |
+| | Tentar de Novo na vista padrão | 5 de 5 | 0 de 5 |
+
+- **Corridas alternadas:** na série de 5 seguida, com 60 fichas, a lista saiu 97 ms depois (964 contra 1.061), com o `root` também
+  44 ms depois, antes de qualquer código mudado rodar. Alternando os dois builds corrida a corrida (`carga2-alt-*`), a lista chega
+  antes. Os números absolutos da série alternada são mais altos porque a máquina estava mais carregada.
+- **O que piorou no `/Criatura`:** o TBT e o fim da última tarefa longa sobem porque os 2,9 MB do compêndio agora avaliam depois da
+  lista na tela, e não antes dela. A lista chega 938 ms antes.
+- **Nuvem (sessão falsa da bancada, Supabase respondido no navegador):** no build antigo toda abertura mandava um `POST
+  /rest/v1/chaves` perto de 3,3 s, com o `fm_creatures_meta_*` regravado com um `lastSaved` novo (e o `fm_folders_*` na primeira,
+conferido pelo corpo do pedido). No novo, a abertura só lê (as duas
+  leituras e o `minhas_salas`). Duplicar uma ficha manda `POST fichas` e `POST chaves` nos dois builds. A conferência em dois
+  aparelhos de verdade, com conta, fica para o autor.
+- **Gravações ao abrir (roteiro com `setItem` vigiado):** com a lista sem mudança, nada de `fm_creatures_*` nem `fm_folders_*`. Com
+  30 fichas sem `isBuiltIn`, 3 sem `folderId` ou 5 da 2.5.2 sem `rulesVersion`, uma gravação na primeira abertura com os campos
+  acrescentados, e nenhuma na segunda. Ficam gravando ao abrir, fora desta mudança: `fm_dashboard_view_*` (o `useDashboardView`,
+  fora da nuvem), `fm_storage_limit_v1` e a sonda do medidor na primeira visita.
+- **Arrasto:** com o mouse a reordenação grava a ordem nova no `localStorage`, com 40 fichas (a lista passa da primeira leva). O toque
+  longo não reordena na emulação, nem no build antigo. Ficou em `docs/a-fazer.md`, para conferir num telefone.
+- **Compêndio à mão:** com ele bloqueado, a vista padrão mostra as fichas e nenhum botão. Na pasta Criaturas Base aparece o Tentar
+  de Novo, e com a rede de volta ele traz os cards. Com a vista Base gravada, a abertura mostra o Tentar de Novo.
+- **Validação:** no `vite preview` do build isolado, a frio, abriram `/`, `/Criatura`, `/Jogador`, `/Afty`, `/EraDeOuro`,
+  `/Eclesiastes`, `/Comunidade`, `/Encontros` e `/Jogador/Encontros`, e no celular `/Criatura`, `/Jogador` e `/EraDeOuro`. O único erro
+  é o 404 do `/_vercel/insights`. `npx eslint src/systems/afty` limpo. No `useCreatureStorage.js` fica o mesmo erro de antes
+  (`set-state-in-effect` no `setIsSaving`), e o `Dashboard.jsx` e o `App.jsx` estão limpos. `npm run asserts`: 356 de 358 arquivos,
+  as mesmas duas falhas da abertura da sessão (`t-app-casca` e `t-reconciliacao-g00`), que vêm de arquivos que ela não tocou.
+  `t-app-esqueleto` (34), `t-pre-carga` (38), `t-app-entradas` (44) e `t-ordem-modulos` (71) passam. Nenhum assert cita linha do
+  `Dashboard.jsx` nem do `useCreatureStorage.js`.
+
+## SESSÃO DE 2026-11-26 · A/B DO LUCIDE NA PRÉVIA DA VERCEL
+
+**Decisão do autor em 2026-11-26: manter o Lucide em um pedaço.** As amostras da Central se sobrepuseram, e o autor considerou
+os desvios das medianas dentro da variação da bancada (+11 ms a frio, +5 ms com cache e +8 ms de TBT com cache). O pedaço
+único acelerou `/Jogador` e `/Criatura` em 218 e 186 ms a frio e em 45 e 98 ms com cache, respectivamente. O `manualChunks`
+foi restaurado. O build escolhido inclui a folha da Era de Ouro, a minificação do HTML e o plugin de pré-carga.
+
+O pedaço único tinha 170 módulos de ícones emitidos, além dos utilitários do Lucide e da dependência React. Media **44.175
+bytes bruto**, **13.642 bytes em Brotli local** (qualidade 9) e **15.056 bytes em Brotli na prévia**, medidos pelo Chrome.
+
+| Cenário no celular | Único, tempo (ms) | Único, TBT (ms) | Automático, tempo (ms) | Automático, TBT (ms) |
+|---|---:|---:|---:|---:|
+| Central fria | 1.579 | 35 | 1.568 | 66 |
+| Central com cache | 457 | 105 | 452 | 97 |
+| `/Jogador` frio | 2.047 | 144 | 2.265 | 170 |
+| `/Jogador` com cache | 616 | 164 | 661 | 163 |
+| `/Criatura` frio | 3.364 | 53 | 3.550 | 67 |
+| `/Criatura` com cache | 667 | 73 | 765 | 90 |
+| Ficha fria, do toque até a Ficha | 1.505 | 1.162 | 1.495 | 1.164 |
+
+Builds locais com a mesma versão do app e o mesmo código, variando apenas o agrupamento do Lucide. Duas prévias estáticas
+protegidas na Vercel. Medianas de três corridas em ordem alternada, 42 corridas ao todo. Chrome 158, celular a 375 px,
+Slow 4G (150 ms de RTT, 1,6 Mbit/s de descida e 750 kbit/s de subida) e CPU 4x. HTTP/2 conferido nos documentos e nos
+arquivos estáticos transferidos. Nos casos quentes, todos os recursos de `/assets/` vieram do cache do navegador.
+
+O tempo é até o conteúdo da Central, as listas ou a Ficha. O TBT soma o tempo acima de 50 ms em cada tarefa longa na janela
+da bancada. Na Ficha ele conta a partir do toque, feito seis segundos depois da lista. Supabase simulado, Analytics e service
+worker bloqueados na bancada. Dados brutos [do pedaço único](../.audit/carregamento/medicoes/lucide-h2-unico-20261126.json) e
+[da divisão automática](../.audit/carregamento/medicoes/lucide-h2-automatico-20261126.json).
+
+O build isolado da árvore com divisão automática confirmou o HTML minificado e o bloco do P1. Passaram os asserts de ordem,
+entradas e pré-carga. Na prévia com divisão automática abriram também Afty, Eclesiastes, Era de Ouro no desktop e no celular, Comunidade,
+lista e detalhe de Encontros e o criador. Os dois deployments foram de prévia.
+
+Depois da decisão do autor, o build isolado voltou a gerar um único pedaço do Lucide e confirmou o HTML minificado e os
+27 arquivos da porta do App e 14 da Ficha. Passaram os asserts de ordem (71), entradas (44) e pré-carga (38).
+
+## SESSÃO DE 2026-11-26 · CARREGAMENTO: ÍCONES, ERA DE OURO E HTML
+
+**Pioras na matriz local.** A Central clara ficou mais lenta a frio (desktop +30 ms, celular +29 ms) e com cache
+(+12 e +56 ms). No celular frio, a transferência iniciada até o conteúdo subiu de 98 para 105 KiB. O pacote inteiro de ícones
+agora entra com o React no bootstrap, inclusive na Central. Com cache, o TBT da Central no celular subiu de 48 para 96 ms, com
+0 KiB de recursos transferidos. Frente à referência do P2, a Central fria levou 56 ms a mais.
+
+- No desktop, `/Jogador` frio e quente subiram 18 e 28 ms. A montagem teve mais tempo bloqueado (mediana de 7 para 28 ms a
+  frio e de 0 para 15 ms a quente). `/Criatura` frio subiu 66 ms na mediana, com sobreposição entre as amostras (163 a 278 ms
+  na base e 175 a 244 ms no final). O compêndio tem o mesmo tamanho. Variaram o fim do seu pedido e o tempo até a lista.
+- No celular, `/Jogador` quente (+125 ms), as voltas com conta e cache quente (+151 e +72 ms), a Ficha quente (+304 ms) e a
+  lista com 60 fichas (+203 ms) tiveram mais bloqueio da thread principal com os recursos estáticos em cache. Na lista com
+  60 fichas, o TBT foi de 296 para 434 ms e as amostras atribuídas a `react-dom` de 214 para 297 ms. A comparação entre a
+  linha de base e a matriz final inclui P1, P2, P3 e a variação de CPU entre corridas.
+- Na Ficha aberta 300 ms depois da lista (`fichaJaNaLista`), o toque à Ficha subiu 195 ms. A janela teve mais bloqueio
+  (TBT de 1.111 para 1.489 ms) e o toque saiu 1.023 ms antes na mediana, com menos tempo de pré-carga desde a navegação.
+  Contando da navegação, a Ficha chegou 770 ms antes (8.067 para 7.297 ms).
+
+### Alterações e validação
+
+- O `manualChunks` do `vite.config.js` seleciona `lucide-react`. No Rolldown do Vite 8, o pedaço gerado inclui a dependência
+  React, com 172 módulos do Lucide e dois arquivos do React. O motor continua sob demanda. O `App.jsx` lê as três constantes
+  da Guilda em `identidade-da-era-de-ouro.js`, folha registrada no teste de ordem. `era-de-ouro.js` reexporta as constantes e
+  suas regras aparecem no pedaço do `afty-derive`.
+- O plugin do P1 gravou 27 arquivos na porta do App e 14 na da Ficha, todos presentes no build. A porta do App tem CSS, a
+  da Ficha tem `afty-derive`, e o Lucide é `modulepreload` do HTML, por isso já chega antes das duas portas.
+- O build remove comentários HTML e compacta as quebras e a indentação entre tags no `index.html`. Os scripts e estilos
+  inline ficaram idênticos. O tamanho Brotli (qualidade 9, como na bancada) foi de 8.814 para 6.926 bytes. No build com
+  os mesmos agrupamento e folha, mas com o minificador desligado, ficou em 8.158 bytes. A minificação responde por 1.232 bytes.
+- No `npm run preview` do build isolado, a frio, abriram `/`, `/Jogador`, `/Criatura`, `/Afty`, `/EraDeOuro` (computador e
+  celular emulado), `/Eclesiastes`, `/Comunidade`, a lista e o detalhe de Encontros (com e sem o prefixo `/Jogador`), a Ficha
+  pelo card e o criador. O console registrou o 404 do `/_vercel/insights` do preview. A Comunidade usou o Supabase simulado.
+- Passaram `t-ordem-modulos` (71 asserts), `t-app-entradas` (44), `t-pre-carga` (38) e `npx eslint src/systems/afty`.
+  A suíte completa passou em 356 de 358 arquivos, com as duas falhas da abertura da sessão, `t-app-casca` e `t-reconciliacao-g00`.
+
+### Matriz local, linha de base e final
+
+Medianas de três corridas por cenário, 72 no total. Base `base-20261126`, anterior ao P1 e ao P2, e final `final-20261126`.
+Chrome 158, servidor HTTP/1.1 com Brotli e cache equivalente ao da bancada. Celular a 375 px, Slow 4G e CPU 4x.
+Tempo até o conteúdo da Central ou lista, do clique na Central à lista em `navJogador`, e do toque à Ficha nos casos da Ficha.
+Pedidos são as entradas de recursos da janela medida, incluindo pré-carga e leituras do cache.
+
+| Cenário e perfil | Base (ms) | Final (ms) | Variação (ms) | Pedidos, base → final |
+|---|---:|---:|---:|---:|
+| `centralFrio` desktop | 73 | 103 | +30 | 38 → 41 |
+| `centralQuente` desktop | 65 | 77 | +12 | 38 → 41 |
+| `navJogador` desktop | 163 | 159 | -4 | 69 → 54 |
+| `jogadorFrio` desktop | 177 | 195 | +18 | 69 → 54 |
+| `jogadorQuente` desktop | 134 | 162 | +28 | 69 → 54 |
+| `centralFrio` celular | 1.371 | 1.400 | +29 | 38 → 41 |
+| `centralQuente` celular | 391 | 447 | +56 | 38 → 41 |
+| `navJogador` celular | 1.811 | 567 | -1.244 | 69 → 52 |
+| `jogadorFrio` celular | 2.957 | 2.013 | -944 | 69 → 51 |
+| `jogadorQuente` celular | 542 | 667 | +125 | 69 → 54 |
+| `logado150` celular | 744 | 895 | +151 | 86 → 67 |
+| `logado2000` celular | 2.611 | 2.683 | +72 | 86 → 67 |
+| `logadoFrio150` celular | 3.545 | 2.500 | -1.045 | 81 → 60 |
+| `logadoFrio2000` celular | 5.375 | 3.722 | -1.653 | 81 → 61 |
+| `criaturaFrio` desktop | 174 | 240 | +66 | 69 → 40 |
+| `criaturaFrio` celular | 3.816 | 2.889 | -927 | 69 → 40 |
+| `fichaFrio` celular | 4.675 | 1.526 | -3.149 | 109 → 72 |
+| `fichaQuente` celular | 1.316 | 1.620 | +304 | 109 → 72 |
+| `fichaLogadoFrio` celular | 2.603 | 1.427 | -1.176 | 123 → 82 |
+| `fichaJaNaLista` celular | 4.800 | 4.995 | +195 | 109 → 72 |
+| `perfilLista` celular (60 fichas) | 835 | 1.038 | +203 | 69 → 54 |
+| `criaturaFalha` celular (toque em Tentar de Novo à lista) | n/d | 1.137 | n/d | 69 → 40 |
+| `centralFrioEscuro` celular | 1.402 | 1.388 | -14 | 38 → 41 |
+| `jogadorFrioEscuro` celular | 2.969 | 2.001 | -968 | 69 → 53 |
+
+No `criaturaFalha`, a linha de base ainda mostrava Carregando aos 10 s. No final, Tentar de Novo apareceu nas três corridas e
+fez um novo pedido do compêndio em cada uma. Os dados brutos estão em [`.audit/carregamento/medicoes`](../.audit/carregamento/medicoes/).
+
+### Antes e depois do pacote e comparação com o P2
+
+O build imediatamente anterior à alteração inclui P1 e P2. A primeira rodada (`p3-antes-20261126`) coincidiu com a suíte de
+asserts. A tabela usa a confirmação sem a suíte em execução (`p3-antes-confirmacao-20261126`) e o recorte celular da matriz final.
+
+| Cenário | Pedidos, antes → final | Tempo antes (ms) | Tempo final (ms) |
+|---|---:|---:|---:|
+| `jogadorFrio`, até a lista | 69 → 39 | 2.886 | 2.013 |
+| `fichaFrio`, após o toque | 40 → 18 | 1.585 | 1.526 |
+
+Na janela inteira da bancada, `jogadorFrio` registrou 101 → 51 recursos e `fichaFrio`, 146 → 72. O HTTP/1.1 local exagera
+o ganho de reduzir pedidos pequenos. O `/Jogador` público ainda servia o HTML anterior ao pacote durante a sessão. O conjunto
+de cinco cenários em produção fica pendente da publicação pelo autor. Conferir a prévia da Vercel em HTTP/2, onde a estimativa
+do diagnóstico é de 0,1 a 0,3 s.
+
+| Cenário frio no celular | Referência P2 (ms) | Antes do pacote (ms) | Com pacote, sem minificar (ms) | Final (ms) | Final ante P2 (ms) |
+|---|---:|---:|---:|---:|---:|
+| `/Criatura` | 3.668 | 3.734 | 2.911 | 2.889 | -779 |
+| Central | 1.344 | 1.415 | 1.395 | 1.400 | +56 |
+
+O controle `p3-sem-minificacao-20261126` indica -22 ms no `/Criatura` e +5 ms na Central ao compactar. As faixas das amostras
+se sobrepõem nos dois cenários. A economia em bytes é direta. As corridas não isolam uma melhora de tempo da minificação.
+
+## SESSÃO DE 2026-11-26 · CARREGAMENTO: ESQUELETOS E TENTAR DE NOVO
+
+Três itens da fila "Carregamento": o esqueleto da lista na abertura, o esqueleto da Ficha e o erro do compêndio no `/Criatura`.
+É carregamento, não regra: vale para a criatura e para o personagem. Nada em `src/components/`.
+
+- **Abertura:** o `#root` do `index.html` já traz o esqueleto, e o `src/celular/EsqueletoDaLista.jsx` é o mesmo desenho como
+  fallback do `Suspense` do `main.jsx`. O `t-app-esqueleto` compara os dois tag por tag (testado com oito alterações
+  propositais, dos dois lados).
+  - Um script do `index.html` escolhe o desenho e grava atributos `data-fm-*` no `<html>`. O React só os lê. A tela vem do
+    `history.state.fm` como no `lerEntrada` de `pilha.js`, e o `t-app-rotas` confere estado por estado contra o módulo.
+  - **Lista** nas rotas de biblioteca. Públicas com a barra do site, privadas (`/Afty`, `/Eclesiastes`, `/EraDeOuro` no
+    computador) sem ela, porque a tela delas não a tem.
+  - **Neutro** fora da lista: fundo, e a barra do site só onde a tela final a tem (Central, Comunidade e Encontros públicos).
+    Na Ficha ou no criador reabertos ao recarregar não há barra. Sem esqueleto: `/Sala` e `/EraDeOuro` no celular.
+- **Quando acende:** o esqueleto nasce escondido (só o fundo `#060910`) e o `main.jsx` o acende aos 700 ms da navegação, ou
+  assim que roda, se for depois (`ESPERA_DO_ESQUELETO`).
+  - Desenhado no primeiro quadro, ele custava uma tarefa de cerca de 80 ms (quase tudo carregamento de fonte) antes do módulo
+    de entrada, e a lista chegava de 40 a 130 ms mais tarde.
+  - Aceso pelo módulo, sem espera, o `/Jogador` a frio empatou, mas com o App em cache a lista ainda chegava de 36 a 82 ms
+    depois.
+  - Com 700 ms ela empata. O preço: com tudo em cache a pessoa vê o fundo até a lista (a primeira pintura de conteúdo no
+    celular vai de 416 para 748 ms, e o LCP fica igual, 752 contra 748 ms).
+  - **Decisão do autor (2026-11-26): manter os 700 ms**, sabendo do preço no cache e do aparelho mais lento (abaixo).
+- **Ficha:** `ficha/EsqueletoDaFicha.jsx` e `esqueleto-ficha.css` no lugar do `fallback={null}`, no tema Padrão, medido pela
+  largura da coluna.
+- **Compêndio:** a falha zera a promessa e o App mostra "Compêndio Não Carregou" com Tentar de Novo
+  (`celular/FalhaDoCompendio.jsx`). Durante a espera, o painel do esqueleto sob a barra de verdade, com a mesma espera dos
+  700 ms. O pedido passou para um `useLayoutEffect`, para sair antes da pintura. A condição de espera não mudou (P5).
+- **Medidas que mudaram em relação ao pedido** (a lista do pedido bateu para o `/Jogador` no celular e no computador):
+  - Card de criatura (`/Criatura` e `/Afty`): 335x121 px no celular (passo de 133) e 136 px de altura no computador.
+  - Listas privadas no celular: sem barra, título em y=127 e cards a partir de y=333.
+  - Barra do site no celular: 69 px de altura, e 281 px de largura nas bibliotecas (a tela inteira na Central).
+  - Cabeçalho da Ficha no tema Padrão: **269 px** de 360 a 599 px de largura (os 271 saíram de uma ficha com CSS próprio),
+    263 até 720, 382 em 320, 283 (290 acima de 1024) até 1199, e 184 daí em diante. O esqueleto confere nas 19 larguras
+    medidas, com menos de 1 px de diferença na altura.
+- **Bancada** (cinco rodadas intercaladas antes e depois, medianas em ms, celular com Slow 4G e CPU 4x, builds isolados). As
+  linhas do `/Criatura` são do código final, em corridas à parte (7 a frio, 10 no quente).
+
+  | Cenário | Lista antes | Lista depois | Primeira pintura de conteúdo |
+  |---|---|---|---|
+  | `jogadorFrio` | 2.789 | 2.807 | 1.080 para 928 |
+  | `jogadorQuente` | 501 | 491 | 416 para 748 |
+  | `navJogador` | 402 | 416 | 332 para 520 |
+  | `logado150` | 665 | 665 | 580 para 856 |
+  | `logado2000` | 2.512 | 2.519 | 2.424 para 812 |
+  | `logadoFrio150` | 3.407 | 3.354 | 1.684 para 868 |
+  | `centralFrio` (conteúdo) | 1.344 | 1.390 | 808 para 880 |
+  | `criaturaFrio` | 3.668 | 3.710 | 1.048 para 916 |
+  | `/Criatura` com cache | 535 | 553 | não medida |
+
+  - **Ficha:** do toque à Ficha, 1.037 para 1.053 ms (`fichaFrio`) e 1.052 para 1.061 ms (`fichaQuente`). A tela vazia, que
+    começava 121 ms depois do toque, deixou de existir. No `fichaJaNaLista` o toque foi de 4.373 para 4.536 ms com a lista
+    135 ms mais cedo (o toque sai 300 ms depois dela): contando da navegação, 7.620 para 7.690 ms.
+  - **CLS:** até 0,0079 (`/Criatura` a frio, o rodapé entrando na tela com a lista vazia) e até 0,0018 nos demais.
+  - **`criaturaFalha`:** o botão aparece antes dos 10 s nas três corridas, e o toque traz a lista em cerca de 1,1 s com um
+    pedido novo do compêndio.
+  - **Pioras que ficaram:** `/Criatura` (+42 ms a frio, +18 com cache) e a Central a frio (+46 ms). O `index.html` passou de
+    3,2 para 8,8 KB comprimidos.
+  - **Quadros:** a frio, em 1,1 e 2,2 s há esqueleto onde havia "Carregando" (em 0,8 s nada foi pintado nos dois). Com conta e
+    nuvem a 2 s, há esqueleto a partir de 0,8 s onde a tela ficava vazia até 2,4 s. Depois do toque, o esqueleto da Ficha
+    aparece em cerca de 0,15 s. Pranchas em `C:/Projetos/Grimorio/_bancada-carregamento-20261126/p2-capturas/`.
+  - **Aparelho mais lento:** uma última corrida saiu com o computador ocupado por outro programa (tudo cerca de 1,5 vez mais
+    lento, nos dois builds). Ali o cache quente passou dos 700 ms, o esqueleto acendeu e a lista chegou de 120 a 150 ms depois.
+    Com uma espera fixa, quem demora perto dela paga o desenho. Os números dessa corrida ficaram fora da tabela.
+- **Conferido:** nenhum esqueleto tem animação nem transição (estilo calculado de todos os elementos, `getAnimations` zerado e
+  capturas iguais em oito estados no celular e no computador, e o verificador acusou uma animação injetada de propósito). Cada
+  rota aberta a frio no `npm run preview` do build isolado, com o console limpo fora o que o próprio teste bloqueia (Supabase
+  na Comunidade, service worker na Guilda) e o `/_vercel/insights` que só existe na Vercel. Ficha aberta pelo card e
+  recarregada: fundo, neutro, esqueleto da Ficha e Ficha, sem passar pela lista nem pela barra.
+- **Asserts:** `t-app-esqueleto.mjs` novo e `t-app-rotas.mjs` ampliado. `npx eslint src/systems/afty` limpo. No
+  `npm run asserts`, 356 de 358 arquivos passam. Os dois que falham são os mesmos de antes desta sessão (`t-app-casca` e
+  `t-reconciliacao-g00`).
+- **Bancada:** o `medir-carga.mjs` passou a filmar os cenários da Ficha a partir do toque e a tocar no Tentar de Novo no
+  `criaturaFalha`.
+- **`.impeccable/config.json`:** duas entradas novas em `detector.ignoreValues`, só para o `index.html`: `side-tab` (a borda de
+  4 px do card, pedida) e `cramped-padding` (botões de tamanho fixo do esqueleto).
+- **Limites conhecidos:**
+  - Com a lista vazia, o esqueleto mostra cards e "Selecionar tudo" que a tela final não tem (visto no filme do
+    `criaturaFrio`). Pergunta em `docs/a-fazer.md`.
+  - O esqueleto da Ficha dentro da Sala (`TelaDoJogador`, `naSala`) não foi verificado, porque pede login. Ele mede pela
+    coluna.
+  - O script do `index.html` reconhece o endereço antigo só pelo domínio. O `ehHostAntigo` também pede o
+    `VITE_DOMINIO_NOVO`, que não está no `.env.local`. Sem essa variável na Vercel, o `/` do endereço antigo mostraria o
+    esqueleto da lista antes da Central.
+  - Tirar comentários e espaços do `index.html` do build pouparia cerca de 1,8 KB comprimidos (medido). Não foi feito.
+- **Desligar:** linha nova em "Como desligar cada peça" do `docs/app-celular.md`.
+
+## SESSÃO DE 2026-11-26 · CARREGAMENTO: ABERTURA EM PARALELO E PRÉ-CARGA
+
+Três itens da fila "Carregamento" (`docs/a-fazer.md`): baixar o App junto com a nuvem, a pré-carga da Ficha (só a parte da pré-carga, o skeleton segue para o P2) e a pré-carga do App a partir da Central.
+
+- **Abertura (`src/main.jsx`):** a tela escolhida (só ela, nunca as duas) desce junto com a nuvem, e a montagem continua depois da nuvem.
+  - **Ordem dos pedidos:** os dois módulos da nuvem saem primeiro e a tela logo atrás. Com a tela na frente, os pedaços do App passavam à frente da nuvem na fila e o "Carregando" saía 1,4 s mais tarde.
+  - **Com sessão:** a tela só é pedida depois de o cliente da nuvem (supabase-js) chegar, e corre junto das duas leituras. Decisão do autor nesta sessão, com a medida: pedida antes, o "Carregando" ia de 1,98 para 3,49 s. Essa comparação foi medida antes da correção do ternário (abaixo), mas a causa (o supabase-js na fila atrás dos pedaços do App) não depende dela. Com a correção, o "Carregando" fica em 1,95 s e a lista em 3,33 s.
+  - **Um `import()` por função:** no ternário `central ? import(A) : import(B)` o build juntava as dependências das duas telas num preload só, e o `/` ligava o App inteiro e o CSS global dele.
+  - **Conferido de novo:** nenhum dos 62 módulos do grafo estático do App lê fichas no topo. O único que lê o armazenamento é `ligarMolduraDoAparelho`, com `dev_moldura_encontros`, uma chave que a nuvem não leva.
+- **Plugin das portas:** `src/celular/portas-plugin.js`, ao lado do `sw-plugin.js`, que só teve o `grafoDoBundle` lido. As regras puras ficam em `src/celular/portas-regras.js`, uma folha sem import.
+  - No `writeBundle`, grava no `index.html` do build um bloco de dados `<script type="application/json" id="fm-portas">` com duas portas.
+  - `app`: o `App.jsx` com os imports estáticos e o CSS deles, menos a entrada. São 56 arquivos.
+  - `ficha`: a Ficha G2 com o `afty-derive` e os pedaços dela, menos a entrada e o `app`. São 36 arquivos.
+  - Os nomes saem do build. O build para se a lista apontar arquivo inexistente e avisa se a Ficha sair sem o motor.
+  - O `index.html` de origem não muda. No `npm run dev` não há bloco, e a pré-carga não faz nada.
+- **Pré-carga:** `src/celular/pre-carga.js`, outra folha sem import.
+  - Usa `<link rel="prefetch" crossorigin>` no ocioso (`requestIdleCallback` com teto de 2 s). Nunca `import()`.
+  - O `href` é absoluto de propósito: o preload do Vite pula a dependência JS quando acha um `link[href]` com o mesmo texto, e um toque antes do fim perderia o `modulepreload` paralelo.
+  - Pula a economia de dados, a `/Sala`, o navegador sem `prefetch` e o que já desceu.
+  - A Central pré-carrega o `app` só no Início, não na Comunidade.
+  - O App pré-carrega a `ficha` com a lista na tela e só se alguma ficha da lista abre na Ficha G2. No `/Criatura` o card da 2.5.2 abre o painel de combate dela, e o motor seria banda perdida. Com `?ficha-g2=0` também não pré-carrega.
+- **Medidas:** bancada do diagnóstico (cópia em `C:/Projetos/Grimorio/_bancada-carregamento-20261126/`, servidor local HTTP/1.1 com os cabeçalhos da Vercel), celular com Slow 4G e CPU 4x, mediana de 3 corridas, builds com `--outDir` isolado.
+
+  | Cenário | Antes | Depois |
+  |---|---|---|
+  | Toque no card até a Ficha, frio, toque 6 s depois da lista (`fichaFrio`) | 4.801 ms | 1.087 ms |
+  | Idem, toque 300 ms depois da lista (`fichaJaNaLista`) | 4.642 ms | 4.596 ms |
+  | Central até a lista (`navJogador`, da carga do `/Jogador`) | 1.737 ms | 440 ms |
+  | `/Jogador` frio: lista (`jogadorFrio`) | 2.966 ms | 2.948 ms |
+  | `/Jogador` frio: o `App-*.js` começa a descer | 1.046 ms | 785 ms, junto do `nuvem-sync` |
+  | Com conta e cache frio, nuvem a 150 ms: lista | 3.841 ms | 3.331 ms |
+  | Idem: "Carregando" e começo do `App-*.js` | 1.980 e 1.944 ms | 1.953 e 1.424 ms |
+  | Com conta, cache quente, nuvem a 150 ms e a 2 s (`logado150`, `logado2000`): lista | 744 e 2.636 ms | 720 e 2.567 ms |
+
+  - **Reaproveitamento:** no `fichaFrio` a Ficha G2 e o motor saem do cache no toque (0 KB). No `navJogador` o App sai do cache (0 KB).
+  - **Pior caso:** no `fichaJaNaLista` a pré-carga sai junto com o toque, os pedidos do toque esperam por ela, e o motor desce uma vez só, sem ganho e sem download duplo.
+  - **Pedidos a mais:** o total de pedidos e de KB dos cenários sobe porque a pré-carga conta no mesmo documento.
+  - **Contra o alvo:** o `/Jogador` frio sem conta quase não mudou, porque no servidor local o limite de 6 conexões do HTTP/1.1 domina. Em produção (HTTP/2) não foi medido. A bancada também ganhou nesta sessão um cenário de conta com cache frio (`logadoFrio150`), só na cópia de trabalho da sessão.
+- **Conferido no `vite preview` do build isolado, a frio e com o console à vista:** `/`, `/Jogador`, `/Criatura`, `/Afty`, `/EraDeOuro`, `/Eclesiastes`, `/Comunidade`, a lista e um detalhe de Encontros e uma Ficha aberta pelo card. O único erro de console é o 404 do `/_vercel/insights/script.js`, que só existe na Vercel.
+  - No `/`, o CSS ligado não muda antes e depois do ocioso, e o App desce só como `prefetch`.
+  - O worker do `/EraDeOuro` instalou com a página e o motor guardados, e abriu com o servidor desligado. Depois o worker, os caches e os dados de teste foram apagados.
+  - Num Chrome com `saveData`, zero links. Na `/Sala`, zero.
+- **Asserts:** `asserts/t-pre-carga.mjs` novo (portas, ajudante, folhas sem import e ligações). `t-ordem-modulos`, `t-app-entradas`, `t-app-rotas` e `t-app-sw` passam, e `npx eslint src/systems/afty` está limpo. No `npm run asserts`, 355 de 357 arquivos passam. Os dois que falham não vêm desta sessão, vêm de mudanças locais em arquivos que ela não tocou:
+  - `t-app-casca` procura `semVoltar = false }) {` no `ListaDeEncontros.jsx`, que agora termina com `publica = false`.
+  - `t-reconciliacao-g00` espera 118 e acha 65, pelo `docs/revisao-automacao/escopo.json`.
+- **Desligar:** linha nova em "Como desligar cada peça" do `docs/app-celular.md`. Nota da abertura em `docs/nuvem-supabase.md`.
+
+## SESSÃO DE 2026-11-26 · DIAGNÓSTICO DE CARREGAMENTO (MINHAS FICHAS)
+
+Diagnóstico e recomendações, **sem mudança de código**. Pedido do autor: entender quando a pessoa vê e usa o conteúdo principal, o que atrasa e onde caberia um skeleton. Com a rota em branco, a tela analisada foi `/Jogador` (Minhas Fichas), com o `/` como entrada e o `/Criatura` como caso secundário.
+
+- **Como foi medido:** build da árvore de trabalho (mesmo conteúdo do `origin/main` 5330766) com `--outDir` isolado, servido com os cabeçalhos da Vercel, e o site no ar (`fichafm.com.br`), pelo Chrome 158 headless. No celular: 375x812, Slow 4G do Lighthouse (150 ms, 1,6 Mbit/s) e CPU 4x. Supabase interceptado no navegador, Analytics bloqueado, service worker bloqueado. Não há dados de usuários reais (o `@vercel/analytics` só conta visitas e o Speed Insights não está instalado).
+- **Lista no celular, primeiro acesso (produção):** a tela fica vazia até 1,1 s, mostra "Carregando" até 2,2 s e então surge inteira, com LCP de 2,5 s. Com cache quente, o LCP é de 0,77 s. Pela Central (os atalhos são `<a href>`, então a página recarrega), a lista aparece 1,29 s depois do toque. No computador, tudo abaixo de 400 ms. CLS entre 0 e 0,002, porque a troca é sempre de tela inteira.
+- **Abrir a Ficha é a maior espera do fluxo:** de 4,6 a 4,9 s do toque até a Ficha no celular frio, com a tela vazia (o `Suspense` de `ficha/AftyFicha.jsx` tem `fallback={null}`, e a Ficha G2 e o `afty-derive`, de 341 KB comprimidos, só começam a descer no toque). Com conta, cai para 2,5 s, porque o ocioso da busca das Salas fechadas já baixou o motor. Com cache quente, 1,25 s, quase tudo CPU.
+- **Os outros gargalos medidos:**
+  - o `main.jsx` baixa a nuvem com `await` antes de pedir o `App`, mesmo sem conta.
+  - com conta, o React só monta depois do `prepararNuvem` (teto de 2,5 s), e a tela fica vazia esse tempo todo.
+  - o `/Criatura` espera o compêndio de 2,9 MB (1,3 s em produção) para a vista padrão, que filtra `!c.isBuiltIn` e não o mostra.
+  - se o compêndio falha, o "Carregando" fica para sempre (o `useCompendio` engole o erro).
+  - o `useCreatureStorage` regrava a biblioteca inteira a cada abertura (cerca de 165 ms com 60 fichas no celular).
+  - com 60 fichas, o TBT vai a 264 ms.
+- **Propostas, por impacto:**
+  1. skeleton da Ficha no lugar do `null` e pré-carga sem execução (`<link rel="prefetch">`) da Ficha G2 e do motor depois que a lista pinta.
+  2. baixar o `App` em paralelo com a nuvem.
+  3. skeleton da lista no `index.html` e no fallback do `main.jsx`, escolhido pelo `history.state.fm.tela` e não só pelo caminho.
+  4. `/Criatura` esperar o compêndio só na pasta Criaturas Base, com erro e Tentar de Novo. A espera atual é de propósito, então é decisão do autor.
+  5. pré-carregar o `App` a partir da Central.
+  6. agrupar os ícones e tirar o `era-de-ouro` do pacote da lista.
+  7. no `src/components/`, só com exceção aprovada: não regravar a biblioteca ao abrir, montar lista grande em etapas e `loading="lazy"` nos retratos.
+  8. medir usuários reais (`@vercel/speed-insights` ou `web-vitals`).
+- **Skeleton:** estático, sem brilho (D-90 a D-92), com `aria-busy` e `role="status"` só para leitor de tela. A barra do site, o título da rota, os botões e a barra de busca podem aparecer já. Os cards (335x86 px no celular, 248x97 px em 3 colunas no computador), a contagem, as pastas e a Ficha depois do toque levam skeleton. A Central não leva: só precisa aparecer antes.
+- **Ficou como hipótese:** o ganho de agrupar pedaços em HTTP/2, onde vão os cerca de 900 ms de CPU ao abrir a Ficha, a abertura da Ficha em produção (medida só no build local) e a recarga da "leitura tardia" da nuvem (`nuvem-sync.js`, lida no código e não reproduzida).
+- **Bancada de carregamento:** roteiros e [guia](../.audit/carregamento/LEIA.md) em `.audit/carregamento/`, com 72 corridas locais em `medicoes/base-20261126.json` e 15 de produção em `medicoes/base-20261126-prod.json`. A matriz inclui a volta com conta e cache frio a 150 ms e a 2 s por pedido simulado.
+- **Fila:** as propostas viraram entradas em `docs/a-fazer.md`, na seção "Carregamento: Minhas Fichas e a abertura da Ficha", e as duas decisões do autor (o compêndio no `/Criatura` e as exceções em `src/components/`) viraram uma pergunta em PERGUNTAS AO AUTOR.
+
+## SESSÃO DE 2026-11-25 · CENTRAL DE JOGO
+
+A Central de Jogo aprovada é a Home em `/`. Ela orienta jogadores e mestres em seis pontos.
+
+- **Propósito:** chegar a fichas, preparação de encontros e Salas a partir de uma só entrada.
+- **Visual:** fundo escuro, lateral em uma superfície mais clara, roxo nos estados ativos e na ação de entrar.
+- **Percurso:** abrir Jogador, Criatura ou Encontros direto, ou informar um código e entrar pelo fluxo da Sala.
+- **Primeira tela:** menu à esquerda, três atalhos no centro e o formulário da Sala antes dos livros.
+- **Adaptação:** no celular, o botão Menu abre a navegação e os atalhos ficam em uma coluna nos aparelhos estreitos.
+- **Referência:** esboço Central de Jogo aprovado no chat, com o destino de Catarse pendente.
+
+A Home normal carrega separada do Grimório. Ela aceita código ou link de Sala, usa o mesmo validador do app e guarda `/` como origem para o botão Voltar da Sala. A abertura preserva os fluxos de retorno do login e de recebimento de fichas do endereço antigo. A conta aparece na barra compartilhada quando a nuvem está configurada, e a Home restaura uma sessão existente pelo mesmo fluxo da Comunidade. A visita sem sessão continua sem iniciar a sincronização.
+
+A Home e as bibliotecas públicas de Criatura e Jogador compartilham a marca fichafm.com.br com a assinatura Feiticeiros & Maldições e a paleta escura da Central. Nas bibliotecas, a marca e o link Início levam à Home. A navegação entre Criatura e Jogador fica ao lado da conta no cabeçalho do site e o painel abaixo concentra as ações de ficha.
+
+O cabeçalho também aparece na lista e no detalhe dos Encontros públicos. O item Encontros abre a lista da biblioteca atual, o link da biblioteca na trilha abre o painel correspondente e o link Encontros no detalhe volta à lista. A moldura usa a paleta da Central e respeita a altura disponível durante o combate.
+
+O menu lateral de 226 px da Home é o padrão das bibliotecas e dos Encontros públicos. Até 760 px o botão Menu abre a navegação recolhida. Durante o combate, em telas entre 761 e 1399 px, a lateral usa ícones em 68 px para dar mais largura à mesa. A lista de Encontros segue o painel das bibliotecas, com título e criação no topo, pastas adaptadas à largura disponível, uma barra de busca e filtros e cartões que priorizam o nome.
+
+Home, Comunidade, Criatura, Jogador e Encontros usam um só componente de navegação, com os mesmos links na mesma ordem. Os botões principais de Salas, Comunidade, Encontros e das bibliotecas usam o roxo de Novo Personagem. Os botões secundários de Encontros usam a cor neutra de Importar e Modelos.
+
+O autor definiu Comunidade como área interna de compartilhamento. A rota `/Comunidade` apresenta o propósito da área e explica as categorias Fichas de Jogador, Fichas de Criatura, CSS Personalizado e Addons para quem chega pela primeira vez. A publicação fica para a implementação da Comunidade.
+
+A prévia da Comunidade agora tem catálogo com seis criações demonstrativas, busca, filtros, ordenação e endereços para abrir detalhes. Os filtros ficam na URL. Temas oferecem uma amostra da Ficha Final que alterna entre o estilo de exemplo e o padrão. Publicar continua em preparação. O catálogo usa dados locais de demonstração e não grava no Supabase.
+
+O refinamento da Comunidade trouxe o catálogo para mais perto do topo no celular, organizou os dados dos cards por rótulo e deixou a publicação em preparação como status. As categorias são seleções nativas navegáveis pelas setas. Limpar a busca preserva a categoria, e limpar os filtros preserva a ordenação. A prévia do tema compara os estilos lado a lado no desktop e alterna entre eles no celular.
+
+A seta da ordenação tem margem interna alinhada ao campo de busca. O seletor continua nativo e usa a seta do navegador quando o sistema força cores de alto contraste.
+
+A Comunidade passou a consultar o catálogo real do Supabase. As contas existentes podem compartilhar cópias de fichas do aparelho, CSS com texto opcional e tópicos de discussão. Os comentários abrem dentro da publicação e carregam pelo ID dela. Cada autor pode remover seu conteúdo. As fichas são baixadas em JSON para o importador atual, e o CSS pode ser copiado ou baixado. A categoria CSS e a publicação de temas mostram a mesma ficha de nível 10 com e sem tema. A prévia compara visão geral, ações, habilidades, perícias, equipamentos e efeitos. O exemplo usa o CSS Dehya enviado pelo autor e permite escolher entre Sekhmet e Hator. Addons permanecem trancados. A API de produção responde à leitura pública. A liberação no site depende do próximo deploy do frontend.
+
+A tela de publicação mostra os quatro tipos em seleções nativas com ícones e uma prévia ao vivo do cartão do catálogo. A ficha selecionada fornece título inicial, edição e nível ou ND. O editor de CSS mostra a contagem em bytes e a ficha de nível 10 com e sem tema. O seletor de ficha tem o mesmo recuo de seta da ordenação do catálogo. O texto da publicação tem barra de formatação e prévia, com negrito, itálico, sublinhado, riscado, títulos de seção e listas. A marcação fica no campo de texto existente e é renderizada em componentes React.
+
+A autoria de publicações e comentários vem da conta autenticada. A migração deriva a assinatura do usuário do Discord vinculado ou da parte anterior ao arroba do e-mail confirmado, substitui os nomes dos registros antigos e aplica a regra em cada novo envio. A prévia e o formulário consultam essa assinatura no banco.
+
+Resumo e comentários usam a mesma barra de formatação e prévia do editor de publicações. O resumo renderiza os estilos no catálogo e no tópico, e os comentários exibem a formatação na discussão. Os campos usam a marcação de texto existente e têm limites de 240 e 2.000 caracteres, respectivamente.
+
+O autor pode editar ao lado de Retirar Publicação. O formulário carrega o título, resumo, texto e CSS salvos. Em publicações de ficha, o autor pode manter a cópia compartilhada ou selecionar outra ficha da mesma categoria. A edição grava na publicação original e preserva os comentários. A migração de edição já está no Supabase de produção e limita as alterações às colunas de conteúdo e ao autor.
+
+## SESSÃO DE 2026-11-24 · FEEDBACK DO LANÇAMENTO 1 (AÇÃO PERSONALIZADA DA INVOCAÇÃO)
+
+- A Ação de Invocação ganhou a família **Personalizada**, no molde do Feitiço Personalizado: resolução opcional pelos números nativos da invocação (Acerto da Jogada de Ataque ou CD do ataque por TR), alcance, alvo e duração em texto, e rolagens próprias. Decisão do autor: ocupa vaga de Ação, custo em PE à mão com o teto do grau, sem Benefícios por PE.
+- A Descrição da Ação e da Característica virou texto longo com formatação no criador (a da Ação saiu do Avançado), e na Ficha o nome abre a descrição na linha, pelo `TextoRico`. O editor de rolagens do Feitiço Personalizado virou o `EditorDeRolagens`, que a Ação usa também.
+- Depois, a Personalizada ganhou o **Motor de Efeitos** (o editor da Característica Livre). As linhas resolvem antes das Ações, então sobem o Acerto e a CD da própria Ação, e entram na disputa das Características como uma Livre a mais: duas fontes do mesmo efeito não acumulam, e dado extra é proibido.
+- Guia em `docs/afty-invocacoes.md` ("Ação Personalizada e descrição que abre"), assert em `asserts/t-invocacao-acao-personalizada.mjs`. Prints de antes e depois em `C:\Projetos\Grimorio\outputs\feedback-lancamento\`. Com isto, dos cinco feedbacks do lançamento só o 2 (ajuste à mão) segue aberto, reservado ao Modo Livre.
+
+## SESSÃO DE 2026-11-23 · FEEDBACKS DO LANÇAMENTO (3, 4 E 5)
+
+- **Rolar na Criatura do `/` (feedback 5).** Exceção de Forma 1 nova no `CombatTracker.jsx` e no `CombatantPanel.jsx`, a prop opcional `onRolar` (registrada no AGENTS.md, seção 6). Com ela, Iniciativa, Testes de Resistência (com a margem de crítico da ficha) e Perícias rolam no clique, e a Ação ganha Rolar Acerto e Rolar (dano) ao lado do Copiar. O `App.jsx` carrega a casca `ui/CriaturaComRolagem252.jsx` na tela `tracker`, que rola com `ui/rolagem-252.js` (o mesmo `rolarTeste` e `rolarDano` da Ficha do Afty, mais `gruposDaNotacao` para ler "4d10+26") e mostra a `BandejaDeRolagens252.jsx` no canto de baixo à esquerda, com Desvantagem, Normal e Vantagem. O painel da criatura da 2.5.2 no Encontro rola igual (números sublinhados em pontilhado) e mostra a bandeja grudada no topo. As linhas antes do fim do `CombatantPanel.jsx` não andaram, porque o `m252-vital.js` as cita como origem. Assert em `asserts/t-rolagem-252.mjs`. As rolagens do Encontro ainda não vão para o Registro.
+
+- **Conjuração Aprimorada no Player.** O bônus de dano do Feitiço (`bonusConjuracaoAprimorada`) somava em toda ficha, e o Suporte do Player o ganhava sem ter a habilidade. Nova divergência `conjuracaoAprimoradaNoDano` em `afty-sistema.js` (autor: "Só no Player"): a criatura segue com o bônus grátis de 2026-08-06, o jogador só soma com a Conjuração Aprimorada, inclusive o Conjurador em multiclasse. O `ctxFeiticos` do derive leva `conjuracaoAprimorada`, e só o `false` explícito zera o bônus. A cópia de uma herdeira conta, a remendada não: `clonesDaHeranca` marca `remendada: true`, e o Especialista em Estilo (que reescreve a habilidade em vagas de Estilo) não soma dano. Assert em `asserts/t-conjuracao-aprimorada-player.mjs`.
+- **Texto da Ação no Encontro.** O painel da criatura da 2.5.2 (`PainelCriatura252`) lia só `description` e `finalTextManual`, e a Ação montada pelos campos (a Expansão do Jogo, seis das oito Ações dele) tem os dois vazios, então a dica não abria. O adaptador `m252-vital.js` expõe `textoDaAcao`, que chama o `resolveActionFinalText` da 2.5.2 (puro, importado como os outros), e a linha da Ação abre o texto no clique, igual ao cartão da ficha da 2.5.2. Assert em `asserts/t-encontro-texto-acao.mjs`, e o `t-encontro-252-porte` passou a aceitar o `fm-action-calc` na lista de imports.
+- Prints de antes e depois em `C:\Projetos\Grimorio\outputs\feedback-lancamento\`. O feedback 1 segue com decisão tomada e sem código, o 2 vai para o Modo Livre.
+- Na suíte, o `t-reconciliacao-g00` falha nesta árvore (65 integrações herdadas contra 118) com ou sem esta mudança.
+
+## SESSÃO DE 2026-11-23 · DADOS DE BALANCEAMENTO DE JOGADOR
+
+- O salvamento explícito do criador de Jogador envia, após o aviso, um resumo de escolhas de catálogo. A recusa e o identificador aleatório por ficha ficam no navegador.
+- O painel privado em `/Jogador/balanceamento` consulta contagens, distribuições e combinações agregadas no Supabase. A coleta permanece desligada por padrão. O guia de ativação está em `docs/nuvem-supabase.md`, na seção Balanceamento de Jogador.
+- A revisão visual do painel afasta as setas dos seletores, agrupa os filtros, mostra as proporções em barras alinhadas e pagina rankings longos. Um recorte vazio mostra apenas o estado da amostra e a ação disponível.
+- A lista de fichas de Jogador oferece **Incluir Fichas Já Salvas** em um convite compacto no canto inferior. O botão registra o aceite e envia os resumos disponíveis no navegador em lote. As Preferências de Privacidade concentram a desativação da coleta.
+
 ## SESSÃO DE 2026-11-23 · PUBLICAÇÃO DAS ATUALIZAÇÕES DE ECLESIASTES
 
 - Integração na base publicada do Grimório dos Feitiços por pontos, dos ajustes de Valores Básicos e das regras de dano, testes, especializações, treinos e Guerra de Feiticeiros de Eclesiastes.
@@ -10,6 +442,7 @@
 - Motor em `src/systems/eclesiastes/feiticos/`: `tabelas.js` e `modelo.js` (folhas), `orcamento.js` (o extrato com fontes de pontos restritas: geral, Permuta, Condicional, Semiativo e Liberação), `motor.js` (Passivo no Motor, família `feiticoAuxiliarPassivo`, RD líquida no agregado), `resumo.js` (linha no formato do `linhaDoFeitico`) e `derivar.js`. O Feitiço salva em `creature.feiticosEcl`, com compras guardadas como quantidade.
 - No derive, só com `ehFichaEclesiastes`: o Feitiço antigo criado pela pessoa sai depois de `marcarTecnicasMarciais` (ficam Técnicas Marciais, recebidos de aliado e Olhos de Agulha), os novos contam no caixa de aquisições e no requisito Possuir Feitiços, os Passivos entram no Motor, os Condicionais e Semiativos ganham interruptor de bancada, e `feiticos.lista` recebe as linhas novas (`feiticos.ecl` guarda o extrato).
 - A tela (`AbaFeiticosEcl.jsx`, `ecl-feiticos.css`) entra dentro do `FeiticosCard`, que segue dono da lista lateral e das Expansões de Domínio. Quatro faixas: identidade, saldo grudado, sub-abas Base, Alcance e Efeitos com os pontos no chip, e detalhe (Descrição com o `TextoLongo` formatado do criador, recebido por prop). Pinta só com tokens `--afty-*`, que passaram a valer em `.ecl-feiticos` pelo `ficha.css`.
+- Liberação Máxima refeita no mesmo dia, a pedido do autor ("Pode Tudo", Chave de Camada): a sub-aba própria saiu, e uma chave Normal | Liberação no saldo faz Alcance e Efeitos editarem o Feitiço liberado. A camada guarda só o que soma ao base (extras, chaves que ligam, efeitos e Condições novos, `aplicarLiberacaoEcl` e `diferencaLiberacaoEcl` em `modelo.js`), e o orçamento roda o mesmo cálculo no Feitiço liberado e cobra a diferença da fonte da Liberação, então toda compra e todo teto valem nela. O saldo tem as MESMAS casas nos dois modos (ND, Custo, Fadiga e a chave em cima, a barra de Pontos e o Sobram embaixo): em Liberação só os números mudam para o total liberado, e as parcelas (base + Liberação) ficam no hover. O campo Componentes do Ritual saiu da tela e da linha da Ficha.
 - Liberação Máxima refeita no mesmo dia, a pedido do autor ("Pode Tudo", Chave de Camada): a sub-aba própria saiu, e uma chave Normal | Liberação no saldo faz Alcance e Efeitos editarem o Feitiço liberado. A camada guarda só o que soma ao base (extras, chaves que ligam, efeitos e Condições novos, `aplicarLiberacaoEcl` e `diferencaLiberacaoEcl` em `modelo.js`), e o orçamento roda o mesmo cálculo no Feitiço liberado e cobra a diferença da fonte da Liberação, então toda compra e todo teto valem nela. O saldo em Liberação mostra o PE junto (8 + 4 = 12 PE), a Fadiga e os pontos da camada. O campo Componentes do Ritual saiu da tela e da linha da Ficha.
 - Conferido no navegador: criação, estouro com Faltam em âmbar, Passivo somando no Preview, 375 px sem rolagem lateral, e a linha na Ficha G2 rolando o dado com as propriedades.
 - Fica para a fase 2: Fadiga na sessão, desconto do PE extra da Liberação, manutenção do Sustentado, usos do Semiativo, melhorias de Ritual e buffs de Feitiço Ativo no Motor. Furos e leituras em `docs/a-fazer.md`, seção Eclesiastes: Feitiços por pontos.
@@ -44,6 +477,11 @@
 - No Criador de Criaturas e Jogadores de Eclesiastes, a aba Cálculos mostra Condições e Simulação de Combate quando disponíveis. O painel de valores editáveis saiu da aba, e o cartão Estudos saiu dos Interlúdios.
 - Em Eclesiastes, a 4ª etapa do Treino de Perícia permite repetir um d20 abaixo de 5 e manter o maior resultado. O sucesso garantido saiu da edição. O Treinamento Completo soma metade do Bônus de Treinamento aos testes da perícia escolhida, com arredondamento para baixo.
 
+## SESSÃO DE 2026-11-18 · ROTAS PÚBLICAS E BASE DE ECLESIASTES
+
+- A raiz abre `/Criatura`. `/Jogador` é o endereço da ficha de personagem. O alternador público mostra só esses dois. `/Player` e os caminhos antigos de Encontros continuam resolvendo para os equivalentes atuais, com as mesmas chaves de fichas, pastas e Encontros.
+- Eclesiastes tem biblioteca de personagens e criaturas, Encontros e rascunhos próprios. As fichas carregam `edicaoDeRegras: "eclesiastes"` e mantêm `rulesVersion` como o tipo. O ponto de entrada do cálculo em `src/systems/eclesiastes/regras.js` usa a base atual. Os catálogos de Especializações e Feitiços do novo livro serão implementados nessa edição quando as regras forem fornecidas. As fichas da edição ficam na própria biblioteca e seguem sem os pacotes nativos da Era de Ouro.
+- Em 2026-11-19, o banco de produção do Ficha FM recebeu a atualização pontual da restrição de grupo e da função `criar_sala`. A verificação confirmou o grupo Eclesiastes, as permissões preservadas e as 48 Salas anteriores. O front-end de Eclesiastes e as rotas públicas foram publicados diretamente na Vercel, a partir de uma cópia isolada da versão anterior de produção com as mudanças dessa entrega. Deploy `dpl_EpYQhaiL6YgqzNxbRyquiJB4WY3N`. No domínio de produção, o Chrome criou os dois tipos de ficha, montou um Encontro e reabriu a luta após avançar o turno.
 ## SESSÃO DE 2026-11-22 · ECLESIASTES NO REPOSITÓRIO
 
 - Integração de `/Eclesiastes` com a versão atual do Grimório. A biblioteca, os rascunhos e os Encontros têm armazenamento próprio. A edição é marcada em `edicaoDeRegras` e o tipo continua em `rulesVersion`. Especializações e Feitiços ainda usam a base compartilhada.

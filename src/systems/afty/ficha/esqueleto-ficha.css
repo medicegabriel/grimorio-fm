@@ -1,0 +1,227 @@
+/* O esqueleto da Ficha G2 (EsqueletoDaFicha.jsx, 2026-11-26). As medidas são as da Ficha no tema Padrão, tiradas da tela:
+   altura do cabeçalho de 269 px até 599 px de coluna, 263 px até 720, 283 px (290 acima de 1024 px de janela, onde a letra
+   cresce) até 1199, e 184 px daí em diante. Os tokens --afty-* levam o valor do tema Padrão como reserva, porque o
+   esqueleto aparece antes de existir uma `.afty-ficha`.
+
+   Mede pela largura da própria coluna (`@container`), porque a Ficha também mora dentro da Sala. */
+
+.afty-esq {
+  container: afty-esq / inline-size;
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background:
+    var(--afty-fundo-brilho, radial-gradient(120% 60% at 50% -10%, #7e22ce33, transparent 70%)),
+    var(--afty-fundo, #060910);
+}
+
+.afty-esq *,
+.afty-esq *::after {
+  box-sizing: border-box;
+}
+
+.afty-esq i {
+  display: block;
+  border-radius: 5px;
+  background: var(--afty-borda, #1e293b);
+}
+
+.afty-esq-voz {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.afty-esq-cabecalho {
+  border-bottom: 1px solid var(--afty-borda, #1e293b);
+}
+
+.afty-esq-pagina {
+  max-width: 1280px;
+  margin-inline: auto;
+  padding: 6px 12px 0;
+}
+
+.afty-esq-placa {
+  position: relative;
+  height: 210px;
+  overflow: hidden;
+  border: 1px solid var(--afty-borda, #1e293b);
+  border-radius: 14px;
+  background: var(--afty-card, #0f172a);
+}
+
+.afty-esq-placa > * {
+  position: absolute;
+}
+
+.afty-esq .afty-esq-voltar { top: 20px; left: 20px; width: 22px; height: 22px; }
+.afty-esq .afty-esq-retrato { top: 6px; left: 56px; width: 52px; height: 52px; border-radius: 12px; }
+
+.afty-esq-nome { top: 15px; left: 117px; right: 150px; display: grid; gap: 10px; }
+.afty-esq-nome > i:nth-child(1) { width: min(100%, 220px); height: 15px; }
+.afty-esq-nome > i:nth-child(2) { width: min(70%, 150px); height: 10px; }
+
+.afty-esq-controles { top: 10px; right: 8px; display: flex; }
+.afty-esq .afty-esq-controles > i { width: 20px; height: 20px; margin: 12px; border-radius: 10px; }
+
+.afty-esq-recursos {
+  top: 66px;
+  left: 8px;
+  right: 8px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.afty-esq-recursos > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 61px;
+  padding: 8px 6px 6px;
+  border-radius: 10px;
+  background: var(--afty-poco, #020617);
+}
+
+.afty-esq-recursos > div > i:nth-child(1) { width: 45%; height: 8px; }
+.afty-esq-recursos > div > i:nth-child(2) { width: 65%; height: 14px; }
+.afty-esq-recursos > div > i:nth-child(3) { width: 100%; height: 5px; opacity: 0.45; }
+.afty-esq-recursos > [data-recurso="pv"] > i:nth-child(3) { background: var(--afty-pv, #f43f5e); }
+.afty-esq-recursos > [data-recurso="pe"] > i:nth-child(3) { background: var(--afty-pe, #38bdf8); }
+.afty-esq-recursos > [data-recurso="alma"] > i:nth-child(3) { background: var(--afty-alma, #e879f9); }
+.afty-esq-recursos > [data-recurso="preparo"] > i:nth-child(3) { background: var(--afty-destaque, #a855f7); }
+
+.afty-esq-valores {
+  top: 135px;
+  left: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  height: 25px;
+  padding-top: 6px;
+  overflow: hidden;
+  border-top: 1px solid var(--afty-borda, #1e293b);
+}
+
+.afty-esq-valores > i { flex: none; width: 54px; height: 11px; }
+
+.afty-esq-agora { top: 162px; left: 8px; right: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 44px; }
+.afty-esq-agora > i { height: 100%; border-radius: 10px; }
+.afty-esq-agora > i:nth-child(1) { width: 34%; max-width: 150px; }
+.afty-esq-agora > i:nth-child(2) { width: 34%; max-width: 150px; height: 31px; }
+.afty-esq-agora > i:nth-child(3) { width: 24%; max-width: 100px; }
+
+.afty-esq-linha {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.afty-esq-abas {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 32px;
+  min-width: 0;
+  height: 44px;
+  padding-left: 14px;
+  overflow: hidden;
+}
+
+.afty-esq-abas > i { position: relative; flex: none; height: 11px; }
+.afty-esq-abas > i:nth-child(1) { width: 39px; background: var(--afty-texto-suave, #94a3b8); }
+.afty-esq-abas > i:nth-child(2) { width: 76px; }
+.afty-esq-abas > i:nth-child(3) { width: 52px; }
+.afty-esq-abas > i:nth-child(4) { width: 92px; }
+.afty-esq-abas > i:nth-child(5) { width: 72px; }
+.afty-esq-abas > i:nth-child(6) { width: 57px; }
+
+/* O traço da aba aberta, na borda de baixo da linha. */
+.afty-esq-linha::after {
+  position: absolute;
+  bottom: 0;
+  left: 8px;
+  width: 52px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--afty-destaque, #a855f7);
+  content: "";
+}
+
+.afty-esq .afty-esq-rolagens { flex: none; width: 44px; height: 44px; border-radius: 10px; }
+
+/* Coluna muito estreita: os recursos e o Agora quebram em duas linhas, e o cabeçalho vai a 382 px. */
+@container afty-esq (max-width: 339px) {
+  .afty-esq-placa { height: 323px; }
+  .afty-esq-recursos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .afty-esq-recursos > [data-recurso="preparo"] { grid-column: 1 / -1; }
+  .afty-esq-valores { top: 200px; }
+  .afty-esq-agora { top: 227px; height: 90px; flex-wrap: wrap; align-content: space-between; }
+  .afty-esq-agora > i { height: 42px; }
+}
+
+@container afty-esq (min-width: 600px) and (max-width: 720px) {
+  .afty-esq-placa { height: 204px; }
+  .afty-esq-valores { height: 22px; }
+  .afty-esq-agora { top: 156px; }
+}
+
+@container afty-esq (min-width: 640px) {
+  .afty-esq-pagina { padding-inline: 16px; }
+}
+
+@container afty-esq (min-width: 721px) {
+  .afty-esq-placa { height: 187px; border-radius: 18px; }
+  .afty-esq .afty-esq-voltar { top: 14px; left: 124px; width: 36px; height: 36px; border-radius: 10px; }
+  .afty-esq .afty-esq-retrato { top: 6px; bottom: 6px; left: 6px; width: 104px; height: auto; }
+  .afty-esq-nome { top: 14px; left: 168px; }
+  .afty-esq-nome > i:nth-child(1) { height: 22px; }
+  .afty-esq-controles { top: 14px; right: 6px; gap: 2px; }
+  .afty-esq .afty-esq-controles > i { margin: 8px; }
+  .afty-esq-recursos { top: 68px; left: 124px; right: 6px; gap: 8px; }
+  .afty-esq-recursos > div { height: 65px; }
+  .afty-esq-valores { top: 135px; left: 124px; right: 440px; height: 45px; padding-top: 0; }
+  .afty-esq-agora { top: 135px; left: auto; right: 6px; width: 414px; height: 44px; }
+  .afty-esq-linha { flex-direction: column; align-items: stretch; gap: 0; }
+  .afty-esq-abas { flex: none; }
+  .afty-esq-linha::after { top: 41px; bottom: auto; }
+  .afty-esq .afty-esq-rolagens { align-self: flex-end; width: min(600px, 100%); height: 37px; border-radius: 14px; }
+}
+
+@media (min-width: 1025px) {
+  @container afty-esq (min-width: 721px) {
+    .afty-esq-pagina { padding-inline: 18px; }
+    .afty-esq-placa { height: 190px; }
+    .afty-esq .afty-esq-rolagens { height: 42px; }
+  }
+}
+
+@container afty-esq (min-width: 1200px) {
+  .afty-esq-pagina { padding-inline: 18px; }
+  .afty-esq-placa { height: 125px; }
+  .afty-esq .afty-esq-voltar { top: 22px; left: 132px; }
+  .afty-esq .afty-esq-retrato { width: 112px; }
+  .afty-esq-nome { top: 20px; left: 176px; right: auto; width: 290px; }
+  .afty-esq-controles { top: 22px; right: 16px; }
+  .afty-esq .afty-esq-controles > i { margin: 8px; }
+  .afty-esq-recursos { top: 6px; left: 490px; right: 140px; }
+  .afty-esq-recursos > div { height: 67px; }
+  .afty-esq-valores { top: 75px; left: 132px; right: 16px; height: 43px; }
+  .afty-esq-agora { top: 76px; right: 16px; width: 433px; height: 40px; }
+  .afty-esq-linha { flex-direction: row; align-items: center; gap: 14px; }
+  /* As abas têm a largura delas, e a barra de rolagens fica com o resto, à direita, até 600 px. */
+  .afty-esq-abas { flex: 0 0 581px; }
+  .afty-esq-linha::after { top: auto; bottom: 0; }
+  .afty-esq .afty-esq-rolagens { flex: 1 1 0; align-self: center; width: auto; max-width: 600px; height: 42px; margin-left: auto; }
+}
+
+@media (min-width: 1920px) { .afty-esq-pagina { max-width: 1440px; } }
+@media (min-width: 2400px) { .afty-esq-pagina { max-width: 1760px; } }

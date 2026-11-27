@@ -1,6 +1,6 @@
 /* Os motores entram PRIMEIRO: o do Afty puxa o `afty-derive.js` antes de tudo, a porta que resolve o ciclo de
    módulos na ordem que funciona (ver asserts/t-ordem-modulos.mjs). */
-import { motorDe, MOTORES } from "./motores/index";
+import { motorDe, MOTORES, normalizarVidaDoMarcador } from "./motores/index";
 import {
   LADO, ENCONTRO_STATUS, STATUS_ORDEM, ordenarPorIniciativa, LOG_MAX,
 } from "./afty-encontro";
@@ -199,8 +199,12 @@ export function criarCriatura(ficha, {
     : { ...base, ficha: copia, sessao: adaptador.estadoInicial(copia, derived) };
 }
 
-/** O marcador: só nome e iniciativa, com o cabeçalho de todo combatente (Abatido, Fora da Ordem). */
-export function criarMarcador({ nome, mod = 0, lado = LADO.JOGADOR, dono, id, gerarId = idNovo } = {}) {
+/**
+ * O marcador: só nome e iniciativa, com o cabeçalho de todo combatente (Abatido, Fora da Ordem). Com `pvMax` (rework,
+ * etapa 2, "Sem Ficha com Vida") ele nasce com a Vida cheia em `vida`, e o adaptador de `motores/marcador.js` cuida dela.
+ */
+export function criarMarcador({ nome, mod = 0, lado = LADO.JOGADOR, pvMax = null, dono, id, gerarId = idNovo } = {}) {
+  const vida = normalizarVidaDoMarcador({ pvMax });
   return {
     id: id ?? gerarId("cmb"),
     motor: null,
@@ -210,6 +214,7 @@ export function criarMarcador({ nome, mod = 0, lado = LADO.JOGADOR, dono, id, ge
     flags: flagsDe(lado),
     visao: visaoPadrao(TIPO.MARCADOR, lado),
     dono: normalizarDono(dono, TIPO.MARCADOR),
+    ...(vida ? { vida } : {}),
   };
 }
 
@@ -217,7 +222,8 @@ export const ehLigado = (c) => c?.tipo === TIPO.PERSONAGEM && !!c?.fichaRef?.id;
 
 /** Onde o estado de um combatente mora: "externo" (sessão da ficha), o campo da instância, ou null. */
 export function campoDoEstado(c) {
-  if (!c || c.tipo === TIPO.MARCADOR) return null;
+  if (!c) return null;
+  if (c.tipo === TIPO.MARCADOR) return c.vida ? "vida" : null;
   if (ehLigado(c)) return "externo";
   return motorDe(c)?.campoDoEstado ?? null;
 }
@@ -293,7 +299,11 @@ export function normalizarCombatente(bruto) {
     visao: normalizarVisao(bruto.visao, tipo, lado),
     dono: normalizarDono(bruto.dono, tipo),
   };
-  if (tipo === TIPO.MARCADOR) return base;
+  if (tipo === TIPO.MARCADOR) {
+    // Só o marcador gravado como marcador guarda a Vida. O que DESCEU para marcador (perdeu a ficha) não ganha uma.
+    const vida = bruto.tipo === TIPO.MARCADOR ? normalizarVidaDoMarcador(bruto.vida) : null;
+    return vida ? { ...base, vida } : base;
+  }
   const origem = ehObjeto(bruto.origem) ? { chave: textoOuNull(bruto.origem.chave), id: textoOuNull(bruto.origem.id) } : null;
   if (tipo === TIPO.PERSONAGEM && ref) {
     return {
@@ -350,9 +360,50 @@ export function criarEncontro({ nome = "Novo Encontro", pastaId = null, grupo = 
   };
 }
 
+/* ---------- o que o rework (etapa 2, 2026-11-23) guarda no Encontro ---------- */
+
+/**
+ * A PILHA DO MESTRE ("Desfazer do Mestre"): as operações do Mestre que não entraram no histórico de ninguém (a criatura dele, o
+ * marcador com Vida), da mais nova para a mais antiga, com o teto. É o par do histórico Personagem por Papel, que segue igual:
+ * cada operação mora num lugar só, e por isso se desfaz uma vez só. Mora no Encontro, que a Sala não publica.
+ */
+export const PILHA_DO_MESTRE_MAX = 50;
+
+export const normalizarPilhaDoMestre = (lista) => (Array.isArray(lista) ? lista : [])
+  .filter((e) => ehObjeto(e) && typeof e.id === "string" && e.id && typeof e.alvo === "string" && Array.isArray(e.delta))
+  .slice(0, PILHA_DO_MESTRE_MAX);
+
+/** A ÚLTIMA VIRADA (Voltar Turno, e o Reabrir exato): o que a passagem de turno, a Nova Rodada ou o Encerrar mudou. */
+export const TIPO_DE_VIRADA = { TURNO: "turno", RODADA: "rodada", ENCERRAR: "encerrar" };
+const TIPOS_DE_VIRADA = Object.values(TIPO_DE_VIRADA);
+
+const momentoDa = (m) => ({
+  status: STATUS_ORDEM.includes(m?.status) ? m.status : ENCONTRO_STATUS.ATIVO,
+  ativoId: textoOuNull(m?.ativoId),
+  rodada: Math.max(1, inteiro(m?.rodada, 1)),
+});
+
+export function normalizarVirada(v) {
+  if (!ehObjeto(v) || !textoOuNull(v.id) || !TIPOS_DE_VIRADA.includes(v.tipo) || !ehObjeto(v.de) || !ehObjeto(v.para)) return null;
+  return {
+    id: v.id,
+    tipo: v.tipo,
+    de: momentoDa(v.de),
+    para: momentoDa(v.para),
+    deltas: (Array.isArray(v.deltas) ? v.deltas : [])
+      .filter((x) => ehObjeto(x) && textoOuNull(x.alvo) && Array.isArray(x.delta) && x.delta.length)
+      .map((x) => ({ alvo: x.alvo, delta: x.delta })),
+    quando: inteiro(v.quando, 0),
+  };
+}
+
 /** Sanea um Encontro do formato novo (`versao: 2`). Outro formato devolve null: quem lê o antigo é `migracao.js`. */
-export function normalizarEncontro(bruto) {
-  if (!ehObjeto(bruto) || bruto.versao !== VERSAO_ENCONTRO) return null;
+export function normalizarEncontro(entrada) {
+  if (!ehObjeto(entrada) || entrada.versao !== VERSAO_ENCONTRO) return null;
+  // Os campos do rework só ficam gravados quando têm o que guardar (o Encontro de antes não ganha chave vazia).
+  const { pilhaDoMestre: pilhaBruta, ultimaVirada: viradaBruta, ...bruto } = entrada;
+  const pilha = normalizarPilhaDoMestre(pilhaBruta);
+  const virada = normalizarVirada(viradaBruta);
   const vistos = new Set();
   const refs = new Set();
   const combatentes = [];
@@ -379,6 +430,8 @@ export function normalizarEncontro(bruto) {
     pedidos: (Array.isArray(bruto.pedidos) ? bruto.pedidos : [])
       .filter((p) => ehObjeto(p) && typeof p.id === "string" && p.pedido?.estado === "pendente"),
     config: { ...CONFIG_PADRAO, ...(ehObjeto(bruto.config) ? { aceitarSozinho: !!bruto.config.aceitarSozinho } : {}) },
+    ...(pilha.length ? { pilhaDoMestre: pilha } : {}),
+    ...(virada ? { ultimaVirada: virada } : {}),
   };
 }
 
@@ -388,7 +441,8 @@ export function normalizarEncontro(bruto) {
  * ligado não tem o que copiar: a sessão é da ficha.
  */
 export function duplicarEncontro(encontro, { gerarId = idNovo, agora = Date.now } = {}) {
-  const clone = clonar(encontro);
+  // A pilha do Mestre e a última virada são da luta de origem, e os ids dela não existem na cópia.
+  const { pilhaDoMestre: _pilha, ultimaVirada: _virada, ...clone } = clonar(encontro);
   const t = agora();
   return {
     ...clone,
@@ -409,13 +463,17 @@ export function duplicarEncontro(encontro, { gerarId = idNovo, agora = Date.now 
   };
 }
 
-/** O que falta para começar. */
+/** Sem iniciativa: nunca rolou e ninguém digitou. É o que o Começar rola sozinho (ver `COMECAR` em redutor.js). */
+export const semIniciativa = (c) => c.iniciativa.rolagem === 0 && !c.iniciativa.manual;
+
+/**
+ * O que falta para começar. A iniciativa vazia não trava mais (rework, etapa 2, "Começar Rola as Vazias"): o Começar rola as
+ * vazias, e `semIniciativa` diz quantas são, para a tela contar.
+ */
 export function validarInicio(encontro) {
   const erros = [];
   if (encontro.combatentes.length === 0) erros.push("Adicione pelo menos um combatente.");
-  const sem = encontro.combatentes.filter((c) => c.iniciativa.rolagem === 0 && !c.iniciativa.manual);
-  if (sem.length > 0) erros.push(`${sem.length} combatente(s) sem iniciativa.`);
-  return { valido: erros.length === 0, erros };
+  return { valido: erros.length === 0, erros, semIniciativa: encontro.combatentes.filter(semIniciativa).length };
 }
 
 /* ============================================================ */

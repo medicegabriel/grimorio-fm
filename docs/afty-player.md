@@ -290,6 +290,11 @@ O autor confirmou `n - 1` em 2026-10-03. Um Conjurador começa com dois Feitiço
 no nível 1 e chega a 33 no nível 30. A função devolve `total` e `partes` para
 mostrar a origem do orçamento.
 
+O bônus de DANO da Conjuração Aprimorada também diverge (`conjuracaoAprimoradaNoDano`, autor,
+2026-11-23): a criatura o soma em todo Feitiço de Dano, o jogador só com a habilidade (o Conjurador,
+inclusive em multiclasse). A cópia remendada de uma herdeira, como a do Especialista em Estilo, não
+conta. Ver `asserts/t-conjuracao-aprimorada-player.mjs`.
+
 ## MULTICLASSE DO JOGADOR
 
 A divergência ativa terceiraClasse permite até **3 Especializações** na Ficha de Player.

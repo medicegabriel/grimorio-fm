@@ -344,7 +344,41 @@ export function createBlankAcao() {
     especial: "",
     reducaoCura: "terco",
     cobertura: "meia",
+    /* A Ação PERSONALIZADA (`familia: "personalizada"`, 2026-11-24, feedback do lançamento), no molde do Feitiço
+       Personalizado: textos de mesa, resolução opcional pelos números nativos da invocação e rolagens próprias.
+         resolucao    "nenhuma" | "jogada" | "tr" (usa `atributoChave`, `trTipo` e `corpoACorpo` acima)
+         alcanceTexto, alvoTexto, duracaoTexto   texto livre
+         rolagens     [{ rotulo, dados, faces, fixo, vezes, tom: "dano" | "cura" }]
+         efeitos      linhas do Motor, no formato da Característica Livre (ver o pré-passe do `resolveInvocacao`) */
+    resolucao: "nenhuma",
+    alcanceTexto: "",
+    alvoTexto: "",
+    duracaoTexto: "",
+    rolagens: [],
+    efeitos: [],
   };
+}
+
+/**
+ * As rolagens próprias de uma Ação Personalizada, limpas e prontas para a Ficha: cada uma com `grupos` estruturado,
+ * igual ao `dano.grupos` das outras Ações. Mesma forma das rolagens do Feitiço Personalizado (`rolagensDoFeitico`).
+ * Rolagem sem dado válido sai da lista, e não vira um d1.
+ */
+export function rolagensDaAcaoPersonalizada(acao) {
+  return (Array.isArray(acao?.rolagens) ? acao.rolagens : [])
+    .map((r) => {
+      const dados = Math.trunc(Number(r?.dados) || 0);
+      const faces = Math.trunc(Number(r?.faces) || 0);
+      return {
+        rotulo: String(r?.rotulo ?? "").trim() || "Rolagem",
+        dados, faces,
+        fixo: Math.trunc(Number(r?.fixo) || 0),
+        vezes: Math.max(1, Math.trunc(Number(r?.vezes) || 1)),
+        tom: r?.tom === "cura" ? "cura" : "dano",
+        grupos: [{ dados, faces }],
+      };
+    })
+    .filter((r) => r.dados > 0 && r.faces > 1);
 }
 
 export function createBlankCaracteristica() {
@@ -1082,6 +1116,10 @@ const comLabel = (ids) => ids.map((v) => ({ value: v, label: MODIFICADOR_ALVOS[v
  * Auxílio de valor fixo só tem um, e a de Ataque tem quatro.
  */
 export function alvosDeModificador(acao) {
+  /* A Personalizada só tem número próprio quando resolve por Jogada (Acerto) ou por TR (CD). */
+  if (acao?.familia === "personalizada") {
+    return acao.resolucao === "jogada" ? comLabel(["acerto"]) : acao.resolucao === "tr" ? comLabel(["cd"]) : [];
+  }
   const familia = acao?.familia === "auxilio" ? "auxilio" : "ataque";
   if (familia === "ataque") {
     return comLabel(["dano", "danoNivel", acao?.ataqueTipo === "tr" ? "cd" : "acerto"]);
@@ -1127,10 +1165,13 @@ function aplicaModificador(out, item, inv, dono, warnings, alvos) {
 export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   const grau = grauMeta(inv?.grau).value;
   const classe = acao?.classe === "complexa" ? "complexa" : "simples";
-  const familia = acao?.familia === "auxilio" ? "auxilio" : "ataque";
+  const familia = acao?.familia === "auxilio" || acao?.familia === "personalizada" ? acao.familia : "ataque";
+  const personalizada = familia === "personalizada";
   // Ação com Custo é uma escolha do jogador (custoPE > 0 na ficha da ação). Não
   // confundir com o custo obrigatório de 2 PE que a Cura ganha embaixo: aquele
   // é um custo por uso, não a mecânica opcional de Ação com Custo.
+  /* ⚠ NA PERSONALIZADA O CUSTO É À MÃO (autor, 2026-11-24: "Vaga de Ação, custo PE à mão"), com o teto do grau. Ela
+     não compra Benefícios por PE nem exige Ação Complexa, que são regras da Ação com Custo do livro. */
   const acaoComCusto = (acao?.custoPE ?? 0) > 0;
   // A `descricao` viaja junto pelo mesmo motivo da Característica: é o texto da
   // ação, e a Ficha não tem outra fonte para ele.
@@ -1146,7 +1187,7 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   // tabela). Aplicados no dano/cura/alcance/área/acerto abaixo.
   const bens = { alcance: 0, area: 0, danoCura: 0, acertoCd: 0, condicoes: [] };
   let peBeneficios = 0;
-  if (acaoComCusto) {
+  if (acaoComCusto && !personalizada) {
     for (const b of Array.isArray(acao?.beneficiosCusto) ? acao.beneficiosCusto : []) {
       if (b?.tipo === "condicao") {
         peBeneficios += INV_CUSTO_CONDICAO[b.nivel] ?? 0;
@@ -1162,7 +1203,30 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
   let alcanceMetros = null;  // number | "corpo" | null
   let areaMetros = null;     // number | null
 
-  if (familia === "ataque") {
+  if (personalizada) {
+    /* A AÇÃO PERSONALIZADA (2026-11-24). O texto é da mesa, e o número que a mesa usa vem da invocação: Acerto pela
+       mesma conta da Jogada de Ataque, CD pela mesma conta do ataque por TR. Assim Precisão, Auxílio de Acerto e o
+       Modificador alcançam a Personalizada como alcançam as outras. */
+    const resolucao = acao?.resolucao === "jogada" || acao?.resolucao === "tr" ? acao.resolucao : "nenhuma";
+    out.resolucao = resolucao;
+    const atributoChave = acao?.atributoChave || (resolucao === "tr" ? "inteligencia" : "forca");
+    if (resolucao === "jogada") {
+      const treinado = (acao?.corpoACorpo ? "corpo" : "distancia") === inv?.ataqueTreinado;
+      out.bonusAtaque = bonusTesteInvocacao(inv, dono, { atributo: atributoChave, treinado }) + (dono.auxilioAcertoProprio ?? 0);
+      out.atributoChave = atributoChave;
+    } else if (resolucao === "tr") {
+      out.cd = cdAtaqueInvocacao(inv, dono, atributoChave);
+      out.trTipo = acao?.trTipo || "reflexos";
+      out.trTipoLabel = AFTY_RESISTENCIAS.find((r) => r.value === out.trTipo)?.label ?? out.trTipo;
+      out.atributoChave = atributoChave;
+    }
+    out.alcance = String(acao?.alcanceTexto ?? "").trim() || null;
+    out.alvoTexto = String(acao?.alvoTexto ?? "").trim() || null;
+    out.duracaoTexto = String(acao?.duracaoTexto ?? "").trim() || null;
+    out.rolagens = rolagensDaAcaoPersonalizada(acao);
+    const max = custoMaxAcao(grau);
+    if ((acao?.custoPE ?? 0) > max) warnings.push(`Custo ${acao.custoPE} PE passa do máximo ${max} do grau.`);
+  } else if (familia === "ataque") {
     // Ação de Ataque é sempre Complexa.
     if (classe !== "complexa") warnings.push("Ação de Ataque deve ser Complexa.");
     const alvo = acao?.alvo === "multiplos" || acao?.alvo === "area" ? acao.alvo : "unico";
@@ -1328,7 +1392,7 @@ export function resolveAcao(acao, inv, dono = {}, invCtx = inv) {
 
   // Ação com Custo (opt-in do jogador): valida faixa de PE e a soma dos benefícios.
   // O custo obrigatório de 2 PE da Cura NÃO entra aqui, não é uma Ação com Custo.
-  if (acaoComCusto) {
+  if (acaoComCusto && !personalizada) {
     const max = custoMaxAcao(grau);
     const custoUsuario = acao?.custoPE ?? 0;
     if (custoUsuario > max) warnings.push(`Custo ${custoUsuario} PE passa do máximo ${max} do grau.`);
@@ -2819,7 +2883,9 @@ export function agregarCaracteristicas(resolvidas = []) {
          abre exceção só em algumas, catalogadas (`CARACTERISTICAS_COM_DADO_EXTRA`).
          A Livre não é uma delas. */
       if (ef.canal === "ataqueDanoAdicional") {
-        out.warnings.push(`${c.nome || "Característica Livre"}: Característica Livre não pode dar dado extra.`);
+        out.warnings.push(c.deAcao
+          ? `${c.nome}: Ação Personalizada não pode dar dado extra.`
+          : `${c.nome || "Característica Livre"}: Característica Livre não pode dar dado extra.`);
         continue;
       }
       const k = `${ef.canal}|${ef.alvo || ""}`;
@@ -3325,7 +3391,20 @@ export function resolveInvocacao(invCru, dono = {}) {
      depois dele, as linhas do Motor apareceriam no card e não mexeriam em nada,
      que é o "calculado e jogado fora" de agosto outra vez. */
   const caracteristicas = (inv?.caracteristicas || []).map((c) => resolveCaracteristica(c, inv, dono));
-  const caract = agregarCaracteristicas(caracteristicas);
+  /* O MOTOR DA AÇÃO PERSONALIZADA (2026-11-24). As linhas resolvem AQUI, e não no `resolveAcao`, pelo mesmo motivo
+     das Características: o `donoLocal` é montado com o acumulador, e uma linha de Acerto resolvida depois dele
+     apareceria no card e não subiria a jogada de nenhuma Ação. Cada Ação entra na disputa como uma Livre a mais
+     (`deAcao`): duas fontes do mesmo efeito não acumulam, vale a maior, e o dado extra segue proibido. */
+  const motorDasAcoes = new Map();
+  const livresDeAcao = [];
+  for (const a of inv?.acoes || []) {
+    if (a?.familia !== "personalizada" || !Array.isArray(a.efeitos) || !a.efeitos.length) continue;
+    const avisos = [];
+    const efeitos = resolverMotorDaCaracteristica(a.efeitos, inv, dono, avisos);
+    motorDasAcoes.set(a.id, { efeitos, avisos });
+    livresDeAcao.push({ subtipo: "livre", deAcao: true, nome: a.nome || "Ação Personalizada", efeitos });
+  }
+  const caract = agregarCaracteristicas([...caracteristicas, ...livresDeAcao]);
   for (const m of caract.motor) somaNoAcumulador(efe, m.canal, m.alvo, m.valor, m.nome);
   /* ⚠ TR MESTRE SÓ NUM TR JÁ TREINADO (decisão do autor, 2026-09-30, Adicionais:
      "Permite que sua invocação se torne mestre em um TR em que ela é Treinada").
@@ -3593,8 +3672,15 @@ export function resolveInvocacao(invCru, dono = {}) {
     (bloco?.dado ? { ...bloco, grupos: dadosDaNotacao(bloco.dado) } : bloco);
   const acoes = (inv?.acoes || []).map((a) => {
     const r = resolveAcao(a, invEf, donoLocal, inv);
+    const motor = motorDasAcoes.get(a.id);
     return {
       ...r,
+      ...(r.familia === "personalizada" ? {
+        efeitos: motor?.efeitos ?? [],
+        resumoMotor: (motor?.efeitos ?? []).filter((e) => e.ativo && e.valor)
+          .map((e) => resumoEfeitoInv(e.canal, e.alvo, e.valor)).join(" · "),
+        ...(motor?.avisos.length ? { warnings: [...(r.warnings ?? []), ...motor.avisos] } : {}),
+      } : {}),
       dano: comGrupos(r.dano),
       cura: comGrupos(r.cura),
       danoAdicional: comGrupos(r.danoAdicional),
@@ -5033,6 +5119,8 @@ export function validarCatalogoInvocacoes() {
     { familia: "ataque", ataqueTipo: "tr" },
     { familia: "auxilio", auxilioSub: "cura" },
     { familia: "auxilio", auxilioSub: "defesa" },
+    { familia: "personalizada", resolucao: "jogada" },
+    { familia: "personalizada", resolucao: "tr" },
   ];
   for (const a of amostras) {
     for (const o of alvosDeModificador(a)) {

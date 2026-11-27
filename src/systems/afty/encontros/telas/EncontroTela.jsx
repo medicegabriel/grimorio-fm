@@ -6,7 +6,7 @@ import "../encontro-g2.css";
 import useEncontro from "../usar-encontro";
 import { ENCONTRO_STATUS } from "../afty-encontro";
 import { TIPO, MOTOR } from "../modelo";
-import { Aviso, Dialogo, Confirmar, Retrato, RotuloLado, Vazio } from "./pecas-encontro";
+import { Aviso, Dialogo, Confirmar, Retrato, RotuloLado, Trilha, Vazio } from "./pecas-encontro";
 import { contagem } from "./pecas-dados";
 import LinhasDoRegistro from "./LinhasDoRegistro";
 import { linhasDoFinalizado } from "../../../../nuvem/sala-telas";
@@ -63,7 +63,7 @@ export function ConfiguracoesDoEncontro({ encontro, acoes, onFechar }) {
 
 /* ---------- finalizado ---------- */
 
-function Finalizado({ estado, onVoltar, onDuplicar }) {
+function Finalizado({ estado, onVoltar, onDuplicar, trilha = null }) {
   const { encontro, derivado, acoes } = estado;
   // O Encontro Finalizado de quem esteve numa Sala como jogador ou espectador é só para ler: reabrir a luta é do Mestre.
   const soLeitura = !!encontro.sala?.papel && encontro.sala.papel !== "mestre";
@@ -72,8 +72,9 @@ function Finalizado({ estado, onVoltar, onDuplicar }) {
   return (
     <div className="ec-plano-pagina">
       <header className="ec-topo">
-        <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros"><ArrowLeft aria-hidden="true" /></button>
+        {!trilha && <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros"><ArrowLeft aria-hidden="true" /></button>}
         <div className="ec-topo-titulo">
+          <Trilha itens={trilha} />
           <h1 className="ec-titulo" title={encontro.nome}>{encontro.nome}</h1>
           <p className="ec-subtitulo"><span>Finalizado</span>{encontro.sala?.codigo && <span>Sala {encontro.sala.codigo}</span>}<span>{contagem(encontro.rodada, "Rodada", "Rodadas")}</span><span>{contagem(derivado.abatidos, "Abatido", "Abatidos")}</span></p>
         </div>
@@ -125,7 +126,9 @@ function Finalizado({ estado, onVoltar, onDuplicar }) {
    `aoEstado(estado)` recebe o estado do gancho a cada render, para a ligação da Sala publicar o que mudou. Na 7c a `sala` leva
    também `acoesTopo` (o botão da Sala no cabeçalho), `avisos` (a Sala sem conexão, a escrita que desistiu) e `painel` (a aba Sala
    do Registro). `acoesSala` é o botão Abrir Sala de um Encontro que ainda não tem Sala, montado pelo `App.jsx`. */
-export default function EncontroTela({ encontroId, lista, onVoltar, onDuplicar, onAtualizarBiblioteca = null, namespaceDaBiblioteca = null, sala = null, acoesSala = null }) {
+/* `trilha` (rework, etapa 1): os links do cabeçalho (rota e lista), no lugar da seta de voltar. A Sala não passa trilha e
+   fica com a seta. */
+export default function EncontroTela({ encontroId, lista, onVoltar, onDuplicar, onAtualizarBiblioteca = null, namespaceDaBiblioteca = null, sala = null, acoesSala = null, trilha = null }) {
   const estado = useEncontro(encontroId, lista, {
     onAtualizarBiblioteca, namespaceDaBiblioteca,
     ...(sala ? { fonte: sala.fonte, autor: sala.autor, aoExecutar: sala.aoExecutar } : {}),
@@ -138,7 +141,7 @@ export default function EncontroTela({ encontroId, lista, onVoltar, onDuplicar, 
 
   if (!encontro) {
     return (
-      <div className="afty-ficha ec-raiz">
+      <div className="afty-ficha ec-raiz" data-tela="nao-encontrado">
         <div className="ec-centro">
           <Vazio icone={ScrollText} titulo="Encontro Não Encontrado">
             <button type="button" className="afty-botao" onClick={onVoltar}><ArrowLeft aria-hidden="true" />Voltar aos Encontros</button>
@@ -163,11 +166,11 @@ export default function EncontroTela({ encontroId, lista, onVoltar, onDuplicar, 
   const abrirConfig = () => setConfig(true);
   let tela;
   if (encontro.status === ENCONTRO_STATUS.ATIVO) {
-    tela = <LutaDoMestre estado={estado} onVoltar={onVoltar} onConfig={abrirConfig} onEncerrar={() => setEncerrar(true)} acoesSala={sala?.acoesTopo ?? acoesSala} painelSala={sala?.painel ?? null} />;
+    tela = <LutaDoMestre estado={estado} onVoltar={onVoltar} onConfig={abrirConfig} onEncerrar={() => setEncerrar(true)} acoesSala={sala?.acoesTopo ?? acoesSala} painelSala={sala?.painel ?? null} trilha={trilha} />;
   } else if (encontro.status === ENCONTRO_STATUS.FINALIZADO) {
-    tela = <Finalizado estado={estado} onVoltar={onVoltar} onDuplicar={() => onDuplicar?.(encontro.id)} />;
+    tela = <Finalizado estado={estado} onVoltar={onVoltar} onDuplicar={() => onDuplicar?.(encontro.id)} trilha={trilha} />;
   } else {
-    tela = <Planejamento estado={estado} onVoltar={onVoltar} onConfig={abrirConfig} acoesSala={sala?.acoesTopo ?? acoesSala} />;
+    tela = <Planejamento estado={estado} onVoltar={onVoltar} onConfig={abrirConfig} acoesSala={sala?.acoesTopo ?? acoesSala} trilha={trilha} />;
   }
 
   return (

@@ -299,9 +299,25 @@
     }
   ],
   "modulosAdicionais": {
+    "balanceamento/coleta.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Preferência local e envio dos resumos de balanceamento de Jogador"
+    },
+    "balanceamento/resumo.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Projeção de escolhas dos catálogos existentes para análise de balanceamento"
+    },
     "criador-celular/secoes.js": {
       "modo": "INTERFACE",
       "justificativa": "App Era de Ouro, etapa E6 (2026-11-20): ordem e vizinhas das seções do criador no celular e os números da faixa de resumo, lidos do derive; sem catálogo de regra do Livro"
+    },
+    "ui/rolagem-252.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Feedback do lançamento (2026-11-23): o pedido de rolagem da ficha de Criatura da 2.5.2 (onRolar) vira rolagem pelo rolador da Ficha; lê a notação do dano, sem catálogo de regra do Livro"
+    },
+    "ui/usar-rolagens-252.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Feedback do lançamento (2026-11-23): o estado React das rolagens da Criatura da 2.5.2 (lista, modo do d20 e o rolar); sem catálogo de regra do Livro"
     },
     "ui/fontes-toque.js": {
       "modo": "INTERFACE",
@@ -515,6 +531,10 @@
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): as três listas de Encontros e a leitura dos inventários por chave; sem catálogo de regra"
     },
+    "encontros/rota-encontros.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Rework dos Encontros, etapa 1 (2026-11-18): o endereço da aba (caminho de lista e de Encontro por rota), a origem da Sala e a chave de aparelho da moldura nova. FOLHA, sem catálogo de regra"
+    },
     "encontros/migracao.js": {
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): migração idempotente dos Encontros antigos para o formato novo; sem catálogo de regra"
@@ -538,6 +558,10 @@
     "encontros/motores/index.js": {
       "modo": "INTERFACE",
       "justificativa": "Encontro Unificado, etapa 3 (2026-11-17): registro dos motores do Encontro"
+    },
+    "encontros/motores/marcador.js": {
+      "modo": "INTERFACE",
+      "justificativa": "Rework dos Encontros, etapa 2 (2026-11-23): adaptador mínimo do marcador com Vida (Sem Ficha com Vida), só Dano, Cura e Descansar na Vida. FOLHA, sem regra do Livro"
     },
     "encontros/pastas.js": {
       "modo": "INTERFACE",

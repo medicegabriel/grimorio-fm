@@ -4,7 +4,7 @@ import { ArrowLeft, Dices, Play, Settings, Pencil, Trash2, Users, Swords, Plus }
 import { TIPO, MOTOR, ehLigado } from "../modelo";
 import { LADO } from "../afty-encontro";
 import {
-  Retrato, Aviso, CampoNumero, SeletorDeVisao, Vazio,
+  Retrato, Aviso, CampoNumero, SeletorDeVisao, Trilha, Vazio,
 } from "./pecas-encontro";
 import { LADO_PECA, contagem } from "./pecas-dados";
 import AdicionarCombatentes from "./AdicionarCombatentes";
@@ -74,7 +74,7 @@ function LinhaDaEscalacao({ c, acoes, onRemover }) {
   );
 }
 
-export default function Planejamento({ estado, onVoltar, onConfig, acoesSala = null }) {
+export default function Planejamento({ estado, onVoltar, onConfig, acoesSala = null, trilha = null }) {
   const { encontro, derivado, acoes, inventario } = estado;
   const [editandoNome, setEditandoNome] = useState(false);
   const [nome, setNome] = useState(encontro.nome);
@@ -96,8 +96,9 @@ export default function Planejamento({ estado, onVoltar, onConfig, acoesSala = n
   return (
     <div className="ec-plano-pagina">
       <header className="ec-topo">
-        <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros"><ArrowLeft aria-hidden="true" /></button>
+        {!trilha && <button type="button" className="afty-botao ec-icone" onClick={onVoltar} aria-label="Voltar aos Encontros" title="Voltar aos Encontros"><ArrowLeft aria-hidden="true" /></button>}
         <div className="ec-topo-titulo">
+          <Trilha itens={trilha} />
           {editandoNome ? (
             <input
               className="ec-campo ec-titulo-campo" autoFocus value={nome} aria-label="Nome do Encontro"

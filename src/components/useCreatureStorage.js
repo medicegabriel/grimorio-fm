@@ -30,34 +30,43 @@ const buildKeys = (namespace = "") => {
 // ============================================================
 // LEITURA/ESCRITA SEGURA
 // ============================================================
+/* A LEITURA DIZ SE MUDOU ALGUMA COISA (autor, 2026-11-26, "Sim, nas três rotas").
+   `mudou` liga quando a migração acrescenta ou troca um campo, ou quando o valor
+   gravado não é uma lista legível (e então a lista vazia o substitui, como
+   sempre). Nada gravado não é mudança: não há o que regravar. */
 const readCreatures = (key, defaultRulesVersion) => {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return [];
+    if (!raw) return { lista: [], mudou: false };
     const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return [];
+    if (!Array.isArray(parsed)) return { lista: [], mudou: true };
+    let mudou = false;
     // Migração silenciosa: garante folderId e rulesVersion em fichas antigas.
     // Fichas sem versão herdam a versão padrão do espaço (2.5.2 no público,
     // "afty" no espaço homebrew).
-    return parsed.map((c) => ({
-      ...c,
-      folderId: c.folderId ?? null,
-      rulesVersion: c.rulesVersion ?? defaultRulesVersion,
-      isBuiltIn: false, // storage nunca contém built-ins
-    }));
+    const lista = parsed.map((c) => {
+      if (c.folderId === undefined || c.rulesVersion == null || c.isBuiltIn !== false) mudou = true;
+      return {
+        ...c,
+        folderId: c.folderId ?? null,
+        rulesVersion: c.rulesVersion ?? defaultRulesVersion,
+        isBuiltIn: false, // storage nunca contém built-ins
+      };
+    });
+    return { lista, mudou };
   } catch {
-    return [];
+    return { lista: [], mudou: true };
   }
 };
 
 const readFolders = (key) => {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return [];
+    if (!raw) return { lista: [], mudou: false };
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    return Array.isArray(parsed) ? { lista: parsed, mudou: false } : { lista: [], mudou: true };
   } catch {
-    return [];
+    return { lista: [], mudou: true };
   }
 };
 
@@ -96,22 +105,31 @@ export default function useCreatureStorage({ namespace = "", defaultRulesVersion
   // então as chaves são estáveis — sem risco de loop nos efeitos.
   const keys = useMemo(() => buildKeys(namespace), [namespace]);
 
-  const [creatures, setCreatures] = useState(() => readCreatures(keys.creatures, defaultRulesVersion));
-  const [folders, setFolders] = useState(() => readFolders(keys.folders));
+  /* A lista lida fica guardada para a primeira gravação a reconhecer. Até aqui a
+     abertura regravava a biblioteca inteira, o que acionava o gancho da nuvem
+     (src/nuvem/nuvem-sync.js) e custava cerca de 165 ms com 60 fichas no celular.
+     A comparação é por identidade e não por "primeira vez": todo setState cria
+     outra lista, e o efeito dobrado do StrictMode segue pulando. */
+  const [lidas] = useState(() => readCreatures(keys.creatures, defaultRulesVersion));
+  const [pastasLidas] = useState(() => readFolders(keys.folders));
+  const [creatures, setCreatures] = useState(lidas.lista);
+  const [folders, setFolders] = useState(pastasLidas.lista);
   const [isSaving, setIsSaving] = useState(false);
 
   // --- Persistência ---
   useEffect(() => {
+    if (creatures === lidas.lista && !lidas.mudou) return undefined;
     setIsSaving(true);
     const ok = writeCreatures(creatures, keys);
     if (!ok) console.warn("Falha ao salvar criaturas (quota?)");
     const t = setTimeout(() => setIsSaving(false), 300);
     return () => clearTimeout(t);
-  }, [creatures, keys]);
+  }, [creatures, keys, lidas]);
 
   useEffect(() => {
+    if (folders === pastasLidas.lista && !pastasLidas.mudou) return;
     writeFolders(folders, keys.folders);
-  }, [folders, keys]);
+  }, [folders, keys, pastasLidas]);
 
   // ============================================================
   // CRIATURAS — CRUD

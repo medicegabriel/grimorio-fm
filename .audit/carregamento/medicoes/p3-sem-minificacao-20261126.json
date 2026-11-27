@@ -1,0 +1,2484 @@
+{
+ "condicoes": {
+  "chrome": "158.0.8127.37",
+  "headless": true,
+  "base": "http://localhost:53170",
+  "perfis": {
+   "desktop": {
+    "viewport": {
+     "width": 1366,
+     "height": 768
+    },
+    "rede": null,
+    "cpu": 1
+   },
+   "celular": {
+    "viewport": {
+     "width": 375,
+     "height": 812
+    },
+    "isMobile": true,
+    "hasTouch": true,
+    "deviceScaleFactor": 2,
+    "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+    "rede": {
+     "latency": 150,
+     "downloadThroughput": 209715.2,
+     "uploadThroughput": 96000
+    },
+    "cpu": 4
+   }
+  },
+  "data": "2026-11-26T23:11:54.294Z"
+ },
+ "criaturaFrio:celular": [
+  {
+   "origem": 1795734714426.6,
+   "ttfb": 152,
+   "docFim": 205,
+   "dcl": 880,
+   "load": 1360,
+   "pinturas": {
+    "first-paint": 812,
+    "first-contentful-paint": 1048
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 225,
+     "fim": 475,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "script",
+     "ini": 226,
+     "fim": 413,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "script",
+     "ini": 227,
+     "fim": 414,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "script",
+     "ini": 227,
+     "fim": 585,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "script",
+     "ini": 228,
+     "fim": 834,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "script",
+     "ini": 228,
+     "fim": 439,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "script",
+     "ini": 228,
+     "fim": 616,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "script",
+     "ini": 229,
+     "fim": 617,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "script",
+     "ini": 229,
+     "fim": 647,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 229,
+     "fim": 787,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "script",
+     "ini": 858,
+     "fim": 1039,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 858,
+     "fim": 1101,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "script",
+     "ini": 860,
+     "fim": 1305,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "script",
+     "ini": 860,
+     "fim": 1258,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 861,
+     "fim": 1132,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 861,
+     "fim": 1071,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 862,
+     "fim": 1383,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 863,
+     "fim": 1429,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 864,
+     "fim": 1211,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 864,
+     "fim": 1444,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "script",
+     "ini": 865,
+     "fim": 1491,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 866,
+     "fim": 1273,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 867,
+     "fim": 1352,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 867,
+     "fim": 1495,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1523,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1555,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 869,
+     "fim": 1600,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "script",
+     "ini": 870,
+     "fim": 1631,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 870,
+     "fim": 1662,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 871,
+     "fim": 1667,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "script",
+     "ini": 873,
+     "fim": 1692,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 873,
+     "fim": 1723,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "script",
+     "ini": 874,
+     "fim": 1860,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "script",
+     "ini": 874,
+     "fim": 1815,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "script",
+     "ini": 875,
+     "fim": 1830,
+     "transf": 1524,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 876,
+     "fim": 1845,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 876,
+     "fim": 1336,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1365,
+     "fim": 1875,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/assets/fm-compendium-yfvYQ6i0.js",
+     "tipo": "script",
+     "ini": 1931,
+     "fim": 2825,
+     "transf": 152386,
+     "corpo": 2924165
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1976,
+     "fim": 2017,
+     "transf": 0,
+     "corpo": 0
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1929,
+    "dashTitulo": 2911,
+    "dashCards3": 2911,
+    "dashNova": 2911
+   },
+   "cls": 0.0079,
+   "deslocamentos": [
+    {
+     "t": 2954,
+     "v": 0.0078,
+     "fontes": [
+      "footer.biblioteca-rodape.bg-slate-950.px-4 \"Política de Privacidade\""
+     ]
+    },
+    {
+     "t": 3070,
+     "v": 0.0001,
+     "fontes": [
+      "div.flex-1.h-1.5.bg-slate-800 \"\""
+     ]
+    }
+   ],
+   "lcp": {
+    "t": 3064,
+    "tam": 4320,
+    "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 1048,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 3064,
+     "tam": 4320,
+     "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 887,
+     "d": 122
+    }
+   ],
+   "carregandoVisto": 284,
+   "carregandoSaiu": 2911,
+   "rootVazioAte": 283,
+   "ultimaTarefa": 1009,
+   "tbt": 72,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  },
+  {
+   "origem": 1795734719985.9,
+   "ttfb": 153,
+   "docFim": 200,
+   "dcl": 877,
+   "load": 1352,
+   "pinturas": {
+    "first-paint": 824,
+    "first-contentful-paint": 1008
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 239,
+     "fim": 480,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "script",
+     "ini": 241,
+     "fim": 417,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "script",
+     "ini": 241,
+     "fim": 432,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "script",
+     "ini": 242,
+     "fim": 573,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "script",
+     "ini": 242,
+     "fim": 837,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "script",
+     "ini": 242,
+     "fim": 449,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "script",
+     "ini": 243,
+     "fim": 637,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "script",
+     "ini": 243,
+     "fim": 621,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "script",
+     "ini": 244,
+     "fim": 652,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 244,
+     "fim": 791,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "script",
+     "ini": 857,
+     "fim": 1040,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 858,
+     "fim": 1103,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "script",
+     "ini": 860,
+     "fim": 1290,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "script",
+     "ini": 860,
+     "fim": 1259,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 861,
+     "fim": 1135,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 861,
+     "fim": 1072,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 862,
+     "fim": 1383,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 863,
+     "fim": 1430,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 863,
+     "fim": 1213,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 864,
+     "fim": 1446,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "script",
+     "ini": 864,
+     "fim": 1476,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 865,
+     "fim": 1274,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 867,
+     "fim": 1337,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1508,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1523,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "script",
+     "ini": 869,
+     "fim": 1555,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 869,
+     "fim": 1602,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "script",
+     "ini": 869,
+     "fim": 1618,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 870,
+     "fim": 1649,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 870,
+     "fim": 1680,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "script",
+     "ini": 871,
+     "fim": 1695,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 871,
+     "fim": 1726,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "script",
+     "ini": 872,
+     "fim": 1850,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "script",
+     "ini": 872,
+     "fim": 1787,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "script",
+     "ini": 873,
+     "fim": 1820,
+     "transf": 1524,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 873,
+     "fim": 1851,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 874,
+     "fim": 1337,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1354,
+     "fim": 1865,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1934,
+     "fim": 1935,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/fm-compendium-yfvYQ6i0.js",
+     "tipo": "script",
+     "ini": 1943,
+     "fim": 2836,
+     "transf": 152386,
+     "corpo": 2924165
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1942,
+    "dashTitulo": 2936,
+    "dashCards3": 2936,
+    "dashNova": 2936
+   },
+   "cls": 0.0079,
+   "deslocamentos": [
+    {
+     "t": 2980,
+     "v": 0.0078,
+     "fontes": [
+      "footer.biblioteca-rodape.bg-slate-950.px-4 \"Política de Privacidade\""
+     ]
+    },
+    {
+     "t": 3061,
+     "v": 0.0001,
+     "fontes": [
+      "div.flex-1.h-1.5.bg-slate-800 \"\""
+     ]
+    }
+   ],
+   "lcp": {
+    "t": 2996,
+    "tam": 4320,
+    "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 1008,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 2996,
+     "tam": 4320,
+     "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 884,
+     "d": 106
+    },
+    {
+     "t": 2983,
+     "d": 50
+    }
+   ],
+   "carregandoVisto": 246,
+   "carregandoSaiu": 2937,
+   "rootVazioAte": 246,
+   "ultimaTarefa": 3033,
+   "tbt": 56,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  },
+  {
+   "origem": 1795734725578.5,
+   "ttfb": 151,
+   "docFim": 209,
+   "dcl": 888,
+   "load": 1356,
+   "pinturas": {
+    "first-paint": 836,
+    "first-contentful-paint": 1020
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 254,
+     "fim": 428,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "script",
+     "ini": 256,
+     "fim": 444,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "script",
+     "ini": 256,
+     "fim": 459,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "script",
+     "ini": 256,
+     "fim": 581,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "script",
+     "ini": 257,
+     "fim": 849,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "script",
+     "ini": 257,
+     "fim": 475,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "script",
+     "ini": 258,
+     "fim": 645,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "script",
+     "ini": 258,
+     "fim": 629,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "script",
+     "ini": 258,
+     "fim": 661,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 259,
+     "fim": 803,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1038,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 868,
+     "fim": 1101,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "script",
+     "ini": 869,
+     "fim": 1286,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "script",
+     "ini": 870,
+     "fim": 1256,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 871,
+     "fim": 1132,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 871,
+     "fim": 1070,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 872,
+     "fim": 1379,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 873,
+     "fim": 1426,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 874,
+     "fim": 1209,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 874,
+     "fim": 1427,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "script",
+     "ini": 875,
+     "fim": 1458,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 875,
+     "fim": 1258,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 876,
+     "fim": 1348,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 877,
+     "fim": 1504,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "script",
+     "ini": 877,
+     "fim": 1534,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "script",
+     "ini": 879,
+     "fim": 1550,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 880,
+     "fim": 1597,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "script",
+     "ini": 880,
+     "fim": 1612,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 881,
+     "fim": 1628,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 881,
+     "fim": 1674,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "script",
+     "ini": 882,
+     "fim": 1704,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 883,
+     "fim": 1719,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "script",
+     "ini": 883,
+     "fim": 1842,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "script",
+     "ini": 883,
+     "fim": 1811,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "script",
+     "ini": 884,
+     "fim": 1796,
+     "transf": 1524,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 884,
+     "fim": 1843,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 885,
+     "fim": 1332,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1361,
+     "fim": 1874,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/assets/fm-compendium-yfvYQ6i0.js",
+     "tipo": "script",
+     "ini": 1913,
+     "fim": 2822,
+     "transf": 152386,
+     "corpo": 2924165
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1955,
+     "fim": 1956,
+     "transf": 0,
+     "corpo": 0
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1912,
+    "dashTitulo": 2905,
+    "dashCards3": 2906,
+    "dashNova": 2906
+   },
+   "cls": 0.0079,
+   "deslocamentos": [
+    {
+     "t": 2949,
+     "v": 0.0078,
+     "fontes": [
+      "footer.biblioteca-rodape.bg-slate-950.px-4 \"Política de Privacidade\""
+     ]
+    },
+    {
+     "t": 3031,
+     "v": 0.0001,
+     "fontes": [
+      "div.flex-1.h-1.5.bg-slate-800 \"\""
+     ]
+    }
+   ],
+   "lcp": {
+    "t": 2972,
+    "tam": 4320,
+    "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 1020,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 2972,
+     "tam": 4320,
+     "el": "h2.text-xl.font-bold.text-white \"Todas as Criaturas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 893,
+     "d": 106
+    }
+   ],
+   "carregandoVisto": 262,
+   "carregandoSaiu": 2906,
+   "rootVazioAte": 262,
+   "ultimaTarefa": 999,
+   "tbt": 56,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  }
+ ],
+ "centralFrio:celular": [
+  {
+   "origem": 1795734731141,
+   "ttfb": 152,
+   "docFim": 211,
+   "dcl": 853,
+   "load": 1189,
+   "pinturas": {
+    "first-paint": 812,
+    "first-contentful-paint": 980
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 217,
+     "fim": 459,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "script",
+     "ini": 218,
+     "fim": 397,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "script",
+     "ini": 219,
+     "fim": 400,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "script",
+     "ini": 219,
+     "fim": 584,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "script",
+     "ini": 221,
+     "fim": 818,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "script",
+     "ini": 221,
+     "fim": 429,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "script",
+     "ini": 222,
+     "fim": 600,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "script",
+     "ini": 222,
+     "fim": 600,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "script",
+     "ini": 222,
+     "fim": 631,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 223,
+     "fim": 771,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BQ3VSpbD.js",
+     "tipo": "script",
+     "ini": 839,
+     "fim": 1039,
+     "transf": 1964,
+     "corpo": 4078
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 839,
+     "fim": 1055,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 840,
+     "fim": 1007,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 841,
+     "fim": 1023,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 842,
+     "fim": 1023,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 842,
+     "fim": 1039,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BHcWVrtU.css",
+     "tipo": "link",
+     "ini": 843,
+     "fim": 1181,
+     "transf": 1400,
+     "corpo": 4203
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1198,
+     "fim": 1366,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 1210,
+     "fim": 1382,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 1211,
+     "fim": 1382,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 1212,
+     "fim": 1397,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 1212,
+     "fim": 1397,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 1213,
+     "fim": 1403,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 1214,
+     "fim": 1534,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 1214,
+     "fim": 1537,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 1215,
+     "fim": 1564,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1402,
+     "fim": 1405,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "link",
+     "ini": 1507,
+     "fim": 1996,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 1508,
+     "fim": 1765,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "link",
+     "ini": 1508,
+     "fim": 1951,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "link",
+     "ini": 1509,
+     "fim": 1780,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 1780,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 1872,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "link",
+     "ini": 1511,
+     "fim": 1996,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "link",
+     "ini": 1511,
+     "fim": 1981,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "link",
+     "ini": 1512,
+     "fim": 1981,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "link",
+     "ini": 1513,
+     "fim": 2042,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "link",
+     "ini": 1513,
+     "fim": 2119,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "link",
+     "ini": 1514,
+     "fim": 2229,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "link",
+     "ini": 1514,
+     "fim": 2166,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "link",
+     "ini": 1515,
+     "fim": 2151,
+     "transf": 1524,
+     "corpo": 3005
+    }
+   ],
+   "caixas": {
+    "cabecalho": null,
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 375,
+     "h": 69
+    },
+    "pastas": null,
+    "cards": [],
+    "tituloLista": null
+   },
+   "marcas": {
+    "centralConteudo": 1395,
+    "barraLateral": 1395
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1512,
+    "tam": 13462,
+    "el": "h1 \"Fichas e Mesas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 980,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1512,
+     "tam": 13462,
+     "el": "h1 \"Fichas e Mesas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 892,
+     "d": 80
+    },
+    {
+     "t": 1406,
+     "d": 87
+    }
+   ],
+   "carregandoVisto": 270,
+   "carregandoSaiu": 1395,
+   "rootVazioAte": 270,
+   "ultimaTarefa": 1493,
+   "tbt": 67,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  },
+  {
+   "origem": 1795734735210.1,
+   "ttfb": 152,
+   "docFim": 192,
+   "dcl": 827,
+   "load": 1193,
+   "pinturas": {
+    "first-paint": 780,
+    "first-contentful-paint": 948
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 192,
+     "fim": 433,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "other",
+     "ini": 193,
+     "fim": 372,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "other",
+     "ini": 194,
+     "fim": 388,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "other",
+     "ini": 194,
+     "fim": 528,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "other",
+     "ini": 194,
+     "fim": 793,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "other",
+     "ini": 194,
+     "fim": 404,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "other",
+     "ini": 195,
+     "fim": 588,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "other",
+     "ini": 195,
+     "fim": 573,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "other",
+     "ini": 196,
+     "fim": 604,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 196,
+     "fim": 745,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BQ3VSpbD.js",
+     "tipo": "script",
+     "ini": 814,
+     "fim": 1042,
+     "transf": 1964,
+     "corpo": 4078
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 815,
+     "fim": 1057,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 815,
+     "fim": 1011,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 816,
+     "fim": 1011,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 817,
+     "fim": 1026,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 818,
+     "fim": 1026,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BHcWVrtU.css",
+     "tipo": "link",
+     "ini": 818,
+     "fim": 1183,
+     "transf": 1400,
+     "corpo": 4203
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1205,
+     "fim": 1416,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 1214,
+     "fim": 1385,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 1215,
+     "fim": 1386,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 1216,
+     "fim": 1400,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 1218,
+     "fim": 1401,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 1218,
+     "fim": 1416,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 1219,
+     "fim": 1570,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 1219,
+     "fim": 1555,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 1220,
+     "fim": 1586,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1374,
+     "fim": 1375,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "link",
+     "ini": 1505,
+     "fim": 1973,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 1505,
+     "fim": 1725,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "link",
+     "ini": 1506,
+     "fim": 1942,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "link",
+     "ini": 1507,
+     "fim": 1786,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 1507,
+     "fim": 1786,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 1508,
+     "fim": 1912,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "link",
+     "ini": 1508,
+     "fim": 1943,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "link",
+     "ini": 1509,
+     "fim": 1973,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "link",
+     "ini": 1509,
+     "fim": 1988,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 2081,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 2112,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 2189,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "link",
+     "ini": 1511,
+     "fim": 2158,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "link",
+     "ini": 1511,
+     "fim": 2143,
+     "transf": 1524,
+     "corpo": 3005
+    }
+   ],
+   "caixas": {
+    "cabecalho": null,
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 375,
+     "h": 69
+    },
+    "pastas": null,
+    "cards": [],
+    "tituloLista": null
+   },
+   "marcas": {
+    "centralConteudo": 1367,
+    "barraLateral": 1367
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1480,
+    "tam": 13462,
+    "el": "h1 \"Fichas e Mesas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 948,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1480,
+     "tam": 13462,
+     "el": "h1 \"Fichas e Mesas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 864,
+     "d": 75
+    },
+    {
+     "t": 1379,
+     "d": 86
+    }
+   ],
+   "carregandoVisto": 256,
+   "carregandoSaiu": 1368,
+   "rootVazioAte": 256,
+   "ultimaTarefa": 1465,
+   "tbt": 61,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  },
+  {
+   "origem": 1795734739254.8,
+   "ttfb": 151,
+   "docFim": 201,
+   "dcl": 828,
+   "load": 1186,
+   "pinturas": {
+    "first-paint": 772,
+    "first-contentful-paint": 940
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DD7oqiBz.js",
+     "tipo": "script",
+     "ini": 200,
+     "fim": 442,
+     "transf": 4423,
+     "corpo": 10634
+    },
+    {
+     "nome": "/assets/rolldown-runtime-Dw2cE7zH.js",
+     "tipo": "other",
+     "ini": 201,
+     "fim": 381,
+     "transf": 680,
+     "corpo": 685
+    },
+    {
+     "nome": "/assets/preload-helper-Dd-HcVz_.js",
+     "tipo": "other",
+     "ini": 202,
+     "fim": 396,
+     "transf": 903,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/lucide-react-BdQxfy5I.js",
+     "tipo": "other",
+     "ini": 202,
+     "fim": 534,
+     "transf": 13942,
+     "corpo": 44175
+    },
+    {
+     "nome": "/assets/react-dom-BeVsuaTO.js",
+     "tipo": "other",
+     "ini": 202,
+     "fim": 796,
+     "transf": 40413,
+     "corpo": 132739
+    },
+    {
+     "nome": "/assets/jsx-runtime-mt_b-GbV.js",
+     "tipo": "other",
+     "ini": 203,
+     "fim": 411,
+     "transf": 737,
+     "corpo": 724
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-CuFAKCFP.js",
+     "tipo": "other",
+     "ini": 203,
+     "fim": 596,
+     "transf": 2353,
+     "corpo": 7182
+    },
+    {
+     "nome": "/assets/sob-demanda-DSE-Fs_l.js",
+     "tipo": "other",
+     "ini": 204,
+     "fim": 580,
+     "transf": 789,
+     "corpo": 923
+    },
+    {
+     "nome": "/assets/nuvem-config-BkyvFaj6.js",
+     "tipo": "other",
+     "ini": 204,
+     "fim": 611,
+     "transf": 1055,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-C0UIOlc5.css",
+     "tipo": "link",
+     "ini": 205,
+     "fim": 749,
+     "transf": 18631,
+     "corpo": 155634
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BQ3VSpbD.js",
+     "tipo": "script",
+     "ini": 816,
+     "fim": 1040,
+     "transf": 1964,
+     "corpo": 4078
+    },
+    {
+     "nome": "/assets/pre-carga-CyDBE6Dj.js",
+     "tipo": "script",
+     "ini": 817,
+     "fim": 1055,
+     "transf": 3261,
+     "corpo": 7165
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 818,
+     "fim": 1010,
+     "transf": 1383,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/fm-docs-BJDheHRo.js",
+     "tipo": "script",
+     "ini": 818,
+     "fim": 1010,
+     "transf": 454,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/sala-ui-dados-UqoQTyVV.js",
+     "tipo": "script",
+     "ini": 819,
+     "fim": 1026,
+     "transf": 747,
+     "corpo": 857
+    },
+    {
+     "nome": "/assets/rota-encontros-DwGFV901.js",
+     "tipo": "script",
+     "ini": 819,
+     "fim": 1026,
+     "transf": 942,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/CentralDeJogo-BHcWVrtU.css",
+     "tipo": "link",
+     "ini": 820,
+     "fim": 1180,
+     "transf": 1400,
+     "corpo": 4203
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 1198,
+     "fim": 1369,
+     "transf": 1638,
+     "corpo": 9522
+    },
+    {
+     "nome": "/assets/ContaNuvem-DvoCWqc7.js",
+     "tipo": "script",
+     "ini": 1216,
+     "fim": 1384,
+     "transf": 1421,
+     "corpo": 2378
+    },
+    {
+     "nome": "/assets/FolhaInferior-1Q62sCfR.js",
+     "tipo": "script",
+     "ini": 1217,
+     "fim": 1385,
+     "transf": 926,
+     "corpo": 1379
+    },
+    {
+     "nome": "/assets/camadas-BWY7WbnN.js",
+     "tipo": "script",
+     "ini": 1217,
+     "fim": 1385,
+     "transf": 1195,
+     "corpo": 2120
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 1218,
+     "fim": 1400,
+     "transf": 1295,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-celular-CmcU6Ymw.js",
+     "tipo": "script",
+     "ini": 1218,
+     "fim": 1401,
+     "transf": 566,
+     "corpo": 467
+    },
+    {
+     "nome": "/assets/PainelDaConta-FOpem346.js",
+     "tipo": "script",
+     "ini": 1219,
+     "fim": 1537,
+     "transf": 1541,
+     "corpo": 3108
+    },
+    {
+     "nome": "/assets/usar-instalacao-3rhqr1rI.js",
+     "tipo": "script",
+     "ini": 1219,
+     "fim": 1558,
+     "transf": 1149,
+     "corpo": 1866
+    },
+    {
+     "nome": "/assets/nuvem-sync-HBy9g4WY.js",
+     "tipo": "script",
+     "ini": 1220,
+     "fim": 1572,
+     "transf": 3386,
+     "corpo": 7331
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1492,
+     "fim": 1494,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/App-CuenQkPo.js",
+     "tipo": "link",
+     "ini": 1506,
+     "fim": 1963,
+     "transf": 19125,
+     "corpo": 73753
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 1506,
+     "fim": 1746,
+     "transf": 4022,
+     "corpo": 17848
+    },
+    {
+     "nome": "/assets/sortable.esm-DOvhmA3q.js",
+     "tipo": "link",
+     "ini": 1507,
+     "fim": 1963,
+     "transf": 15546,
+     "corpo": 48883
+    },
+    {
+     "nome": "/assets/editar-pela-sala-DNyAZdzP.js",
+     "tipo": "link",
+     "ini": 1508,
+     "fim": 1794,
+     "transf": 3092,
+     "corpo": 8230
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 1509,
+     "fim": 1779,
+     "transf": 1771,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 1509,
+     "fim": 1901,
+     "transf": 8980,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-wsaQIcjn.js",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 1978,
+     "transf": 3774,
+     "corpo": 12895
+    },
+    {
+     "nome": "/assets/PdfViewerModal-BqKr7zFg.js",
+     "tipo": "link",
+     "ini": 1510,
+     "fim": 1979,
+     "transf": 2366,
+     "corpo": 5311
+    },
+    {
+     "nome": "/assets/lista-fichas-clVUHjnA.js",
+     "tipo": "link",
+     "ini": 1511,
+     "fim": 1994,
+     "transf": 1852,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-yKwwlyi2.js",
+     "tipo": "link",
+     "ini": 1512,
+     "fim": 2072,
+     "transf": 1103,
+     "corpo": 1752
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-CqofrmbA.js",
+     "tipo": "link",
+     "ini": 1512,
+     "fim": 2134,
+     "transf": 1483,
+     "corpo": 2755
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-DN_c_y8V.js",
+     "tipo": "link",
+     "ini": 1513,
+     "fim": 2214,
+     "transf": 12469,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/coleta-Cb4PNUNP.js",
+     "tipo": "link",
+     "ini": 1514,
+     "fim": 2166,
+     "transf": 1699,
+     "corpo": 3264
+    },
+    {
+     "nome": "/assets/listas-Db1rtjGy.js",
+     "tipo": "link",
+     "ini": 1515,
+     "fim": 2150,
+     "transf": 1524,
+     "corpo": 3005
+    }
+   ],
+   "caixas": {
+    "cabecalho": null,
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 375,
+     "h": 69
+    },
+    "pastas": null,
+    "cards": [],
+    "tituloLista": null
+   },
+   "marcas": {
+    "centralConteudo": 1396,
+    "barraLateral": 1397
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1488,
+    "tam": 13462,
+    "el": "h1 \"Fichas e Mesas\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 940,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1488,
+     "tam": 13462,
+     "el": "h1 \"Fichas e Mesas\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 864,
+     "d": 70
+    },
+    {
+     "t": 1397,
+     "d": 85
+    }
+   ],
+   "carregandoVisto": 271,
+   "carregandoSaiu": 1397,
+   "rootVazioAte": 271,
+   "ultimaTarefa": 1482,
+   "tbt": 55,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "faltouMarca": false
+  }
+ ]
+}

@@ -33,6 +33,7 @@ export function temSessaoOuRetorno() {
    Vercel ficam de fora) e só quando o endereço novo foi configurado. */
 export const HOST_ANTIGO = "grimorio-fm.vercel.app";
 export const ORIGEM_ANTIGA = `https://${HOST_ANTIGO}`;
+export const PARAM_RECEBER = "receber-fichas";
 export const ORIGEM_NOVA = (() => {
   try { return env.VITE_DOMINIO_NOVO ? new URL(env.VITE_DOMINIO_NOVO).origin : ""; } catch { return ""; }
 })();
@@ -61,7 +62,7 @@ export function chaveDaPessoa(chave) {
 /* Para onde o login volta: a MESMA página COM a query dela. Até 2026-11-19 ia só o
    caminho, e a `/Sala/Nova?encontro=<id>&grupo=<g>` perdia o encontro na volta do
    Google. Saem só os parâmetros que a ida e a volta do login põem na URL. */
-const PARAMETROS_DO_LOGIN = ["code", "state", "error", "error_code", "error_description", "receber-fichas"];
+const PARAMETROS_DO_LOGIN = ["code", "state", "error", "error_code", "error_description", PARAM_RECEBER];
 export function destinoDoLogin(href) {
   try {
     const url = new URL(href);

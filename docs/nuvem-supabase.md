@@ -1,5 +1,19 @@
 # Nuvem (Supabase), Login e Mudança de Endereço
 
+## Balanceamento de Jogador
+
+A coleta fica desligada por padrão. Os dados das fichas e os resumos de balanceamento usam tabelas distintas. O painel privado fica em `/Jogador/balanceamento` e usa o login já disponível no site.
+
+1. Em um projeto de teste, execute [`supabase/balanceamento.sql`](../supabase/balanceamento.sql) pelo SQL Editor. Confira que o job `balanceamento-apagar-expiradas` aparece em Cron. Ele apaga os resumos vencidos de hora em hora. O relatório aplica o corte de 90 dias mesmo entre execuções do job.
+2. Use Node.js 24.x nas funções da Vercel. Em Preview, configure a URL de teste em `SUPABASE_URL` e a chave secreta desse projeto em `SUPABASE_SECRET_KEY`. Ambas são variáveis de servidor. Para o login do painel, configure também as variáveis públicas da nuvem descritas mais abaixo, apontando para o mesmo projeto de teste. Use `BALANCEAMENTO_ADMIN_ID` com o UID da conta autorizada, disponível em Authentication → Users no Supabase. O UID depende da conta e do projeto. Escolha a conta do provedor que será usada para consultar o painel.
+3. No Firewall da Vercel, configure uma regra de limite para `POST /api/balanceamento/contribuicao`, por IP, com 60 requisições por minuto e resposta 429. O IP é usado para o limite na Vercel. O resumo e o banco de balanceamento dispensam esse dado.
+4. Ative `BALANCEAMENTO_ATIVO=1` no servidor e `VITE_BALANCEAMENTO_ATIVO=1` no site da prévia. Publique a prévia com essas variáveis e confira um salvamento de Jogador sem login, a recusa pelo aviso, e o painel com a conta autorizada e com outra conta. Verifique a amostra em duas edições da mesma ficha.
+5. Repita a configuração no ambiente de produção com as credenciais e o UID desse ambiente. Publique a política de privacidade junto com o recurso. Para pausar a coleta, retire as duas variáveis de ativação e publique a configuração atualizada.
+
+Os períodos do painel usam a data em que o último resumo chegou ao servidor. Fichas salvas antes do lançamento podem entrar ao serem editadas e salvas de novo. Cada navegador e domínio conserva seu próprio código por ficha e sua preferência de coleta.
+
+O convite **Incluir Fichas Já Salvas** envia as fichas elegíveis disponíveis no navegador após o clique no botão. Ele reaproveita o código por ficha do salvamento individual e inclui a versão e a data do aceite no resumo recebido. O envio em sequência respeita o limite da API. Em caso de interrupção, o botão de tentativa envia apenas as fichas pendentes. As Preferências de Privacidade desativam os próximos envios neste navegador.
+
 Implementado em 2026-11-16. O código fica INERTE até as variáveis de ambiente existirem: sem elas o
 site é o de sempre, só com localStorage, e a biblioteca do Supabase nem é baixada.
 
@@ -12,6 +26,8 @@ site é o de sempre, só com localStorage, e a biblioteca do Supabase nem é bai
   modelos, addons, temas, pastas) vai inteiro na tabela `chaves`.
 - Ao abrir o site com conta, o `main.jsx` lê a nuvem antes de montar o React (no máximo 2,5 s). Se
   a rede atrasar, o site abre com o local e a leitura tardia recarrega a página uma vez.
+- Desde 2026-11-26 a tela (o App ou a Central) é baixada junto com a nuvem, mas só MONTA depois dela. Por isso nenhum módulo
+  do grafo estático do App pode ler fichas no topo: o módulo pode ser avaliado antes de a leitura gravar.
 - Nada sobe antes da primeira leitura da sessão.
 - Só o primeiro login de um aparelho baixa tudo. Depois o site baixa só o que mudou desde o cursor
   guardado em `nuvem_estado_v1`, que é hora do servidor (gatilho `carimbar_atualizado_em`).
@@ -146,6 +162,16 @@ Quem tiver conta também pode só entrar nos dois endereços: o antigo sobe, o n
 
 O banco só pesa para quem entra. Meça o tamanho de uma ficha real em Supabase, Table Editor, e
 confira o limite do plano grátis (banco e usuários ativos por mês) na página de preços atual.
+
+## Comunidade
+
+A rota `/Comunidade` usa a conta já existente do fichafm. Qualquer visitante pode listar publicações, baixar fichas e CSS e ler comentários. Contas Google ou Discord podem publicar uma cópia da ficha selecionada, CSS ou um tópico, escrever sobre a publicação e comentar. Addons ficam trancados. O banco assina cada envio com o usuário do Discord vinculado ou com a parte anterior ao arroba do e-mail confirmado. O identificador da conta fica privado.
+
+O Supabase de produção do fichafm já recebeu [publicações e comentários](../supabase/migrations/20261126014725_comunidade_publicacoes_e_comentarios.sql), [autoria da conta](../supabase/migrations/20261126014733_comunidade_autoria_da_conta.sql) e [edição de publicações](../supabase/migrations/20261126020955_comunidade_editar_publicacao.sql), nessa ordem. Para liberar a rota no domínio público, publique a versão do frontend que inclui a Comunidade. As URLs de retorno existentes cobrem `/Comunidade` quando o domínio foi configurado com `/**`.
+
+O catálogo lista até 24 publicações por página e só lê o conteúdo completo ao abrir uma publicação. Os comentários têm paginação independente. A publicação de uma ficha usa uma cópia de até 240 KB sem o retrato principal. CSS tem limite de 32 KB e é exibido em uma amostra isolada de nível 10. Cada conta pode manter até 50 publicações e 200 comentários. O autor pode editar e retirar publicações próprias ou excluir comentários próprios. A edição grava na publicação original e preserva a discussão. Retirar uma publicação apaga todos os comentários dela.
+
+Para verificar o SQL localmente, instale `@electric-sql/pglite@0.5.15` fora do repositório e execute `node supabase/prova-comunidade-pglite.mjs <pasta dist do pglite>`. No ambiente escolhido para publicação, confira a leitura sem login e, com duas contas, publique um tópico, comente na segunda conta e verifique se só a primeira conta consegue editar o tópico.
 
 ## Sala Online (2026-11-17 e 2026-11-18)
 

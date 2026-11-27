@@ -1124,6 +1124,23 @@ export const DIVERGENCIAS = [
     player: "progressão própria: 2 no Nível 4 e +1 a cada três níveis, e a progressão estourada invalida todas",
     ativa: true,
   },
+  {
+    /* ⚠ NASCEU DE UM FEEDBACK DO LANÇAMENTO (2026-11-23): "como suporte ele adiciona o bônus de conjuração
+       aprimorada de especialista em técnica". O bônus de dano entrava em todo Feitiço de Dano sem olhar o
+       sistema, e isso é certo só na criatura, onde ele é grátis desde 2026-08-06 (`bonusConjuracaoAprimorada`).
+       No jogador ele é da habilidade do Conjurador, e o Suporte o ganhava sem tê-la.
+
+       ⚠ A CÓPIA REMENDADA NÃO CONTA. O Especialista em Estilo herda a Conjuração Aprimorada e a reescreve em
+       vagas de Estilo (`remendaHabilidades`): o clone dele tem outro texto e outro efeito, e não soma dano.
+       A cópia sem remendo de uma herdeira conta, porque é a mesma habilidade do livro. */
+    id: "conjuracaoAprimoradaNoDano",
+    tipo: "regra",
+    onde: "afty-feiticos.js, bonusConjuracaoAprimorada, e o ctxFeiticos de afty-derive.js",
+    fonte: "No primeiro nível você também recebe a habilidade Conjuração Aprimorada: [...] Sempre que utilizar um Feitiço que cause dano, você soma um bônus ao total de dano causado baseado no nível do Feitiço (livro, Especialista em Técnica). Só no Player (autor, 2026-11-23)",
+    afty: "toda criatura soma o bônus em todo Feitiço de Dano",
+    player: "só soma quem tem a habilidade Conjuração Aprimorada, inclusive o Conjurador em multiclasse",
+    ativa: true,
+  },
 ];
 
 const POR_ID = new Map(DIVERGENCIAS.map((d) => [d.id, d]));

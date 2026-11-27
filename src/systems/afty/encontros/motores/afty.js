@@ -88,6 +88,9 @@ export const motorAfty = {
   /* O começo zera a rodada da sessão (ela contava a luta anterior) e entrega as cascas da cena, como o COMECAR. */
   iniciaCombate: (sessao, derived = null) => iniciaCombate({ ...sessao, rodada: 1 }, derived),
   encerraCombate: (sessao) => aplicaPatchCombate(sessao, { ativo: false }),
+  /* O Reabrir quando o retorno exato do Encerrar não fecha (rework, etapa 2): só religa a bancada. O que o encerrar desmanchou
+     (Expansão, Invencível, ações de Addon) não volta, e a Exaustão que ele cobrou fica. */
+  retomaCombate: (sessao) => aplicaPatchCombate(sessao, { ativo: true }),
   iniciaTurno: (sessao, derived = null) => iniciaTurnoFicha(sessao, derived),
   encerraTurno: (sessao, derived = null) => encerraTurnoArmas(encerraTurnoFicha(sessao, derived)),
   viraRodada: (sessao, derived = null) => {

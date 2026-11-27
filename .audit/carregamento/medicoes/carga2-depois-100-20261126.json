@@ -1,0 +1,3062 @@
+{
+ "condicoes": {
+  "chrome": "158.0.8127.37",
+  "headless": true,
+  "base": "http://localhost:55551",
+  "perfis": {
+   "desktop": {
+    "viewport": {
+     "width": 1366,
+     "height": 768
+    },
+    "rede": null,
+    "cpu": 1
+   },
+   "celular": {
+    "viewport": {
+     "width": 375,
+     "height": 812
+    },
+    "isMobile": true,
+    "hasTouch": true,
+    "deviceScaleFactor": 2,
+    "userAgent": "Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36",
+    "rede": {
+     "latency": 150,
+     "downloadThroughput": 209715.2,
+     "uploadThroughput": 96000
+    },
+    "cpu": 4
+   }
+  },
+  "data": "2026-11-26T23:46:30.332Z"
+ },
+ "perfilLista:celular": [
+  {
+   "origem": 1795736792619.3,
+   "ttfb": 152,
+   "docFim": 180,
+   "dcl": 492,
+   "load": 581,
+   "pinturas": {
+    "first-paint": 368,
+    "first-contentful-paint": 968
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DxRmNfUw.js",
+     "tipo": "script",
+     "ini": 305,
+     "fim": 308,
+     "transf": 0,
+     "corpo": 11615
+    },
+    {
+     "nome": "/assets/react-Dv5S9prK.js",
+     "tipo": "other",
+     "ini": 307,
+     "fim": 309,
+     "transf": 0,
+     "corpo": 7129
+    },
+    {
+     "nome": "/assets/preload-helper-CVfo8sXc.js",
+     "tipo": "other",
+     "ini": 308,
+     "fim": 310,
+     "transf": 0,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/createLucideIcon-BVx-hXWI.js",
+     "tipo": "other",
+     "ini": 309,
+     "fim": 311,
+     "transf": 0,
+     "corpo": 1338
+    },
+    {
+     "nome": "/assets/react-dom-IyIKU8sz.js",
+     "tipo": "other",
+     "ini": 310,
+     "fim": 312,
+     "transf": 0,
+     "corpo": 132682
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-BiSiq9Mf.js",
+     "tipo": "other",
+     "ini": 310,
+     "fim": 312,
+     "transf": 0,
+     "corpo": 7187
+    },
+    {
+     "nome": "/assets/refresh-cw-sisXBgGH.js",
+     "tipo": "other",
+     "ini": 311,
+     "fim": 313,
+     "transf": 0,
+     "corpo": 320
+    },
+    {
+     "nome": "/assets/sob-demanda-BF1k6GqC.js",
+     "tipo": "other",
+     "ini": 311,
+     "fim": 313,
+     "transf": 0,
+     "corpo": 903
+    },
+    {
+     "nome": "/assets/nuvem-config-DwVG6RuG.js",
+     "tipo": "other",
+     "ini": 312,
+     "fim": 314,
+     "transf": 0,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-CBMEGqDl.css",
+     "tipo": "link",
+     "ini": 312,
+     "fim": 315,
+     "transf": 0,
+     "corpo": 155360
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-DBjICwVG.js",
+     "tipo": "script",
+     "ini": 439,
+     "fim": 441,
+     "transf": 0,
+     "corpo": 1741
+    },
+    {
+     "nome": "/assets/nuvem-sync-CKIdr7Ko.js",
+     "tipo": "script",
+     "ini": 440,
+     "fim": 441,
+     "transf": 0,
+     "corpo": 7320
+    },
+    {
+     "nome": "/assets/App-DkAN_0GM.js",
+     "tipo": "script",
+     "ini": 443,
+     "fim": 445,
+     "transf": 0,
+     "corpo": 77750
+    },
+    {
+     "nome": "/assets/sortable.esm-BcZXyMfs.js",
+     "tipo": "script",
+     "ini": 444,
+     "fim": 445,
+     "transf": 0,
+     "corpo": 48826
+    },
+    {
+     "nome": "/assets/pre-carga-Dra54li0.js",
+     "tipo": "script",
+     "ini": 445,
+     "fim": 451,
+     "transf": 0,
+     "corpo": 8378
+    },
+    {
+     "nome": "/assets/book-open-VZ8uKzS2.js",
+     "tipo": "script",
+     "ini": 446,
+     "fim": 452,
+     "transf": 0,
+     "corpo": 223
+    },
+    {
+     "nome": "/assets/sala-ui-dados-Bk6WNh3N.js",
+     "tipo": "script",
+     "ini": 447,
+     "fim": 453,
+     "transf": 0,
+     "corpo": 1208
+    },
+    {
+     "nome": "/assets/ghost-BoLwH6R-.js",
+     "tipo": "script",
+     "ini": 447,
+     "fim": 453,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/menu-Dk-PaKDl.js",
+     "tipo": "script",
+     "ini": 448,
+     "fim": 453,
+     "transf": 0,
+     "corpo": 242
+    },
+    {
+     "nome": "/assets/swords-1RZ-YK4g.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 453,
+     "transf": 0,
+     "corpo": 550
+    },
+    {
+     "nome": "/assets/user-round-CsMJ0XWa.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 454,
+     "transf": 0,
+     "corpo": 181
+    },
+    {
+     "nome": "/assets/x-D0vbRxw6.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 454,
+     "transf": 0,
+     "corpo": 154
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 451,
+     "fim": 454,
+     "transf": 0,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/alert-triangle-BTVgcj6l.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 456,
+     "transf": 0,
+     "corpo": 265
+    },
+    {
+     "nome": "/assets/arrow-right-DF8UNTPR.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 456,
+     "transf": 0,
+     "corpo": 164
+    },
+    {
+     "nome": "/assets/coleta-C8bXGopv.js",
+     "tipo": "script",
+     "ini": 454,
+     "fim": 457,
+     "transf": 0,
+     "corpo": 3491
+    },
+    {
+     "nome": "/assets/check-square-C2m1a3s4.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 457,
+     "transf": 0,
+     "corpo": 215
+    },
+    {
+     "nome": "/assets/check-DxPX6FyU.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 458,
+     "transf": 0,
+     "corpo": 124
+    },
+    {
+     "nome": "/assets/chevron-down-_eZuo2QW.js",
+     "tipo": "script",
+     "ini": 457,
+     "fim": 459,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/copy-DmsYzsVq.js",
+     "tipo": "script",
+     "ini": 457,
+     "fim": 459,
+     "transf": 0,
+     "corpo": 236
+    },
+    {
+     "nome": "/assets/crown-BjaVGvMG.js",
+     "tipo": "script",
+     "ini": 458,
+     "fim": 460,
+     "transf": 0,
+     "corpo": 151
+    },
+    {
+     "nome": "/assets/download-DTjOlGzF.js",
+     "tipo": "script",
+     "ini": 459,
+     "fim": 460,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/PdfViewerModal-DnEXu0Ze.js",
+     "tipo": "script",
+     "ini": 460,
+     "fim": 461,
+     "transf": 0,
+     "corpo": 5612
+    },
+    {
+     "nome": "/assets/file-text-hGLVRImF.js",
+     "tipo": "script",
+     "ini": 461,
+     "fim": 462,
+     "transf": 0,
+     "corpo": 332
+    },
+    {
+     "nome": "/assets/maximize-2-ts632JKT.js",
+     "tipo": "script",
+     "ini": 461,
+     "fim": 462,
+     "transf": 0,
+     "corpo": 298
+    },
+    {
+     "nome": "/assets/minus-BgqxqSXO.js",
+     "tipo": "script",
+     "ini": 462,
+     "fim": 464,
+     "transf": 0,
+     "corpo": 117
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-26yCgoKG.js",
+     "tipo": "script",
+     "ini": 462,
+     "fim": 465,
+     "transf": 0,
+     "corpo": 13468
+    },
+    {
+     "nome": "/assets/more-vertical--fOzWWGS.js",
+     "tipo": "script",
+     "ini": 465,
+     "fim": 465,
+     "transf": 0,
+     "corpo": 490
+    },
+    {
+     "nome": "/assets/folder-plus-CQ5S7ePj.js",
+     "tipo": "script",
+     "ini": 465,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 305
+    },
+    {
+     "nome": "/assets/folder-89jEm2X0.js",
+     "tipo": "script",
+     "ini": 466,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 228
+    },
+    {
+     "nome": "/assets/inbox-C6ukXngr.js",
+     "tipo": "script",
+     "ini": 467,
+     "fim": 468,
+     "transf": 0,
+     "corpo": 286
+    },
+    {
+     "nome": "/assets/pen-line-Cr62sZq8.js",
+     "tipo": "script",
+     "ini": 467,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 192
+    },
+    {
+     "nome": "/assets/trash-2-B8WV2btY.js",
+     "tipo": "script",
+     "ini": 468,
+     "fim": 470,
+     "transf": 0,
+     "corpo": 357
+    },
+    {
+     "nome": "/assets/image-5xvywFyl.js",
+     "tipo": "script",
+     "ini": 469,
+     "fim": 470,
+     "transf": 0,
+     "corpo": 269
+    },
+    {
+     "nome": "/assets/info-BrVUJpvF.js",
+     "tipo": "script",
+     "ini": 469,
+     "fim": 471,
+     "transf": 0,
+     "corpo": 204
+    },
+    {
+     "nome": "/assets/lock-Dzwnh09E.js",
+     "tipo": "script",
+     "ini": 470,
+     "fim": 473,
+     "transf": 0,
+     "corpo": 206
+    },
+    {
+     "nome": "/assets/search-Bi1HKsGH.js",
+     "tipo": "script",
+     "ini": 471,
+     "fim": 473,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/editar-pela-sala-CJ-JV-x4.js",
+     "tipo": "script",
+     "ini": 471,
+     "fim": 473,
+     "transf": 0,
+     "corpo": 9964
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 471,
+     "fim": 474,
+     "transf": 0,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 473,
+     "fim": 476,
+     "transf": 0,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/upload-B61swgzO.js",
+     "tipo": "script",
+     "ini": 473,
+     "fim": 476,
+     "transf": 0,
+     "corpo": 257
+    },
+    {
+     "nome": "/assets/users-xu7_Hc2w.js",
+     "tipo": "script",
+     "ini": 474,
+     "fim": 476,
+     "transf": 0,
+     "corpo": 304
+    },
+    {
+     "nome": "/assets/FolhaInferior-COJvphEa.js",
+     "tipo": "script",
+     "ini": 474,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 1327
+    },
+    {
+     "nome": "/assets/camadas-C3E9qnuO.js",
+     "tipo": "script",
+     "ini": 475,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 2063
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 476,
+     "fim": 479,
+     "transf": 0,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-BSWO6Uop.js",
+     "tipo": "script",
+     "ini": 477,
+     "fim": 480,
+     "transf": 0,
+     "corpo": 1809
+    },
+    {
+     "nome": "/assets/usar-celular-Pq6Fd8kF.js",
+     "tipo": "script",
+     "ini": 479,
+     "fim": 480,
+     "transf": 0,
+     "corpo": 410
+    },
+    {
+     "nome": "/assets/fm-docs-B8k4KZTs.js",
+     "tipo": "script",
+     "ini": 480,
+     "fim": 481,
+     "transf": 0,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-DMQjAIB9.js",
+     "tipo": "script",
+     "ini": 481,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-zOrkvgss.js",
+     "tipo": "script",
+     "ini": 482,
+     "fim": 484,
+     "transf": 0,
+     "corpo": 2354
+    },
+    {
+     "nome": "/assets/PainelDaConta-B80DrtqG.js",
+     "tipo": "script",
+     "ini": 483,
+     "fim": 485,
+     "transf": 0,
+     "corpo": 3648
+    },
+    {
+     "nome": "/assets/log-in-ZpJRHs4K.js",
+     "tipo": "script",
+     "ini": 484,
+     "fim": 486,
+     "transf": 0,
+     "corpo": 259
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-BtNKbgNb.js",
+     "tipo": "script",
+     "ini": 485,
+     "fim": 488,
+     "transf": 0,
+     "corpo": 2738
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-jL5PPDwM.js",
+     "tipo": "script",
+     "ini": 486,
+     "fim": 489,
+     "transf": 0,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/listas-BSh_maHt.js",
+     "tipo": "script",
+     "ini": 486,
+     "fim": 490,
+     "transf": 0,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-Op6aJerW.js",
+     "tipo": "script",
+     "ini": 487,
+     "fim": 490,
+     "transf": 0,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 487,
+     "fim": 490,
+     "transf": 0,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 591,
+     "fim": 762,
+     "transf": 300,
+     "corpo": 9522
+    },
+    {
+     "nome": "https://i.pinimg.com/736x/5c/f4/77/5cf477efc0dc153c2d2045a40b4a132d.jpg",
+     "tipo": "img",
+     "ini": 1114,
+     "fim": 1115,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1360,
+     "fim": 1362,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/AftyFichaG2-r9OUWl7g.js",
+     "tipo": "link",
+     "ini": 1934,
+     "fim": 1937,
+     "transf": 0,
+     "corpo": 405372
+    },
+    {
+     "nome": "/assets/AftyFichaG2-CkM71AsY.css",
+     "tipo": "link",
+     "ini": 1934,
+     "fim": 1938,
+     "transf": 0,
+     "corpo": 134167
+    },
+    {
+     "nome": "/assets/afty-derive-wg2NHZJl.js",
+     "tipo": "link",
+     "ini": 1934,
+     "fim": 1945,
+     "transf": 0,
+     "corpo": 1418195
+    },
+    {
+     "nome": "/assets/ficha-rolagem-D8eKebfU.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1950,
+     "transf": 0,
+     "corpo": 7848
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Xgf8DEK3.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1951,
+     "transf": 0,
+     "corpo": 46023
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Dn3HgzBZ.css",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1951,
+     "transf": 0,
+     "corpo": 31872
+    },
+    {
+     "nome": "/assets/shield-alert-BX30Sqsl.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1952,
+     "transf": 0,
+     "corpo": 980
+    },
+    {
+     "nome": "/assets/eye-off-BhKg5Lot.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1952,
+     "transf": 0,
+     "corpo": 398
+    },
+    {
+     "nome": "/assets/eye-BIdjsWxq.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1953,
+     "transf": 0,
+     "corpo": 199
+    },
+    {
+     "nome": "/assets/sword-BGNJn8e6.js",
+     "tipo": "link",
+     "ini": 1935,
+     "fim": 1953,
+     "transf": 0,
+     "corpo": 689
+    },
+    {
+     "nome": "/assets/shield-off-ZySqIjUR.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1954,
+     "transf": 0,
+     "corpo": 795
+    },
+    {
+     "nome": "/assets/heart-pulse-aQWL1hX0.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1954,
+     "transf": 0,
+     "corpo": 319
+    },
+    {
+     "nome": "/assets/hourglass-C_-1oge-.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1954,
+     "transf": 0,
+     "corpo": 360
+    },
+    {
+     "nome": "/assets/layers-DdUTP8F-.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1956,
+     "transf": 0,
+     "corpo": 364
+    },
+    {
+     "nome": "/assets/shield-DClwbvTT.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1956,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/skull-DjoU0hR-.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1958,
+     "transf": 0,
+     "corpo": 354
+    },
+    {
+     "nome": "/assets/zap-fQx10D7W.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1959,
+     "transf": 0,
+     "corpo": 521
+    },
+    {
+     "nome": "/assets/unlock-B-mvk5mW.js",
+     "tipo": "link",
+     "ini": 1936,
+     "fim": 1960,
+     "transf": 0,
+     "corpo": 207
+    },
+    {
+     "nome": "/assets/wand-2-DveP3u6X.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1962,
+     "transf": 0,
+     "corpo": 506
+    },
+    {
+     "nome": "/assets/TextoRico-D_fH9ueU.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1962,
+     "transf": 0,
+     "corpo": 5730
+    },
+    {
+     "nome": "/assets/fontes-DVM2TtCV.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1962,
+     "transf": 0,
+     "corpo": 7509
+    },
+    {
+     "nome": "/assets/arrow-up-DtFWVmQY.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1962,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/chevron-left-wawe7Gf8.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1962,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/chevron-right-BMaEYxPI.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1964,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/PainelServos-B4ipTb9b.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1967,
+     "transf": 0,
+     "corpo": 383713
+    },
+    {
+     "nome": "/assets/chevron-up-oshYP6HB.js",
+     "tipo": "link",
+     "ini": 1937,
+     "fim": 1967,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/dices-DlhjDZ1k.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1967,
+     "transf": 0,
+     "corpo": 406
+    },
+    {
+     "nome": "/assets/vital-DGgGYYA8.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1967,
+     "transf": 0,
+     "corpo": 2822
+    },
+    {
+     "nome": "/assets/ficha-sessao-DbruG4BL.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1968,
+     "transf": 0,
+     "corpo": 98190
+    },
+    {
+     "nome": "/assets/ficha-recebidos-CH9NbTvI.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1971,
+     "transf": 0,
+     "corpo": 125510
+    },
+    {
+     "nome": "/assets/clock-ijvXkzod.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1971,
+     "transf": 0,
+     "corpo": 183
+    },
+    {
+     "nome": "/assets/undo-2-BfL6hKmE.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1972,
+     "transf": 0,
+     "corpo": 388
+    },
+    {
+     "nome": "/assets/power-DfzZ43U0.js",
+     "tipo": "link",
+     "ini": 1938,
+     "fim": 1972,
+     "transf": 0,
+     "corpo": 173
+    },
+    {
+     "nome": "/assets/sliders-horizontal-CukwUd8U.js",
+     "tipo": "link",
+     "ini": 1939,
+     "fim": 1972,
+     "transf": 0,
+     "corpo": 584
+    },
+    {
+     "nome": "/assets/util-BGEfAdPr.js",
+     "tipo": "link",
+     "ini": 1939,
+     "fim": 1973,
+     "transf": 0,
+     "corpo": 1433
+    },
+    {
+     "nome": "/assets/sessao-loja-aefOuc0t.js",
+     "tipo": "link",
+     "ini": 1939,
+     "fim": 1974,
+     "transf": 0,
+     "corpo": 2263
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [
+     {
+      "x": 20,
+      "y": 402,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 500,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 598,
+      "w": 335,
+      "h": 86
+     }
+    ],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1194,
+    "dashTitulo": 1195,
+    "dashCards3": 1195,
+    "dashNova": 1195
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1352,
+    "tam": 5292,
+    "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 968,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1352,
+     "tam": 5292,
+     "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 421,
+     "d": 73
+    },
+    {
+     "t": 612,
+     "d": 54
+    },
+    {
+     "t": 671,
+     "d": 87
+    },
+    {
+     "t": 768,
+     "d": 149
+    },
+    {
+     "t": 990,
+     "d": 64
+    },
+    {
+     "t": 1197,
+     "d": 146
+    },
+    {
+     "t": 1630,
+     "d": 252
+    }
+   ],
+   "carregandoVisto": 414,
+   "carregandoSaiu": 1196,
+   "rootVazioAte": 414,
+   "ultimaTarefa": 1882,
+   "tbt": 475,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "perfilPorArquivo": [
+    "2092ms (nativo)",
+    "343ms react-dom.js",
+    "117ms editar-pela-sala-CJ-JV-x4.js",
+    "65ms sortable.esm.js",
+    "31ms App.js",
+    "20ms createLucideIcon-BVx-hXWI.js",
+    "18ms react.js",
+    "11ms pre-carga.js",
+    "9ms preload-helper.js",
+    "6ms index.js",
+    "3ms identidade-da-era-de-ouro.js",
+    "2ms Jogador",
+    "1ms ContaNuvem.js",
+    "1ms camadas.js"
+   ],
+   "perfilPorFuncao": [
+    "964ms (program) @ (nativo):-1",
+    "833ms (idle) @ (nativo):-1",
+    "116ms h @ editar-pela-sala-CJ-JV-x4.js:1",
+    "66ms (anônima) @ (nativo):1",
+    "64ms querySelectorAll @ (nativo):-1",
+    "52ms appendChild @ (nativo):-1",
+    "49ms ne @ react-dom.js:0",
+    "34ms _c @ react-dom.js:7",
+    "33ms Ho @ react-dom.js:5",
+    "23ms (anônima) @ (nativo):0",
+    "18ms (garbage collector) @ (nativo):-1",
+    "17ms (anônima) @ createLucideIcon-BVx-hXWI.js:0",
+    "16ms Hc @ react-dom.js:7",
+    "14ms Fn @ sortable.esm.js:4",
+    "14ms checar @ (nativo):19",
+    "14ms Pl @ react-dom.js:7",
+    "13ms createElement @ (nativo):-1",
+    "12ms (anônima) @ sortable.esm.js:4",
+    "9ms Ul @ react-dom.js:7",
+    "9ms (anônima) @ App.js:1"
+   ]
+  },
+  {
+   "origem": 1795736797347.3,
+   "ttfb": 152,
+   "docFim": 177,
+   "dcl": 468,
+   "load": 546,
+   "pinturas": {
+    "first-paint": 376,
+    "first-contentful-paint": 860
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DxRmNfUw.js",
+     "tipo": "script",
+     "ini": 312,
+     "fim": 313,
+     "transf": 0,
+     "corpo": 11615
+    },
+    {
+     "nome": "/assets/react-Dv5S9prK.js",
+     "tipo": "other",
+     "ini": 313,
+     "fim": 314,
+     "transf": 0,
+     "corpo": 7129
+    },
+    {
+     "nome": "/assets/preload-helper-CVfo8sXc.js",
+     "tipo": "other",
+     "ini": 313,
+     "fim": 315,
+     "transf": 0,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/createLucideIcon-BVx-hXWI.js",
+     "tipo": "other",
+     "ini": 314,
+     "fim": 315,
+     "transf": 0,
+     "corpo": 1338
+    },
+    {
+     "nome": "/assets/react-dom-IyIKU8sz.js",
+     "tipo": "other",
+     "ini": 314,
+     "fim": 316,
+     "transf": 0,
+     "corpo": 132682
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-BiSiq9Mf.js",
+     "tipo": "other",
+     "ini": 315,
+     "fim": 317,
+     "transf": 0,
+     "corpo": 7187
+    },
+    {
+     "nome": "/assets/refresh-cw-sisXBgGH.js",
+     "tipo": "other",
+     "ini": 316,
+     "fim": 318,
+     "transf": 0,
+     "corpo": 320
+    },
+    {
+     "nome": "/assets/sob-demanda-BF1k6GqC.js",
+     "tipo": "other",
+     "ini": 316,
+     "fim": 318,
+     "transf": 0,
+     "corpo": 903
+    },
+    {
+     "nome": "/assets/nuvem-config-DwVG6RuG.js",
+     "tipo": "other",
+     "ini": 317,
+     "fim": 318,
+     "transf": 0,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-CBMEGqDl.css",
+     "tipo": "link",
+     "ini": 317,
+     "fim": 319,
+     "transf": 0,
+     "corpo": 155360
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-DBjICwVG.js",
+     "tipo": "script",
+     "ini": 448,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 1741
+    },
+    {
+     "nome": "/assets/nuvem-sync-CKIdr7Ko.js",
+     "tipo": "script",
+     "ini": 448,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 7320
+    },
+    {
+     "nome": "/assets/App-DkAN_0GM.js",
+     "tipo": "script",
+     "ini": 448,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 77750
+    },
+    {
+     "nome": "/assets/sortable.esm-BcZXyMfs.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 48826
+    },
+    {
+     "nome": "/assets/pre-carga-Dra54li0.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 8378
+    },
+    {
+     "nome": "/assets/book-open-VZ8uKzS2.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 223
+    },
+    {
+     "nome": "/assets/sala-ui-dados-Bk6WNh3N.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 467,
+     "transf": 0,
+     "corpo": 1208
+    },
+    {
+     "nome": "/assets/ghost-BoLwH6R-.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/menu-Dk-PaKDl.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 242
+    },
+    {
+     "nome": "/assets/swords-1RZ-YK4g.js",
+     "tipo": "script",
+     "ini": 449,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 550
+    },
+    {
+     "nome": "/assets/user-round-CsMJ0XWa.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 181
+    },
+    {
+     "nome": "/assets/x-D0vbRxw6.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 154
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/alert-triangle-BTVgcj6l.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 265
+    },
+    {
+     "nome": "/assets/arrow-right-DF8UNTPR.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 164
+    },
+    {
+     "nome": "/assets/coleta-C8bXGopv.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 3491
+    },
+    {
+     "nome": "/assets/check-square-C2m1a3s4.js",
+     "tipo": "script",
+     "ini": 450,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 215
+    },
+    {
+     "nome": "/assets/check-DxPX6FyU.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 469,
+     "transf": 0,
+     "corpo": 124
+    },
+    {
+     "nome": "/assets/chevron-down-_eZuo2QW.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 470,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/copy-DmsYzsVq.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 475,
+     "transf": 0,
+     "corpo": 236
+    },
+    {
+     "nome": "/assets/crown-BjaVGvMG.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 151
+    },
+    {
+     "nome": "/assets/download-DTjOlGzF.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/PdfViewerModal-DnEXu0Ze.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 5612
+    },
+    {
+     "nome": "/assets/file-text-hGLVRImF.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 332
+    },
+    {
+     "nome": "/assets/maximize-2-ts632JKT.js",
+     "tipo": "script",
+     "ini": 451,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 298
+    },
+    {
+     "nome": "/assets/minus-BgqxqSXO.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 117
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-26yCgoKG.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 13468
+    },
+    {
+     "nome": "/assets/more-vertical--fOzWWGS.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 490
+    },
+    {
+     "nome": "/assets/folder-plus-CQ5S7ePj.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 305
+    },
+    {
+     "nome": "/assets/folder-89jEm2X0.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 228
+    },
+    {
+     "nome": "/assets/inbox-C6ukXngr.js",
+     "tipo": "script",
+     "ini": 452,
+     "fim": 477,
+     "transf": 0,
+     "corpo": 286
+    },
+    {
+     "nome": "/assets/pen-line-Cr62sZq8.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 192
+    },
+    {
+     "nome": "/assets/trash-2-B8WV2btY.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 357
+    },
+    {
+     "nome": "/assets/image-5xvywFyl.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 269
+    },
+    {
+     "nome": "/assets/info-BrVUJpvF.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 204
+    },
+    {
+     "nome": "/assets/lock-Dzwnh09E.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 206
+    },
+    {
+     "nome": "/assets/search-Bi1HKsGH.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 478,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/editar-pela-sala-CJ-JV-x4.js",
+     "tipo": "script",
+     "ini": 453,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 9964
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 454,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 454,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/upload-B61swgzO.js",
+     "tipo": "script",
+     "ini": 454,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 257
+    },
+    {
+     "nome": "/assets/users-xu7_Hc2w.js",
+     "tipo": "script",
+     "ini": 454,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 304
+    },
+    {
+     "nome": "/assets/FolhaInferior-COJvphEa.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 1327
+    },
+    {
+     "nome": "/assets/camadas-C3E9qnuO.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 2063
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-BSWO6Uop.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 1809
+    },
+    {
+     "nome": "/assets/usar-celular-Pq6Fd8kF.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 410
+    },
+    {
+     "nome": "/assets/fm-docs-B8k4KZTs.js",
+     "tipo": "script",
+     "ini": 455,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-DMQjAIB9.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-zOrkvgss.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 2354
+    },
+    {
+     "nome": "/assets/PainelDaConta-B80DrtqG.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 3648
+    },
+    {
+     "nome": "/assets/log-in-ZpJRHs4K.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 482,
+     "transf": 0,
+     "corpo": 259
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-BtNKbgNb.js",
+     "tipo": "script",
+     "ini": 456,
+     "fim": 483,
+     "transf": 0,
+     "corpo": 2738
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-jL5PPDwM.js",
+     "tipo": "script",
+     "ini": 457,
+     "fim": 483,
+     "transf": 0,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/listas-BSh_maHt.js",
+     "tipo": "script",
+     "ini": 460,
+     "fim": 483,
+     "transf": 0,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-Op6aJerW.js",
+     "tipo": "script",
+     "ini": 461,
+     "fim": 491,
+     "transf": 0,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 463,
+     "fim": 491,
+     "transf": 0,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 612,
+     "fim": 785,
+     "transf": 300,
+     "corpo": 9522
+    },
+    {
+     "nome": "https://i.pinimg.com/736x/5c/f4/77/5cf477efc0dc153c2d2045a40b4a132d.jpg",
+     "tipo": "img",
+     "ini": 1028,
+     "fim": 1029,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1297,
+     "fim": 1299,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/AftyFichaG2-r9OUWl7g.js",
+     "tipo": "link",
+     "ini": 1805,
+     "fim": 1807,
+     "transf": 0,
+     "corpo": 405372
+    },
+    {
+     "nome": "/assets/AftyFichaG2-CkM71AsY.css",
+     "tipo": "link",
+     "ini": 1806,
+     "fim": 1811,
+     "transf": 0,
+     "corpo": 134167
+    },
+    {
+     "nome": "/assets/afty-derive-wg2NHZJl.js",
+     "tipo": "link",
+     "ini": 1806,
+     "fim": 1817,
+     "transf": 0,
+     "corpo": 1418195
+    },
+    {
+     "nome": "/assets/ficha-rolagem-D8eKebfU.js",
+     "tipo": "link",
+     "ini": 1808,
+     "fim": 1811,
+     "transf": 0,
+     "corpo": 7848
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Xgf8DEK3.js",
+     "tipo": "link",
+     "ini": 1809,
+     "fim": 1820,
+     "transf": 0,
+     "corpo": 46023
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Dn3HgzBZ.css",
+     "tipo": "link",
+     "ini": 1810,
+     "fim": 1822,
+     "transf": 0,
+     "corpo": 31872
+    },
+    {
+     "nome": "/assets/shield-alert-BX30Sqsl.js",
+     "tipo": "link",
+     "ini": 1810,
+     "fim": 1822,
+     "transf": 0,
+     "corpo": 980
+    },
+    {
+     "nome": "/assets/eye-off-BhKg5Lot.js",
+     "tipo": "link",
+     "ini": 1811,
+     "fim": 1822,
+     "transf": 0,
+     "corpo": 398
+    },
+    {
+     "nome": "/assets/eye-BIdjsWxq.js",
+     "tipo": "link",
+     "ini": 1811,
+     "fim": 1823,
+     "transf": 0,
+     "corpo": 199
+    },
+    {
+     "nome": "/assets/sword-BGNJn8e6.js",
+     "tipo": "link",
+     "ini": 1812,
+     "fim": 1823,
+     "transf": 0,
+     "corpo": 689
+    },
+    {
+     "nome": "/assets/shield-off-ZySqIjUR.js",
+     "tipo": "link",
+     "ini": 1812,
+     "fim": 1823,
+     "transf": 0,
+     "corpo": 795
+    },
+    {
+     "nome": "/assets/heart-pulse-aQWL1hX0.js",
+     "tipo": "link",
+     "ini": 1813,
+     "fim": 1825,
+     "transf": 0,
+     "corpo": 319
+    },
+    {
+     "nome": "/assets/hourglass-C_-1oge-.js",
+     "tipo": "link",
+     "ini": 1813,
+     "fim": 1825,
+     "transf": 0,
+     "corpo": 360
+    },
+    {
+     "nome": "/assets/layers-DdUTP8F-.js",
+     "tipo": "link",
+     "ini": 1814,
+     "fim": 1825,
+     "transf": 0,
+     "corpo": 364
+    },
+    {
+     "nome": "/assets/shield-DClwbvTT.js",
+     "tipo": "link",
+     "ini": 1815,
+     "fim": 1825,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/skull-DjoU0hR-.js",
+     "tipo": "link",
+     "ini": 1816,
+     "fim": 1826,
+     "transf": 0,
+     "corpo": 354
+    },
+    {
+     "nome": "/assets/zap-fQx10D7W.js",
+     "tipo": "link",
+     "ini": 1816,
+     "fim": 1826,
+     "transf": 0,
+     "corpo": 521
+    },
+    {
+     "nome": "/assets/unlock-B-mvk5mW.js",
+     "tipo": "link",
+     "ini": 1817,
+     "fim": 1827,
+     "transf": 0,
+     "corpo": 207
+    },
+    {
+     "nome": "/assets/wand-2-DveP3u6X.js",
+     "tipo": "link",
+     "ini": 1818,
+     "fim": 1827,
+     "transf": 0,
+     "corpo": 506
+    },
+    {
+     "nome": "/assets/TextoRico-D_fH9ueU.js",
+     "tipo": "link",
+     "ini": 1818,
+     "fim": 1827,
+     "transf": 0,
+     "corpo": 5730
+    },
+    {
+     "nome": "/assets/fontes-DVM2TtCV.js",
+     "tipo": "link",
+     "ini": 1819,
+     "fim": 1827,
+     "transf": 0,
+     "corpo": 7509
+    },
+    {
+     "nome": "/assets/arrow-up-DtFWVmQY.js",
+     "tipo": "link",
+     "ini": 1820,
+     "fim": 1828,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/chevron-left-wawe7Gf8.js",
+     "tipo": "link",
+     "ini": 1820,
+     "fim": 1828,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/chevron-right-BMaEYxPI.js",
+     "tipo": "link",
+     "ini": 1821,
+     "fim": 1829,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/PainelServos-B4ipTb9b.js",
+     "tipo": "link",
+     "ini": 1822,
+     "fim": 1831,
+     "transf": 0,
+     "corpo": 383713
+    },
+    {
+     "nome": "/assets/chevron-up-oshYP6HB.js",
+     "tipo": "link",
+     "ini": 1824,
+     "fim": 1830,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/dices-DlhjDZ1k.js",
+     "tipo": "link",
+     "ini": 1824,
+     "fim": 1830,
+     "transf": 0,
+     "corpo": 406
+    },
+    {
+     "nome": "/assets/vital-DGgGYYA8.js",
+     "tipo": "link",
+     "ini": 1825,
+     "fim": 1831,
+     "transf": 0,
+     "corpo": 2822
+    },
+    {
+     "nome": "/assets/ficha-sessao-DbruG4BL.js",
+     "tipo": "link",
+     "ini": 1826,
+     "fim": 1832,
+     "transf": 0,
+     "corpo": 98190
+    },
+    {
+     "nome": "/assets/ficha-recebidos-CH9NbTvI.js",
+     "tipo": "link",
+     "ini": 1826,
+     "fim": 1834,
+     "transf": 0,
+     "corpo": 125510
+    },
+    {
+     "nome": "/assets/clock-ijvXkzod.js",
+     "tipo": "link",
+     "ini": 1827,
+     "fim": 1834,
+     "transf": 0,
+     "corpo": 183
+    },
+    {
+     "nome": "/assets/undo-2-BfL6hKmE.js",
+     "tipo": "link",
+     "ini": 1828,
+     "fim": 1834,
+     "transf": 0,
+     "corpo": 388
+    },
+    {
+     "nome": "/assets/power-DfzZ43U0.js",
+     "tipo": "link",
+     "ini": 1828,
+     "fim": 1834,
+     "transf": 0,
+     "corpo": 173
+    },
+    {
+     "nome": "/assets/sliders-horizontal-CukwUd8U.js",
+     "tipo": "link",
+     "ini": 1829,
+     "fim": 1836,
+     "transf": 0,
+     "corpo": 584
+    },
+    {
+     "nome": "/assets/util-BGEfAdPr.js",
+     "tipo": "link",
+     "ini": 1829,
+     "fim": 1837,
+     "transf": 0,
+     "corpo": 1433
+    },
+    {
+     "nome": "/assets/sessao-loja-aefOuc0t.js",
+     "tipo": "link",
+     "ini": 1830,
+     "fim": 1837,
+     "transf": 0,
+     "corpo": 2263
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [
+     {
+      "x": 20,
+      "y": 402,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 500,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 598,
+      "w": 335,
+      "h": 86
+     }
+    ],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1118,
+    "dashTitulo": 1119,
+    "dashCards3": 1119,
+    "dashNova": 1119
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1292,
+    "tam": 5292,
+    "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 860,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1292,
+     "tam": 5292,
+     "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 629,
+     "d": 77
+    },
+    {
+     "t": 716,
+     "d": 125
+    },
+    {
+     "t": 911,
+     "d": 59
+    },
+    {
+     "t": 1119,
+     "d": 162
+    },
+    {
+     "t": 1531,
+     "d": 198
+    },
+    {
+     "t": 1735,
+     "d": 57
+    }
+   ],
+   "carregandoVisto": 428,
+   "carregandoSaiu": 1119,
+   "rootVazioAte": 428,
+   "ultimaTarefa": 1792,
+   "tbt": 378,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "perfilPorArquivo": [
+    "2044ms (nativo)",
+    "341ms react-dom.js",
+    "103ms editar-pela-sala-CJ-JV-x4.js",
+    "52ms sortable.esm.js",
+    "36ms App.js",
+    "31ms createLucideIcon-BVx-hXWI.js",
+    "21ms react.js",
+    "15ms pre-carga.js",
+    "4ms Jogador",
+    "3ms identidade-da-era-de-ouro.js",
+    "2ms preload-helper.js",
+    "2ms EsqueletoDaLista.js",
+    "1ms index.js",
+    "1ms MoveToFolderMenu.js"
+   ],
+   "perfilPorFuncao": [
+    "890ms (idle) @ (nativo):-1",
+    "871ms (program) @ (nativo):-1",
+    "100ms h @ editar-pela-sala-CJ-JV-x4.js:1",
+    "70ms (anônima) @ (nativo):1",
+    "61ms querySelectorAll @ (nativo):-1",
+    "51ms ne @ react-dom.js:0",
+    "50ms appendChild @ (nativo):-1",
+    "34ms _c @ react-dom.js:7",
+    "30ms Ho @ react-dom.js:5",
+    "29ms (anônima) @ (nativo):0",
+    "17ms Ul @ react-dom.js:7",
+    "16ms (garbage collector) @ (nativo):-1",
+    "16ms (anônima) @ createLucideIcon-BVx-hXWI.js:0",
+    "14ms c @ createLucideIcon-BVx-hXWI.js:0",
+    "13ms Nl @ react-dom.js:7",
+    "13ms Fn @ sortable.esm.js:4",
+    "12ms wt @ App.js:1",
+    "12ms checar @ (nativo):19",
+    "10ms Hc @ react-dom.js:7",
+    "10ms _ @ react-dom.js:5"
+   ]
+  },
+  {
+   "origem": 1795736801984.6,
+   "ttfb": 153,
+   "docFim": 181,
+   "dcl": 442,
+   "load": 513,
+   "pinturas": {
+    "first-paint": 344,
+    "first-contentful-paint": 912
+   },
+   "recursos": [
+    {
+     "nome": "/assets/index-DxRmNfUw.js",
+     "tipo": "script",
+     "ini": 285,
+     "fim": 287,
+     "transf": 0,
+     "corpo": 11615
+    },
+    {
+     "nome": "/assets/react-Dv5S9prK.js",
+     "tipo": "other",
+     "ini": 286,
+     "fim": 287,
+     "transf": 0,
+     "corpo": 7129
+    },
+    {
+     "nome": "/assets/preload-helper-CVfo8sXc.js",
+     "tipo": "other",
+     "ini": 287,
+     "fim": 287,
+     "transf": 0,
+     "corpo": 1193
+    },
+    {
+     "nome": "/assets/createLucideIcon-BVx-hXWI.js",
+     "tipo": "other",
+     "ini": 287,
+     "fim": 288,
+     "transf": 0,
+     "corpo": 1338
+    },
+    {
+     "nome": "/assets/react-dom-IyIKU8sz.js",
+     "tipo": "other",
+     "ini": 287,
+     "fim": 289,
+     "transf": 0,
+     "corpo": 132682
+    },
+    {
+     "nome": "/assets/EsqueletoDaLista-BiSiq9Mf.js",
+     "tipo": "other",
+     "ini": 288,
+     "fim": 290,
+     "transf": 0,
+     "corpo": 7187
+    },
+    {
+     "nome": "/assets/refresh-cw-sisXBgGH.js",
+     "tipo": "other",
+     "ini": 288,
+     "fim": 290,
+     "transf": 0,
+     "corpo": 320
+    },
+    {
+     "nome": "/assets/sob-demanda-BF1k6GqC.js",
+     "tipo": "other",
+     "ini": 289,
+     "fim": 290,
+     "transf": 0,
+     "corpo": 903
+    },
+    {
+     "nome": "/assets/nuvem-config-DwVG6RuG.js",
+     "tipo": "other",
+     "ini": 289,
+     "fim": 291,
+     "transf": 0,
+     "corpo": 1386
+    },
+    {
+     "nome": "/assets/index-CBMEGqDl.css",
+     "tipo": "link",
+     "ini": 289,
+     "fim": 292,
+     "transf": 0,
+     "corpo": 155360
+    },
+    {
+     "nome": "/assets/nuvem-mudanca-DBjICwVG.js",
+     "tipo": "script",
+     "ini": 397,
+     "fim": 398,
+     "transf": 0,
+     "corpo": 1741
+    },
+    {
+     "nome": "/assets/nuvem-sync-CKIdr7Ko.js",
+     "tipo": "script",
+     "ini": 398,
+     "fim": 399,
+     "transf": 0,
+     "corpo": 7320
+    },
+    {
+     "nome": "/assets/App-DkAN_0GM.js",
+     "tipo": "script",
+     "ini": 401,
+     "fim": 402,
+     "transf": 0,
+     "corpo": 77750
+    },
+    {
+     "nome": "/assets/sortable.esm-BcZXyMfs.js",
+     "tipo": "script",
+     "ini": 401,
+     "fim": 402,
+     "transf": 0,
+     "corpo": 48826
+    },
+    {
+     "nome": "/assets/pre-carga-Dra54li0.js",
+     "tipo": "script",
+     "ini": 402,
+     "fim": 403,
+     "transf": 0,
+     "corpo": 8378
+    },
+    {
+     "nome": "/assets/book-open-VZ8uKzS2.js",
+     "tipo": "script",
+     "ini": 403,
+     "fim": 404,
+     "transf": 0,
+     "corpo": 223
+    },
+    {
+     "nome": "/assets/sala-ui-dados-Bk6WNh3N.js",
+     "tipo": "script",
+     "ini": 403,
+     "fim": 404,
+     "transf": 0,
+     "corpo": 1208
+    },
+    {
+     "nome": "/assets/ghost-BoLwH6R-.js",
+     "tipo": "script",
+     "ini": 404,
+     "fim": 405,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/menu-Dk-PaKDl.js",
+     "tipo": "script",
+     "ini": 405,
+     "fim": 405,
+     "transf": 0,
+     "corpo": 242
+    },
+    {
+     "nome": "/assets/swords-1RZ-YK4g.js",
+     "tipo": "script",
+     "ini": 405,
+     "fim": 406,
+     "transf": 0,
+     "corpo": 550
+    },
+    {
+     "nome": "/assets/user-round-CsMJ0XWa.js",
+     "tipo": "script",
+     "ini": 406,
+     "fim": 407,
+     "transf": 0,
+     "corpo": 181
+    },
+    {
+     "nome": "/assets/x-D0vbRxw6.js",
+     "tipo": "script",
+     "ini": 407,
+     "fim": 407,
+     "transf": 0,
+     "corpo": 154
+    },
+    {
+     "nome": "/assets/pre-carga-LTuHiA9X.css",
+     "tipo": "link",
+     "ini": 407,
+     "fim": 408,
+     "transf": 0,
+     "corpo": 3542
+    },
+    {
+     "nome": "/assets/alert-triangle-BTVgcj6l.js",
+     "tipo": "script",
+     "ini": 408,
+     "fim": 409,
+     "transf": 0,
+     "corpo": 265
+    },
+    {
+     "nome": "/assets/arrow-right-DF8UNTPR.js",
+     "tipo": "script",
+     "ini": 409,
+     "fim": 410,
+     "transf": 0,
+     "corpo": 164
+    },
+    {
+     "nome": "/assets/coleta-C8bXGopv.js",
+     "tipo": "script",
+     "ini": 410,
+     "fim": 410,
+     "transf": 0,
+     "corpo": 3491
+    },
+    {
+     "nome": "/assets/check-square-C2m1a3s4.js",
+     "tipo": "script",
+     "ini": 410,
+     "fim": 411,
+     "transf": 0,
+     "corpo": 215
+    },
+    {
+     "nome": "/assets/check-DxPX6FyU.js",
+     "tipo": "script",
+     "ini": 411,
+     "fim": 411,
+     "transf": 0,
+     "corpo": 124
+    },
+    {
+     "nome": "/assets/chevron-down-_eZuo2QW.js",
+     "tipo": "script",
+     "ini": 411,
+     "fim": 412,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/copy-DmsYzsVq.js",
+     "tipo": "script",
+     "ini": 412,
+     "fim": 413,
+     "transf": 0,
+     "corpo": 236
+    },
+    {
+     "nome": "/assets/crown-BjaVGvMG.js",
+     "tipo": "script",
+     "ini": 413,
+     "fim": 413,
+     "transf": 0,
+     "corpo": 151
+    },
+    {
+     "nome": "/assets/download-DTjOlGzF.js",
+     "tipo": "script",
+     "ini": 414,
+     "fim": 414,
+     "transf": 0,
+     "corpo": 262
+    },
+    {
+     "nome": "/assets/PdfViewerModal-DnEXu0Ze.js",
+     "tipo": "script",
+     "ini": 414,
+     "fim": 415,
+     "transf": 0,
+     "corpo": 5612
+    },
+    {
+     "nome": "/assets/file-text-hGLVRImF.js",
+     "tipo": "script",
+     "ini": 415,
+     "fim": 415,
+     "transf": 0,
+     "corpo": 332
+    },
+    {
+     "nome": "/assets/maximize-2-ts632JKT.js",
+     "tipo": "script",
+     "ini": 415,
+     "fim": 416,
+     "transf": 0,
+     "corpo": 298
+    },
+    {
+     "nome": "/assets/minus-BgqxqSXO.js",
+     "tipo": "script",
+     "ini": 417,
+     "fim": 418,
+     "transf": 0,
+     "corpo": 117
+    },
+    {
+     "nome": "/assets/MoveToFolderMenu-26yCgoKG.js",
+     "tipo": "script",
+     "ini": 418,
+     "fim": 419,
+     "transf": 0,
+     "corpo": 13468
+    },
+    {
+     "nome": "/assets/more-vertical--fOzWWGS.js",
+     "tipo": "script",
+     "ini": 419,
+     "fim": 419,
+     "transf": 0,
+     "corpo": 490
+    },
+    {
+     "nome": "/assets/folder-plus-CQ5S7ePj.js",
+     "tipo": "script",
+     "ini": 419,
+     "fim": 420,
+     "transf": 0,
+     "corpo": 305
+    },
+    {
+     "nome": "/assets/folder-89jEm2X0.js",
+     "tipo": "script",
+     "ini": 420,
+     "fim": 421,
+     "transf": 0,
+     "corpo": 228
+    },
+    {
+     "nome": "/assets/inbox-C6ukXngr.js",
+     "tipo": "script",
+     "ini": 421,
+     "fim": 421,
+     "transf": 0,
+     "corpo": 286
+    },
+    {
+     "nome": "/assets/pen-line-Cr62sZq8.js",
+     "tipo": "script",
+     "ini": 421,
+     "fim": 422,
+     "transf": 0,
+     "corpo": 192
+    },
+    {
+     "nome": "/assets/trash-2-B8WV2btY.js",
+     "tipo": "script",
+     "ini": 422,
+     "fim": 422,
+     "transf": 0,
+     "corpo": 357
+    },
+    {
+     "nome": "/assets/image-5xvywFyl.js",
+     "tipo": "script",
+     "ini": 422,
+     "fim": 423,
+     "transf": 0,
+     "corpo": 269
+    },
+    {
+     "nome": "/assets/info-BrVUJpvF.js",
+     "tipo": "script",
+     "ini": 423,
+     "fim": 423,
+     "transf": 0,
+     "corpo": 204
+    },
+    {
+     "nome": "/assets/lock-Dzwnh09E.js",
+     "tipo": "script",
+     "ini": 423,
+     "fim": 424,
+     "transf": 0,
+     "corpo": 206
+    },
+    {
+     "nome": "/assets/search-Bi1HKsGH.js",
+     "tipo": "script",
+     "ini": 424,
+     "fim": 425,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/editar-pela-sala-CJ-JV-x4.js",
+     "tipo": "script",
+     "ini": 424,
+     "fim": 425,
+     "transf": 0,
+     "corpo": 9964
+    },
+    {
+     "nome": "/assets/editar-pela-sala-BM2OBLg4.css",
+     "tipo": "link",
+     "ini": 425,
+     "fim": 426,
+     "transf": 0,
+     "corpo": 6009
+    },
+    {
+     "nome": "/assets/ficha-lsaa2Yif.css",
+     "tipo": "link",
+     "ini": 426,
+     "fim": 426,
+     "transf": 0,
+     "corpo": 54963
+    },
+    {
+     "nome": "/assets/upload-B61swgzO.js",
+     "tipo": "script",
+     "ini": 427,
+     "fim": 427,
+     "transf": 0,
+     "corpo": 257
+    },
+    {
+     "nome": "/assets/users-xu7_Hc2w.js",
+     "tipo": "script",
+     "ini": 427,
+     "fim": 428,
+     "transf": 0,
+     "corpo": 304
+    },
+    {
+     "nome": "/assets/FolhaInferior-COJvphEa.js",
+     "tipo": "script",
+     "ini": 428,
+     "fim": 429,
+     "transf": 0,
+     "corpo": 1327
+    },
+    {
+     "nome": "/assets/camadas-C3E9qnuO.js",
+     "tipo": "script",
+     "ini": 428,
+     "fim": 429,
+     "transf": 0,
+     "corpo": 2063
+    },
+    {
+     "nome": "/assets/FolhaInferior-Bald4QZx.css",
+     "tipo": "link",
+     "ini": 429,
+     "fim": 430,
+     "transf": 0,
+     "corpo": 3313
+    },
+    {
+     "nome": "/assets/usar-instalacao-BSWO6Uop.js",
+     "tipo": "script",
+     "ini": 430,
+     "fim": 430,
+     "transf": 0,
+     "corpo": 1809
+    },
+    {
+     "nome": "/assets/usar-celular-Pq6Fd8kF.js",
+     "tipo": "script",
+     "ini": 430,
+     "fim": 431,
+     "transf": 0,
+     "corpo": 410
+    },
+    {
+     "nome": "/assets/fm-docs-B8k4KZTs.js",
+     "tipo": "script",
+     "ini": 431,
+     "fim": 432,
+     "transf": 0,
+     "corpo": 230
+    },
+    {
+     "nome": "/assets/lista-fichas-DMQjAIB9.js",
+     "tipo": "script",
+     "ini": 432,
+     "fim": 432,
+     "transf": 0,
+     "corpo": 3377
+    },
+    {
+     "nome": "/assets/ContaNuvem-zOrkvgss.js",
+     "tipo": "script",
+     "ini": 432,
+     "fim": 433,
+     "transf": 0,
+     "corpo": 2354
+    },
+    {
+     "nome": "/assets/PainelDaConta-B80DrtqG.js",
+     "tipo": "script",
+     "ini": 433,
+     "fim": 435,
+     "transf": 0,
+     "corpo": 3648
+    },
+    {
+     "nome": "/assets/log-in-ZpJRHs4K.js",
+     "tipo": "script",
+     "ini": 435,
+     "fim": 435,
+     "transf": 0,
+     "corpo": 259
+    },
+    {
+     "nome": "/assets/EntrarPorCodigo-BtNKbgNb.js",
+     "tipo": "script",
+     "ini": 435,
+     "fim": 436,
+     "transf": 0,
+     "corpo": 2738
+    },
+    {
+     "nome": "/assets/identidade-da-era-de-ouro-jL5PPDwM.js",
+     "tipo": "script",
+     "ini": 436,
+     "fim": 437,
+     "transf": 0,
+     "corpo": 36665
+    },
+    {
+     "nome": "/assets/listas-BSh_maHt.js",
+     "tipo": "script",
+     "ini": 437,
+     "fim": 437,
+     "transf": 0,
+     "corpo": 3005
+    },
+    {
+     "nome": "/assets/rota-encontros-Op6aJerW.js",
+     "tipo": "script",
+     "ini": 437,
+     "fim": 438,
+     "transf": 0,
+     "corpo": 1317
+    },
+    {
+     "nome": "/assets/App-ChZAC55C.css",
+     "tipo": "link",
+     "ini": 438,
+     "fim": 439,
+     "transf": 0,
+     "corpo": 17848
+    },
+    {
+     "nome": "/favicon.svg",
+     "tipo": "other",
+     "ini": 520,
+     "fim": 697,
+     "transf": 300,
+     "corpo": 9522
+    },
+    {
+     "nome": "https://i.pinimg.com/736x/5c/f4/77/5cf477efc0dc153c2d2045a40b4a132d.jpg",
+     "tipo": "img",
+     "ini": 944,
+     "fim": 945,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/_vercel/insights/script.js",
+     "tipo": "script",
+     "ini": 1156,
+     "fim": 1158,
+     "transf": 0,
+     "corpo": 0
+    },
+    {
+     "nome": "/assets/AftyFichaG2-r9OUWl7g.js",
+     "tipo": "link",
+     "ini": 1639,
+     "fim": 1641,
+     "transf": 0,
+     "corpo": 405372
+    },
+    {
+     "nome": "/assets/AftyFichaG2-CkM71AsY.css",
+     "tipo": "link",
+     "ini": 1640,
+     "fim": 1644,
+     "transf": 0,
+     "corpo": 134167
+    },
+    {
+     "nome": "/assets/afty-derive-wg2NHZJl.js",
+     "tipo": "link",
+     "ini": 1640,
+     "fim": 1648,
+     "transf": 0,
+     "corpo": 1418195
+    },
+    {
+     "nome": "/assets/ficha-rolagem-D8eKebfU.js",
+     "tipo": "link",
+     "ini": 1641,
+     "fim": 1643,
+     "transf": 0,
+     "corpo": 7848
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Xgf8DEK3.js",
+     "tipo": "link",
+     "ini": 1641,
+     "fim": 1651,
+     "transf": 0,
+     "corpo": 46023
+    },
+    {
+     "nome": "/assets/PrimitivasDeAddon-Dn3HgzBZ.css",
+     "tipo": "link",
+     "ini": 1642,
+     "fim": 1655,
+     "transf": 0,
+     "corpo": 31872
+    },
+    {
+     "nome": "/assets/shield-alert-BX30Sqsl.js",
+     "tipo": "link",
+     "ini": 1642,
+     "fim": 1655,
+     "transf": 0,
+     "corpo": 980
+    },
+    {
+     "nome": "/assets/eye-off-BhKg5Lot.js",
+     "tipo": "link",
+     "ini": 1643,
+     "fim": 1656,
+     "transf": 0,
+     "corpo": 398
+    },
+    {
+     "nome": "/assets/eye-BIdjsWxq.js",
+     "tipo": "link",
+     "ini": 1643,
+     "fim": 1656,
+     "transf": 0,
+     "corpo": 199
+    },
+    {
+     "nome": "/assets/sword-BGNJn8e6.js",
+     "tipo": "link",
+     "ini": 1644,
+     "fim": 1656,
+     "transf": 0,
+     "corpo": 689
+    },
+    {
+     "nome": "/assets/shield-off-ZySqIjUR.js",
+     "tipo": "link",
+     "ini": 1644,
+     "fim": 1656,
+     "transf": 0,
+     "corpo": 795
+    },
+    {
+     "nome": "/assets/heart-pulse-aQWL1hX0.js",
+     "tipo": "link",
+     "ini": 1645,
+     "fim": 1657,
+     "transf": 0,
+     "corpo": 319
+    },
+    {
+     "nome": "/assets/hourglass-C_-1oge-.js",
+     "tipo": "link",
+     "ini": 1645,
+     "fim": 1658,
+     "transf": 0,
+     "corpo": 360
+    },
+    {
+     "nome": "/assets/layers-DdUTP8F-.js",
+     "tipo": "link",
+     "ini": 1646,
+     "fim": 1658,
+     "transf": 0,
+     "corpo": 364
+    },
+    {
+     "nome": "/assets/shield-DClwbvTT.js",
+     "tipo": "link",
+     "ini": 1646,
+     "fim": 1658,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/skull-DjoU0hR-.js",
+     "tipo": "link",
+     "ini": 1647,
+     "fim": 1658,
+     "transf": 0,
+     "corpo": 354
+    },
+    {
+     "nome": "/assets/zap-fQx10D7W.js",
+     "tipo": "link",
+     "ini": 1647,
+     "fim": 1658,
+     "transf": 0,
+     "corpo": 521
+    },
+    {
+     "nome": "/assets/unlock-B-mvk5mW.js",
+     "tipo": "link",
+     "ini": 1648,
+     "fim": 1660,
+     "transf": 0,
+     "corpo": 207
+    },
+    {
+     "nome": "/assets/wand-2-DveP3u6X.js",
+     "tipo": "link",
+     "ini": 1648,
+     "fim": 1660,
+     "transf": 0,
+     "corpo": 506
+    },
+    {
+     "nome": "/assets/TextoRico-D_fH9ueU.js",
+     "tipo": "link",
+     "ini": 1649,
+     "fim": 1660,
+     "transf": 0,
+     "corpo": 5730
+    },
+    {
+     "nome": "/assets/fontes-DVM2TtCV.js",
+     "tipo": "link",
+     "ini": 1649,
+     "fim": 1660,
+     "transf": 0,
+     "corpo": 7509
+    },
+    {
+     "nome": "/assets/arrow-up-DtFWVmQY.js",
+     "tipo": "link",
+     "ini": 1650,
+     "fim": 1661,
+     "transf": 0,
+     "corpo": 272
+    },
+    {
+     "nome": "/assets/chevron-left-wawe7Gf8.js",
+     "tipo": "link",
+     "ini": 1651,
+     "fim": 1661,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/chevron-right-BMaEYxPI.js",
+     "tipo": "link",
+     "ini": 1653,
+     "fim": 1663,
+     "transf": 0,
+     "corpo": 129
+    },
+    {
+     "nome": "/assets/PainelServos-B4ipTb9b.js",
+     "tipo": "link",
+     "ini": 1653,
+     "fim": 1664,
+     "transf": 0,
+     "corpo": 383713
+    },
+    {
+     "nome": "/assets/chevron-up-oshYP6HB.js",
+     "tipo": "link",
+     "ini": 1654,
+     "fim": 1663,
+     "transf": 0,
+     "corpo": 127
+    },
+    {
+     "nome": "/assets/dices-DlhjDZ1k.js",
+     "tipo": "link",
+     "ini": 1655,
+     "fim": 1665,
+     "transf": 0,
+     "corpo": 406
+    },
+    {
+     "nome": "/assets/vital-DGgGYYA8.js",
+     "tipo": "link",
+     "ini": 1655,
+     "fim": 1665,
+     "transf": 0,
+     "corpo": 2822
+    },
+    {
+     "nome": "/assets/ficha-sessao-DbruG4BL.js",
+     "tipo": "link",
+     "ini": 1656,
+     "fim": 1665,
+     "transf": 0,
+     "corpo": 98190
+    },
+    {
+     "nome": "/assets/ficha-recebidos-CH9NbTvI.js",
+     "tipo": "link",
+     "ini": 1656,
+     "fim": 1667,
+     "transf": 0,
+     "corpo": 125510
+    },
+    {
+     "nome": "/assets/clock-ijvXkzod.js",
+     "tipo": "link",
+     "ini": 1657,
+     "fim": 1668,
+     "transf": 0,
+     "corpo": 183
+    },
+    {
+     "nome": "/assets/undo-2-BfL6hKmE.js",
+     "tipo": "link",
+     "ini": 1657,
+     "fim": 1668,
+     "transf": 0,
+     "corpo": 388
+    },
+    {
+     "nome": "/assets/power-DfzZ43U0.js",
+     "tipo": "link",
+     "ini": 1658,
+     "fim": 1668,
+     "transf": 0,
+     "corpo": 173
+    },
+    {
+     "nome": "/assets/sliders-horizontal-CukwUd8U.js",
+     "tipo": "link",
+     "ini": 1658,
+     "fim": 1668,
+     "transf": 0,
+     "corpo": 584
+    },
+    {
+     "nome": "/assets/util-BGEfAdPr.js",
+     "tipo": "link",
+     "ini": 1659,
+     "fim": 1668,
+     "transf": 0,
+     "corpo": 1433
+    },
+    {
+     "nome": "/assets/sessao-loja-aefOuc0t.js",
+     "tipo": "link",
+     "ini": 1660,
+     "fim": 1670,
+     "transf": 0,
+     "corpo": 2263
+    }
+   ],
+   "caixas": {
+    "cabecalho": {
+     "x": 0,
+     "y": 69,
+     "w": 375,
+     "h": 103
+    },
+    "barraLateral": {
+     "x": 0,
+     "y": 0,
+     "w": 281,
+     "h": 69
+    },
+    "pastas": {
+     "x": 0,
+     "y": 0,
+     "w": 0,
+     "h": 0
+    },
+    "cards": [
+     {
+      "x": 20,
+      "y": 402,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 500,
+      "w": 335,
+      "h": 86
+     },
+     {
+      "x": 20,
+      "y": 598,
+      "w": 335,
+      "h": 86
+     }
+    ],
+    "tituloLista": {
+     "x": 16,
+     "y": 196,
+     "w": 343,
+     "h": 24
+    }
+   },
+   "marcas": {
+    "barraLateral": 1007,
+    "dashTitulo": 1008,
+    "dashCards3": 1008,
+    "dashNova": 1008
+   },
+   "cls": 0,
+   "deslocamentos": [],
+   "lcp": {
+    "t": 1160,
+    "tam": 5292,
+    "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+    "url": null
+   },
+   "lcps": [
+    {
+     "t": 912,
+     "tam": 3105,
+     "el": "div \"fichafm.com.brFeiticeiros & Maldições\"",
+     "url": null
+    },
+    {
+     "t": 1160,
+     "tam": 5292,
+     "el": "h2.text-xl.font-bold.text-white \"Todos os Personagens\"",
+     "url": null
+    }
+   ],
+   "tarefas": [
+    {
+     "t": 384,
+     "d": 58
+    },
+    {
+     "t": 581,
+     "d": 66
+    },
+    {
+     "t": 696,
+     "d": 53
+    },
+    {
+     "t": 782,
+     "d": 120
+    },
+    {
+     "t": 1009,
+     "d": 131
+    },
+    {
+     "t": 1376,
+     "d": 189
+    },
+    {
+     "t": 1573,
+     "d": 52
+    }
+   ],
+   "carregandoVisto": 376,
+   "carregandoSaiu": 1008,
+   "rootVazioAte": 376,
+   "ultimaTarefa": 1625,
+   "tbt": 319,
+   "htmlFundo": "rgb(6, 9, 16)",
+   "bodyFundo": "rgb(15, 23, 42)",
+   "perfilPorArquivo": [
+    "1982ms (nativo)",
+    "302ms react-dom.js",
+    "91ms editar-pela-sala-CJ-JV-x4.js",
+    "48ms sortable.esm.js",
+    "38ms App.js",
+    "27ms createLucideIcon-BVx-hXWI.js",
+    "14ms pre-carga.js",
+    "10ms react.js",
+    "8ms preload-helper.js",
+    "5ms index.js",
+    "3ms EsqueletoDaLista.js",
+    "2ms Jogador",
+    "2ms identidade-da-era-de-ouro.js",
+    "1ms refresh-cw.js"
+   ],
+   "perfilPorFuncao": [
+    "918ms (idle) @ (nativo):-1",
+    "787ms (program) @ (nativo):-1",
+    "88ms h @ editar-pela-sala-CJ-JV-x4.js:1",
+    "67ms querySelectorAll @ (nativo):-1",
+    "58ms appendChild @ (nativo):-1",
+    "56ms (anônima) @ (nativo):1",
+    "50ms ne @ react-dom.js:0",
+    "31ms Ho @ react-dom.js:5",
+    "28ms _c @ react-dom.js:7",
+    "24ms (anônima) @ (nativo):0",
+    "18ms Ul @ react-dom.js:7",
+    "16ms (garbage collector) @ (nativo):-1",
+    "16ms checar @ (nativo):19",
+    "13ms wt @ App.js:1",
+    "12ms (anônima) @ createLucideIcon-BVx-hXWI.js:0",
+    "12ms c @ createLucideIcon-BVx-hXWI.js:0",
+    "11ms (anônima) @ sortable.esm.js:4",
+    "9ms Pl @ react-dom.js:7",
+    "9ms Fn @ sortable.esm.js:4",
+    "8ms Hc @ react-dom.js:7"
+   ]
+  }
+ ]
+}

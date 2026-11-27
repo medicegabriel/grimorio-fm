@@ -64,7 +64,10 @@ t("sob demanda tem rede para o pedaço que não chega", lê("../src/celular/sob-
 const VERCEL = JSON.parse(lê("../vercel.json"));
 t("os arquivos com hash ficam em cache longo",
   VERCEL.headers?.find((h) => h.source === "/assets/(.*)")?.headers?.[0]?.value, "public, max-age=31536000, immutable");
-t("a reescrita não cobre /assets", VERCEL.rewrites?.[0]?.source, "/((?!assets/).*)");
+const rewrite = new RegExp(`^${VERCEL.rewrites[0].source}$`);
+t("a reescrita cobre a tela e preserva assets e API",
+  ["/Jogador/balanceamento", "/assets/chunk.js", "/api/balanceamento/relatorio"].map((path) => rewrite.test(path)),
+  [true, false, false]);
 
 /* 2026-11-20: o ficha.css entra na abertura. Sob demanda ele chegava DEPOIS do CSS do Encontro na Sala, e
    `.afty-ficha { min-height: 100dvh }` vencia a faixa da luta (mesma especificidade, ganha a ordem). */
@@ -72,7 +75,7 @@ t("o ficha.css entra pela Ficha da abertura", lê("../src/systems/afty/ficha/Aft
 t("e a Ficha entra no App por import direto", /^import AftyFicha from "\.\/systems\/afty\/ficha\/AftyFicha";/m.test(lê("../src/App.jsx")), true);
 
 /* ---------- Etapa E10 (2026-11-20): o motor fora da abertura ----------
-   A lista de Encontros chega por uma ponte sob demanda. O grafo de imports estáticos a partir do `main.jsx` não pode alcançar
+   A lista de Encontros chega por uma ponte sob demanda. O grafo estático do bootstrap e das duas telas de entrada não pode alcançar
    o motor: se alcançar, ele volta inteiro (cerca de 1,5 MB) para o pacote de abertura de toda rota. */
 const { existsSync, statSync } = await import("node:fs");
 const { fileURLToPath } = await import("node:url");
@@ -83,7 +86,11 @@ const resolver = (de, s) => {
   return [b, `${b}.js`, `${b}.jsx`].find((c) => existsSync(c) && statSync(c).isFile()) ?? null;
 };
 const raizSrc = fileURLToPath(new URL("../src/", import.meta.url));
-const alcancados = new Set([path.join(raizSrc, "main.jsx")]);
+const MAIN = lê("../src/main.jsx");
+t("Central de Jogo e Grimório são entradas separadas", [
+  MAIN.includes("import('./home/CentralDeJogo.jsx')"), MAIN.includes("import('./App.jsx')"),
+], [true, true]);
+const alcancados = new Set(["main.jsx", "App.jsx", "home/CentralDeJogo.jsx"].map((f) => path.join(raizSrc, f)));
 for (const f of alcancados) {
   if (!/\.jsx?$/.test(f)) continue;
   const texto = readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
@@ -95,6 +102,10 @@ for (const f of alcancados) {
 const relDoSrc = (x) => path.relative(raizSrc, x).split(path.sep).join("/");
 const naAbertura = [...alcancados].map(relDoSrc);
 t("a abertura não alcança o motor", naAbertura.filter((x) => /afty-derive|afty-habilidades|encontros\/modelo|encontros\/motores|ficha\/ficha-sessao|usar-lista-encontros/.test(x)), []);
+t("a abertura lê só a identidade da Era de Ouro", [
+  naAbertura.includes("systems/eradeouro/identidade-da-era-de-ouro.js"),
+  naAbertura.includes("systems/eradeouro/era-de-ouro.js"),
+], [true, false]);
 t("a abertura chega à ponte só sob demanda", [naAbertura.includes("celular/usar-lista-adiada.js"), naAbertura.includes("systems/afty/encontros/PonteDaLista.jsx")], [true, false]);
 const ADIADA = lê("../src/celular/usar-lista-adiada.js");
 t("a ponte é import sob demanda", ADIADA.includes('React.lazy(() => import("../systems/afty/encontros/PonteDaLista"))'), true);

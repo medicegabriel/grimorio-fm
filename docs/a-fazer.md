@@ -7,6 +7,37 @@ arquivo md. Para outros colaboradores usarem ele também e ir anotando oq for pr
 
 ---
 
+## Carregamento: Minhas Fichas e a abertura da Ficha (diagnóstico de 2026-11-26)
+
+Medições e evidência em `docs/afty-status.md`, sessão de 2026-11-26. Os números são do celular com Slow 4G e CPU 4x. Cada item
+se valida com a mesma bancada, antes e depois (último item). As duas decisões do diagnóstico foram respondidas e feitas no mesmo
+dia (`docs/afty-status.md`, sessão "Carregamento: lista sem o compêndio, abertura sem regravar e cards em levas"). As dos
+esqueletos feitos nessa data estão em PERGUNTAS AO AUTOR, "Carregamento: o tema e a lista vazia nos esqueletos (2026-11-26)".
+
+### Barra do topo estreita no celular quando a lista do `/Criatura` não chega
+**Onde:** a moldura das bibliotecas públicas (`BarraLateralSite`, `src/home/biblioteca-publica.css`), no estado de falha do compêndio
+**Situação:** com a tela Compêndio Não Carregou no celular (375 px), a barra do topo com a marca e o Menu ocupa 281 px e não a largura
+toda. Igual no build anterior a 2026-11-26 e no de depois, então não veio da saída da pasta Criaturas Base. Não conferido no esqueleto.
+**Precisa:** a barra ocupar a largura toda também quando o painel não tem a lista.
+**Anotado:** 2026-11-26, Claude, ao conferir o botão Todas as Criaturas da falha
+
+### Arrastar por toque na lista não reordena (na emulação)
+**Onde:** `src/components/Dashboard.jsx` (`useSensors`: `PointerSensor` e `TouchSensor` juntos), somente-leitura
+**Situação:** no Chrome com celular emulado, o toque longo de 350 ms seguido de arrasto não move o card, nem no build anterior
+a 2026-11-26 nem no de depois. O mouse reordena. A leitura provável é que o `PointerSensor` fica com o toque e o navegador o
+cancela ao rolar, e então o `TouchSensor` não chega a ligar. Não foi conferido num aparelho de verdade.
+**Precisa:** conferir num telefone. Se reproduzir, a correção mora em `src/components/` e pede exceção nova com o autor.
+**Anotado:** 2026-11-26, Claude, ao conferir o arrasto depois das levas de cards
+
+### Medir usuários reais
+**Onde:** `src/main.jsx` ou `src/App.jsx`, `package.json`
+**Situação:** não há dado de campo. O `@vercel/analytics` só conta visitas, e o Speed Insights não está instalado.
+**Precisa:** `@vercel/speed-insights` (LCP, CLS e INP por rota no painel da Vercel) ou `web-vitals` com atribuição, mandado como
+evento. Dependência nova, então com o autor de acordo.
+**Anotado:** 2026-11-26, Claude, diagnóstico de carregamento
+
+---
+
 ## Ficha do Sun Wukong (prévia da Guilda), o que segue de mesa (2026-11-21)
 
 A ficha está em `previas/sun-wukong-eradeouro.json` (criatura, ND 26, Calamidade, mesa Era de Ouro, origem Maldição Era de Ouro do
@@ -39,6 +70,45 @@ No ar desde 2026-11-17 em `fichafm.com.br`. Guia em `docs/nuvem-supabase.md`, es
 - **Falta testar:** a mesma ficha editada em dois aparelhos com a mesma conta.
 - O Supabase tem uma conta de teste só com Google (`c98b4943…`) que guarda a ficha Teste Nuvem. O autor decide se apaga em Authentication, Users.
 - No celular o título do cabeçalho do Dashboard já cortava ("Jo...") antes do alternador. Fica para uma revisão do cabeçalho.
+
+## Rework dos Encontros: o que a etapa 1 deixou para as próximas (2026-11-18)
+
+Plano em `docs/afty-encontros.md`, seção "Rework visual e de usabilidade". Estado em `PROGRESSO-REWORK-ENCONTROS.md` (pasta contêiner).
+
+- **O cabeçalho ficou uma linha mais alto com a trilha** (82 px na Luta em 1440, 150 px em 375). A etapa 5 junta trilha e título no
+  cabeçalho enxuto da Luta, e a 3 e a 4 fazem o mesmo na lista e no Planejamento.
+- **`encontro-g2.css` vira `encontro.css` na etapa 3**, junto com a reestruturação do CSS (moldura e G2 embutida em blocos separados).
+  Ficou fora da fundação para não misturar renomeação com a mudança de regra.
+- **Sombras soltas e raio fora da escala** (achados do detector): `sala-ui.css:64`, o `.ec-registro-flutuante` e o `.ec-grupo` do
+  `encontro-g2.css`, e o raio de 5 px da caixa de seleção. Viram token na etapa da tela de cada um.
+- **Voltar do navegador no criador e na Ficha:** essas telas não têm caminho próprio, então o Voltar leva ao último caminho gravado
+  (a lista, se a pessoa veio dela). A entrada própria no histórico para a Ficha Inteira aberta do Encontro é da etapa 5.
+- **Suíte:** `t-reconciliacao-g00.mjs` já falhava antes do rework (1 de 335 arquivos na linha de base de 2026-11-18, e segue o único
+  em 2026-11-23). Não é do Encontro e não foi investigado.
+
+**O que a etapa 2 (modelo, 2026-11-23) deixou para as telas e para a Sala:**
+
+- **Ligar nas telas (etapas 4 a 6):** o `registroEmOrdem` no Registro da Luta e no Finalizado (hoje eles ainda leem o `log` cru, e o
+  Finalizado segue mostrando "Combate encerrado." acima de "Combate iniciado." até a etapa 6), o Voltar Turno no rodapé da Ordem
+  (`podeVoltarTurno` diz quando fica apagado), o Ctrl+Z pelo `ultimaDesfazivel`, o campo Vida no Sem Ficha e as Criaturas Base no
+  Adicionar do `/` (`inventarioComCriaturasBase`, só no `/`). O `App.jsx`, o `usar-encontro.js`, o `EncontroTela.jsx` e o `LutaDoMestre.jsx`
+  ficaram de fora de propósito: o `main` remoto também mudou os quatro.
+- **O marcador com Vida ainda some nas telas:** elas filtram pelo TIPO, e não pelo motor. `LutaDoMestre.jsx:48` (rótulo "Sem Ficha"),
+  `:148` (`temNumero` exige não ser marcador), `:183` e `:542` (a seleção para a barra de grupo pula o marcador), `:318` (o meio mostra
+  só "Combatente sem Ficha"), `EncontroTela.jsx:106` (o Finalizado não mostra a Vida dele) e `Planejamento.jsx:27`. A etapa 4 (campo Vida
+  no Sem Ficha) e a 5 (Ordem e meio) trocam esses testes por "tem `vida`" (`campoDoEstado` ou `motorDe`). O derivado do `usar-encontro.js`
+  já serve (o adaptador deriva sem ficha, `{ hp, pe: 0 }`). Nenhum caminho cria marcador com Vida hoje, então nada quebra antes disso.
+- **Sala, etapa 7 (o SQL o autor cola):** o banco recusa tudo de marcador (`publicar_resumo` e `gravar_ficha` com "Combatente sem
+  Ficha"), então a Vida do marcador não chega aos jogadores. Precisa do corte por Visão (Barra e Aberta, como a criatura) no
+  `sala-projecao.js` e no `salas.sql`. O Voltar Turno na Sala publica os eventos de hoje (`turno`, e `rodada` com a rodada que voltou,
+  que o Registro público lê como rodada nova): um evento próprio precisa entrar na lista de `gravar_operacao` (`'comecar', 'turno', ...`).
+  A pilha é só do Mestre: o jogador desfazer a própria mudança no próprio personagem, na Sala, também é da etapa 7.
+- **Diálogo fechado pelo Esc deixa uma entrada morta no histórico, no `npm run dev`** (visto na reconciliação de 2026-11-23): depois de
+  abrir e fechar pelo Esc a confirmação do Encerrar, o primeiro Voltar do navegador fica no mesmo Encontro. A camada do Voltar do aparelho
+  (`useCamadaDeVoltar`, etapa E2) empilha duas vezes no modo estrito do React, como o próprio `camadas.js` avisa. Não foi conferido no
+  build de produção: conferir no `npm run preview` na etapa 8 (ou antes, se alguém mexer no `Dialogo`).
+- **Reabrir sem o retorno exato** (Encontro Finalizado de antes de 2026-11-23, ou mexido depois do Encerrar): só religa a bancada. A
+  Expansão, o Invencível e as ações de Addon que o Encerrar desmanchou não voltam, e a Exaustão que ele cobrou fica.
 
 ## Encontro Unificado e Sala: o que ficou aberto (atualizado em 2026-11-18, fim da 8a)
 
@@ -1032,6 +1102,16 @@ aprovada com esses limites, o teste real do autor continua pendente.
 ---
 
 ## PERGUNTAS AO AUTOR
+
+### Carregamento: o tema e a lista vazia nos esqueletos (2026-11-26)
+**Onde:** `src/systems/afty/ficha/EsqueletoDaFicha.jsx`, `index.html` e `src/celular/EsqueletoDaLista.jsx`
+**Situação:** os esqueletos entraram em 2026-11-26 e dois casos ficaram sem decisão.
+1. **O esqueleto da Ficha sai sempre no tema Padrão** (os tokens `--afty-*` com a reserva do Padrão). Numa ficha de tema
+   claro, a tela passa de escura para clara quando a Ficha chega. Ele deve usar as cores do tema da ficha tocada?
+2. **Lista vazia.** O esqueleto sempre mostra cards e o "Selecionar tudo". Com a biblioteca vazia (um visitante novo, ou a
+   vista padrão do `/Criatura`, que esconde as Criaturas Base) eles dão lugar a "Esta pasta está vazia". O script do
+   `index.html` deve olhar se há ficha guardada antes de desenhar os cards?
+**Anotado:** 2026-11-26, Claude, esqueletos de carregamento
 
 ### Eclesiastes: Feitiços por pontos, furos e leituras para confirmar (2026-11-23)
 **Onde:** `docs/eclesiastes-feiticos.md` (texto), `src/systems/eclesiastes/feiticos/` (motor e tela)

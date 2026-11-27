@@ -3,7 +3,8 @@ import { ArrowLeft } from 'lucide-react';
 import CombatantPanel from './CombatantPanel';
 import { createInitialCombatState } from '../fm-encounter';
 
-export default function CombatTracker({ creature, onUpdate, onExit }) {
+// `onRolar` (opcional, 2026-11-23): repassado ao CombatantPanel. Sem ele, nada muda. Ver AGENTS.md, seção 6.
+export default function CombatTracker({ creature, onUpdate, onExit, onRolar }) {
   const combatant = useMemo(() => ({
     id: `single_${creature.id}`,
     creatureId: creature.id,
@@ -38,6 +39,7 @@ export default function CombatTracker({ creature, onUpdate, onExit }) {
           combatant={combatant}
           onCombatStateChange={handleCombatStateChange}
           onCreatureUpdate={handleCreatureUpdate}
+          onRolar={onRolar}
           onFlagChange={() => { /* no-op em single-mode */ }}
           onNewRound={() => { /* efeitos já aplicados no panel */ }} />
       </main>

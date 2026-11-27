@@ -315,6 +315,11 @@ nunca apagado. Regra de duração (2026-11-17): no Encontro, só as durações e
 
 Os Encontros de `/` e `/Player` e a Sala estão abertos a todos desde 2026-11-18 (o cadeado saiu depois da revisão final, a pedido do autor).
 
+Desde o rework (2026-11-18) a aba tem endereço: `/Encontros` e `/Encontros/<id>`, com o prefixo da rota (`/Jogador/Encontros/<id>`). A rota
+sai do PREFIXO do caminho (`rota-encontros.js`, FOLHA), e a pilha de telas do app (`usePilhaDeTelas`) grava o caminho de cada tela. O visual novo da moldura (etapas
+3 a 7 do rework) só vale com a chave de aparelho `localStorage.dev_moldura_encontros = "site"` até a etapa 8, e nunca alcança a Ficha G2
+embutida. Plano e estado em `docs/afty-encontros.md`, seção "Rework visual e de usabilidade".
+
 A **Sala** (`src/nuvem/`) é um Encontro com várias contas: o Mestre abre pelo botão Abrir Sala, os jogadores entram por `/Sala/<código>` com senha. Todo corte do que cada um pode
 ver é feito NO BANCO (RLS e RPCs em `supabase/salas.sql`, espelho puro em `sala-projecao.js`), nunca só na tela. Toda escrita é RPC. Nunca rode o SQL no banco: o autor cola.
 Guia de banco, cliente, telas e manutenção em `docs/nuvem-supabase.md`. ⚠ Com um `.env.local` o `npm run dev` fala com o Supabase de PRODUÇÃO (o arquivo não existe hoje).
